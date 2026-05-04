@@ -1,4 +1,3 @@
-import hojuJobsLogo from "@/assets/hoju-jobs-logo.png";
 import { useNavigate, NavLink } from "react-router-dom";
 import { Plus, LogIn, LogOut, FileText, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,12 +27,13 @@ export function Header() {
             onClick={() => { sessionStorage.removeItem("hoju_filters"); window.location.href = "/"; }}
           >
             <img
-              src={hojuJobsLogo}
-              alt="Hoju Jobs"
-              className="h-8 sm:h-10"
+              src="/favicon-48x48.png"
+              alt=""
+              className="h-8 w-8 sm:h-10 sm:w-10"
+              aria-hidden="true"
             />
-            <span className="text-lg font-bold tracking-normal text-foreground sm:text-xl">
-              Hoju Jobs
+            <span className="text-base font-black uppercase leading-none tracking-[0.12em] text-[#061b43] sm:text-2xl">
+              HOJU JOBS
             </span>
           </button>
           <div className="flex items-center gap-1.5 sm:gap-2">
