@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 
+const SITE_NAME = "Hoju Jobs";
+
 function useDocumentLangOverride(lang: string | undefined) {
   useEffect(() => {
     if (lang == null) return;
@@ -47,7 +49,9 @@ export function useSEO({ title, description, canonical, keywords, htmlLang, ogLo
     }
     setMeta("property", "og:title", title);
     setMeta("property", "og:description", description);
-    setMeta("property", "og:site_name", "Hoju Jobs");
+    setMeta("property", "og:site_name", SITE_NAME);
+    setMeta("name", "application-name", SITE_NAME);
+    setMeta("name", "apple-mobile-web-app-title", SITE_NAME);
     setMeta("name", "robots", noindex ? "noindex, nofollow" : "index, follow");
     setMeta("name", "twitter:title", title);
     setMeta("name", "twitter:description", description);

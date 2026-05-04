@@ -112,23 +112,30 @@ const Index = ({ cityFilter }: IndexProps) => {
       url: meta.canonical,
       description: meta.description,
       inLanguage: "ko",
-      isPartOf: { "@type": "WebSite", name: "Hoju Jobs", url: "https://hojujobs.com" },
+      isPartOf: {
+        "@type": "WebSite",
+        "@id": "https://hojujobs.com/#website",
+        name: "Hoju Jobs",
+        url: "https://hojujobs.com/",
+      },
     } : {
       "@context": "https://schema.org",
       "@graph": [
         {
           "@type": "WebSite",
+          "@id": "https://hojujobs.com/#website",
           name: "Hoju Jobs",
           alternateName: ["호주잡스", "호주 구인구직", "호주 한인 구인구직"],
-          url: "https://hojujobs.com",
+          url: "https://hojujobs.com/",
           description: meta.description,
           inLanguage: "ko",
         },
         {
           "@type": "Organization",
+          "@id": "https://hojujobs.com/#organization",
           name: "Hoju Jobs",
           alternateName: ["호주잡스", "호주 구인구직"],
-          url: "https://hojujobs.com",
+          url: "https://hojujobs.com/",
           logo: { "@type": "ImageObject", url: "https://hojujobs.com/favicon.png" },
           description: "호주 한인 커뮤니티 구인구직 게시판. 시드니, 멜번, 브리즈번 등 호주 전역 한인 채용정보.",
           contactPoint: { "@type": "ContactPoint", email: "admin.hojujobs@gmail.com", contactType: "customer support" },

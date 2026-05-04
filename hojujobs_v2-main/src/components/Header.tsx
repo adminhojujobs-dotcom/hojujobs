@@ -21,12 +21,21 @@ export function Header() {
     <header className="bg-white border-b border-border">
       <div className="max-w-6xl mx-auto px-4 pt-4 sm:pt-5">
         <div className="flex items-center justify-between pb-7 sm:pb-8">
-          <img
-            src={hojuJobsLogo}
-            alt="Hoju Jobs"
-            className="h-8 sm:h-10 cursor-pointer"
+          <button
+            type="button"
+            className="flex items-center gap-2"
+            aria-label="Hoju Jobs home"
             onClick={() => { sessionStorage.removeItem("hoju_filters"); window.location.href = "/"; }}
-          />
+          >
+            <img
+              src={hojuJobsLogo}
+              alt="Hoju Jobs"
+              className="h-8 sm:h-10"
+            />
+            <span className="text-lg font-bold tracking-normal text-foreground sm:text-xl">
+              Hoju Jobs
+            </span>
+          </button>
           <div className="flex items-center gap-1.5 sm:gap-2">
             {user ? (
               <>
