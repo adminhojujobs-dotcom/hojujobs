@@ -17,7 +17,7 @@ export const REGION_GROUPS: RegionGroup[] = [
     "레드펀", "록스", "드러모인", "바랑가루", "팟츠 포인트", "피어몬트", "타운홀", "매릭빌",
     "그린 스퀘어", "치펜데일", "패딩턴", "라이카트", "이너 웨스트", "센트럴 파크",
     "글리브", "달링허스트", "바랑갈루", "매랙빌", "파이브 독", "캠퍼다운", "로즈베리",
-    "시티 타운홀", "브로드웨이",
+    "시티 타운홀", "브로드웨이", "시드넘",
   ]},
   { state: "NSW", region: "노스 시드니 / 노스쇼어", suburbs: [
     "노스 쇼어", "노스 시드니", "채스우드", "세인트 레오나즈",
@@ -39,7 +39,7 @@ export const REGION_GROUPS: RegionGroup[] = [
   ]},
   { state: "NSW", region: "힐스 지구", suburbs: [
     "노웨스트", "켈리빌", "라우스 힐", "스탠호프 가든스", "체리브룩", "카슬힐", "듀럴", "노스 록스", "스카트필드", "칼링포드", "페넌트 힐스",
-    "리버스톤", "매스든 파크", "엘라라", "스코필드",
+    "리버스톤", "매스든 파크", "엘라라", "스코필드", "버큼힐", "윈스턴 힐스",
   ]},
   { state: "NSW", region: "사우스 시드니", suburbs: [
     "허스트빌", "사우스 허스트빌", "마스콧", "본다이", "본다이 정션",
@@ -49,7 +49,7 @@ export const REGION_GROUPS: RegionGroup[] = [
   ]},
   { state: "NSW", region: "사우스웨스트", suburbs: [
     "캠벨타운", "마운트 드루이트", "스프링우드", "리버풀", "뱅크스타운", "페어필드", "펜리스", "웨스턴 에어리어",
-    "블랙타운", "캐브라마타", "웨더릴 파크", "카술라", "라켐바", "벨모어", "세인트 메리스", "스미스필드", "빌라우드",
+    "블랙타운", "캐브라마타", "웨더릴 파크", "카술라", "라켐바", "벨모어", "세인트 메리스", "스미스필드", "빌라우드", "레브즈비",
   ]},
   { state: "NSW", region: "센트럴 코스트", suburbs: ["센트럴 코스트", "고스포드"] },
   { state: "NSW", region: "기타 NSW", suburbs: [
@@ -130,6 +130,7 @@ export const SUBURB_EN: Record<string, string> = {
   "로즈베리": "Rosebery NSW",
   "시티 타운홀": "Sydney CBD NSW",
   "브로드웨이": "Broadway NSW",
+  "시드넘": "Sydenham NSW",
   "노스 쇼어": "North Shore NSW",
   "노스 시드니": "North Sydney NSW",
   "채스우드": "Chatswood NSW",
@@ -225,6 +226,8 @@ export const SUBURB_EN: Record<string, string> = {
   "매스든 파크": "Marsden Park NSW",
   "엘라라": "Elara NSW",
   "스코필드": "Schofields NSW",
+  "버큼힐": "Baulkham Hills NSW",
+  "윈스턴 힐스": "Winston Hills NSW",
   "허스트빌": "Hurstville NSW",
   "사우스 허스트빌": "South Hurstville NSW",
   "마스콧": "Mascot NSW",
@@ -267,6 +270,7 @@ export const SUBURB_EN: Record<string, string> = {
   "세인트 메리스": "St Marys NSW",
   "스미스필드": "Smithfield NSW",
   "빌라우드": "Villawood NSW",
+  "레브즈비": "Revesby NSW",
   "센트럴 코스트": "Central Coast NSW",
   "고스포드": "Gosford NSW",
   "포트 맥쿼리": "Port Macquarie NSW",
