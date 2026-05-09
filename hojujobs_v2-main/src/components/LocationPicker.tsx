@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { MapPin, ChevronDown, Search, X, Check } from "lucide-react";
+import { MapPin, ChevronDown, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -61,15 +61,6 @@ export function LocationPicker({
     });
   };
 
-  const toggleAllInRegion = (suburbs: string[]) => {
-    const allSelected = suburbs.every((s) => selectedLocations.includes(s));
-    if (allSelected) {
-      onLocationsChange(selectedLocations.filter((l) => !suburbs.includes(l)));
-    } else {
-      onLocationsChange([...new Set([...selectedLocations, ...suburbs])]);
-    }
-  };
-
   const addCustom = () => {
     const trimmed = customInput.trim();
     if (trimmed && !selectedLocations.includes(trimmed)) {
@@ -129,44 +120,26 @@ export function LocationPicker({
         <div className="max-h-[280px] overflow-y-auto p-1">
           {activeRegionGroups.map((group) => {
             const isExpanded = expandedRegions.has(group.region) || !!search;
-            const selectedCount = group.suburbs.filter((s) => selectedLocations.includes(s)).length;
-            const allSelected = selectedCount === group.suburbs.length;
-            const someSelected = selectedCount > 0;
+            const someSelected = group.suburbs.some((s) => selectedLocations.includes(s));
 
             return (
               <div key={group.region}>
-                <div className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => toggleAllInRegion(group.suburbs)}
+                <button
+                  type="button"
+                  onClick={() => toggleRegion(group.region)}
+                  className={cn(
+                    "w-full flex items-center justify-between px-2 py-1.5 text-sm transition-colors",
+                    someSelected ? "text-primary font-semibold" : "text-foreground"
+                  )}
+                >
+                  <span className="truncate text-left">{group.region}</span>
+                  <ChevronDown
                     className={cn(
-                      "flex items-center gap-1.5 py-1.5 pl-2 pr-1 transition-colors",
-                      someSelected ? "text-primary" : "text-muted-foreground"
+                      "h-3 w-3 text-muted-foreground transition-transform",
+                      isExpanded && "rotate-180"
                     )}
-                  >
-                    <Checkbox
-                      checked={allSelected ? true : someSelected ? "indeterminate" : false}
-                      className="pointer-events-none h-3.5 w-3.5"
-                      tabIndex={-1}
-                    />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggleRegion(group.region)}
-                    className={cn(
-                      "flex-1 flex items-center justify-between pr-2 py-1.5 text-sm transition-colors",
-                      someSelected ? "text-primary font-semibold" : "text-foreground"
-                    )}
-                  >
-                    <span className="truncate text-left">{group.region}</span>
-                    <ChevronDown
-                      className={cn(
-                        "h-3 w-3 text-muted-foreground transition-transform",
-                        isExpanded && "rotate-180"
-                      )}
-                    />
-                  </button>
-                </div>
+                  />
+                </button>
                 {isExpanded && (
                   <div className="ml-4 border-l border-border/50 pl-1">
                     {group.suburbs.map((s) => (
