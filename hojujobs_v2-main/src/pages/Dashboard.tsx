@@ -160,8 +160,13 @@ function skyscannerUrl(from: string, to: string, selectedMonth: string) {
   return `https://www.skyscanner.net/transport/flights/${from}/${to}/${yy}${mm}01/?adults=1&rtn=0&cabinclass=economy&market=AU&locale=en-AU&currency=AUD`;
 }
 
-function flightPrice(price: number) {
-  return `A$${price.toLocaleString()}`;
+function naverFlightsUrl(destination: string, selectedMonth: string) {
+  const query = `${monthLabel(selectedMonth)} 인천 ${destination} 항공권 네이버 항공권`;
+  return `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
+}
+
+function flightPrice(price: number, source: FlightSource) {
+  return source === "naver" ? `${formatKrw(price)}~` : `A$${price.toLocaleString()}~`;
 }
 
 function formatAud(amount: number) {
@@ -171,6 +176,13 @@ function formatAud(amount: number) {
 function formatKrw(amount: number) {
   return `₩${amount.toLocaleString("ko-KR")}`;
 }
+
+type FlightSource = "skyscanner" | "naver";
+
+const FLIGHT_SOURCE_OPTIONS: { id: FlightSource; label: string }[] = [
+  { id: "skyscanner", label: "Skyscanner" },
+  { id: "naver", label: "Naver Flights" },
+];
 
 const FLIGHT_ROUTES = [
   {
@@ -214,6 +226,48 @@ const FLIGHT_ROUTES = [
   },
 ];
 
+const NAVER_FLIGHT_ROUTES = [
+  {
+    flag: "🇦🇺",
+    label: "시드니",
+    codes: "ICN → SYD",
+    from: "icn",
+    to: "syd",
+    deals: [
+      { airline: { iata: "CZ", name: "중국남방항공" }, duration: "약 15–18시간", direct: false, priceByMonth: [520000, 540000, 580000, 610000, 680000, 790000, 720000, 650000, 600000, 560000, 545000, 760000] },
+      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 10시간 10분", direct: true, priceByMonth: [560000, 575000, 610000, 640000, 700000, 820000, 760000, 690000, 640000, 590000, 575000, 790000] },
+      { airline: { iata: "TW", name: "티웨이항공" }, duration: "약 10시간 45분", direct: true, priceByMonth: [590000, 610000, 650000, 690000, 740000, 870000, 810000, 730000, 680000, 630000, 610000, 840000] },
+      { airline: { iata: "KE", name: "대한항공" }, duration: "약 10시간 10분", direct: true, priceByMonth: [890000, 930000, 980000, 1040000, 1120000, 1310000, 1230000, 1120000, 1040000, 970000, 940000, 1330000] },
+    ],
+  },
+  {
+    flag: "🇦🇺",
+    label: "멜버른",
+    codes: "ICN → MEL",
+    from: "icn",
+    to: "mel",
+    deals: [
+      { airline: { iata: "MU", name: "중국동방항공" }, duration: "약 14–17시간", direct: false, priceByMonth: [430000, 450000, 490000, 530000, 600000, 720000, 660000, 590000, 540000, 490000, 465000, 690000] },
+      { airline: { iata: "CZ", name: "중국남방항공" }, duration: "약 13–16시간", direct: false, priceByMonth: [460000, 475000, 515000, 555000, 630000, 750000, 690000, 615000, 560000, 515000, 490000, 720000] },
+      { airline: { iata: "VN", name: "베트남항공" }, duration: "약 17–20시간", direct: false, priceByMonth: [520000, 545000, 590000, 640000, 700000, 830000, 770000, 690000, 640000, 585000, 560000, 790000] },
+      { airline: { iata: "SQ", name: "싱가포르항공" }, duration: "약 14–18시간", direct: false, priceByMonth: [780000, 820000, 870000, 940000, 1020000, 1230000, 1150000, 1040000, 950000, 890000, 850000, 1210000] },
+    ],
+  },
+  {
+    flag: "🇦🇺",
+    label: "브리즈번",
+    codes: "ICN → BNE",
+    from: "icn",
+    to: "bne",
+    deals: [
+      { airline: { iata: "CZ", name: "중국남방항공" }, duration: "약 14–18시간", direct: false, priceByMonth: [470000, 490000, 525000, 570000, 640000, 760000, 700000, 620000, 575000, 525000, 500000, 720000] },
+      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 9시간 35분", direct: true, priceByMonth: [510000, 530000, 565000, 600000, 670000, 800000, 740000, 670000, 610000, 560000, 540000, 770000] },
+      { airline: { iata: "SQ", name: "싱가포르항공" }, duration: "약 14–17시간", direct: false, priceByMonth: [740000, 780000, 830000, 900000, 980000, 1180000, 1110000, 1000000, 920000, 850000, 810000, 1160000] },
+      { airline: { iata: "KE", name: "대한항공" }, duration: "약 9시간 35분", direct: true, priceByMonth: [870000, 910000, 960000, 1030000, 1110000, 1300000, 1220000, 1110000, 1040000, 960000, 930000, 1320000] },
+    ],
+  },
+];
+
 export default function Dashboard() {
   useSEO({ title: "대시보드 | 호주잡스", description: "호주잡스 관리자 대시보드", noindex: true });
   const { user, isAdmin, loading } = useAuth();
@@ -221,6 +275,7 @@ export default function Dashboard() {
   const [rates, setRates] = useState<RateData | null>(null);
   const [loadingRate, setLoadingRate] = useState(true);
   const [selectedFlightMonth, setSelectedFlightMonth] = useState(() => getUpcomingFlightMonths()[0].value);
+  const [selectedFlightSource, setSelectedFlightSource] = useState<FlightSource>("skyscanner");
   const [krwAmount, setKrwAmount] = useState("1000000");
 
   useEffect(() => {
@@ -278,6 +333,8 @@ export default function Dashboard() {
   const selectedFlightMonthIndex = Number(selectedFlightMonth.split("-")[1]) - 1;
   const calculatorKrw = Number(krwAmount.replace(/[^\d]/g, ""));
   const calculatorAud = rates ? calculatorKrw * rates.aud : 0;
+  const activeFlightRoutes = selectedFlightSource === "naver" ? NAVER_FLIGHT_ROUTES : FLIGHT_ROUTES;
+  const activeFlightSource = FLIGHT_SOURCE_OPTIONS.find((source) => source.id === selectedFlightSource);
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
@@ -380,7 +437,7 @@ export default function Dashboard() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-sm font-bold text-foreground">🇰🇷 최저가 항공편</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">인천 출발 편도 기준 · Skyscanner 확인</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">인천 출발 편도 기준 · {activeFlightSource?.label} 확인</p>
                 </div>
                 <div className="flex h-8 w-[116px] shrink-0 items-center justify-center gap-1.5 rounded-md border border-border bg-muted/40 px-2 text-xs font-semibold text-primary">
                   <CalendarDays className="h-3.5 w-3.5 shrink-0" />
@@ -405,9 +462,26 @@ export default function Dashboard() {
                   </button>
                 ))}
               </div>
+              <div className="mt-3 grid grid-cols-2 gap-1.5" aria-label="항공권 검색 소스 선택">
+                {FLIGHT_SOURCE_OPTIONS.map((source) => (
+                  <button
+                    key={source.id}
+                    type="button"
+                    onClick={() => setSelectedFlightSource(source.id)}
+                    className={`h-8 rounded-md border px-2 text-xs font-semibold transition-colors ${
+                      selectedFlightSource === source.id
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border bg-white text-muted-foreground hover:border-primary/40 hover:bg-muted/40 hover:text-foreground"
+                    }`}
+                    aria-pressed={selectedFlightSource === source.id}
+                  >
+                    {source.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="divide-y">
-              {FLIGHT_ROUTES.map((route) => {
+              {activeFlightRoutes.map((route) => {
                 const bestDeals = route.deals
                   .map((deal) => ({ ...deal, price: deal.priceByMonth[selectedFlightMonthIndex] }))
                   .sort((a, b) => a.price - b.price)
@@ -425,7 +499,11 @@ export default function Dashboard() {
                       {bestDeals.map((deal) => (
                         <a
                           key={`${route.codes}-${deal.airline.iata}`}
-                          href={skyscannerUrl(route.from, route.to, selectedFlightMonth)}
+                          href={
+                            selectedFlightSource === "naver"
+                              ? naverFlightsUrl(route.label, selectedFlightMonth)
+                              : skyscannerUrl(route.from, route.to, selectedFlightMonth)
+                          }
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-3 rounded-md border border-border/70 bg-white px-3 py-2 hover:border-primary/30 hover:bg-muted/30 transition-colors group"
@@ -447,7 +525,7 @@ export default function Dashboard() {
                             <p className="text-[11px] text-muted-foreground mt-0.5">{deal.duration}</p>
                           </div>
                           <div className="shrink-0 text-right">
-                            <p className="text-sm font-bold text-primary">{flightPrice(deal.price)}~</p>
+                            <p className="text-sm font-bold text-primary">{flightPrice(deal.price, selectedFlightSource)}</p>
                             <ExternalLink className="h-3 w-3 text-muted-foreground mt-1 ml-auto" />
                           </div>
                         </a>
