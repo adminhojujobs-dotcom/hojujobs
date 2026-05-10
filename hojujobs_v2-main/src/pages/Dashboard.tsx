@@ -33,6 +33,7 @@ const NEWS_ARTICLES = [
   {
     title: "워홀러 88일 지역 근무, WA 관광지 기준 논란",
     date: "2026년 4월 3일",
+    publishedAt: "2026-04-03",
     year: 2026,
     tag: "비자",
     summary: "ABC는 로트네스트 아일랜드는 원격 지역으로 인정되지만 마가렛 리버 등 일부 관광지는 인정되지 않아, 2차 비자를 준비하는 워홀러와 지역 카페·숙박업체 모두 인력 확보에 어려움을 겪고 있다고 보도했습니다.",
@@ -43,6 +44,7 @@ const NEWS_ARTICLES = [
   {
     title: "2026 최저임금 인상 논의 — 워홀 일자리 임금도 영향",
     date: "2026년 3월 26일",
+    publishedAt: "2026-03-26",
     year: 2026,
     tag: "임금",
     summary: "연방정부가 2026년 연례 임금 심사에서 물가상승률보다 높은 최저·어워드 임금 인상을 요청했습니다. 카페, 식당, 리테일 등 워홀러가 많이 일하는 업종의 시급 기준을 확인해두면 좋습니다.",
@@ -53,6 +55,7 @@ const NEWS_ARTICLES = [
   {
     title: "이주 노동자 임금 체불 보고서 — 현금잡 주의",
     date: "2026년 5월",
+    publishedAt: "2026-05-01",
     year: 2026,
     tag: "법률",
     summary: "Migrant Justice Institute의 새 보고서를 인용한 보도에 따르면 임금 체불, 슈퍼 미지급, 불법 공제 등 임시비자 노동자 착취가 여전히 큰 문제입니다. 출국 전에는 페이슬립, TFN, 슈퍼 계좌, 고용계약을 꼭 확인하세요.",
@@ -63,6 +66,7 @@ const NEWS_ARTICLES = [
   {
     title: "아웃백 일자리 감소 — 연료비 상승이 지역 워홀 구직에 영향",
     date: "2026년 4월 14일",
+    publishedAt: "2026-04-14",
     year: 2026,
     tag: "2차 비자",
     summary: "ABC는 연료비 부담과 관광객 감소로 일부 아웃백 로드하우스와 지역 사업장이 시즌 직원을 줄이고 있다고 보도했습니다. 88일 지역 근무를 계획한다면 숙소·교통·실제 근무 가능 여부를 먼저 확인하는 편이 안전합니다.",
@@ -73,6 +77,7 @@ const NEWS_ARTICLES = [
   {
     title: "호주 호스텔 트렌드 변화 — 조용한 숙소·개인공간 수요 증가",
     date: "2026년 4월 22일",
+    publishedAt: "2026-04-22",
     year: 2026,
     tag: "숙소",
     summary: "가디언은 호주 백패커 숙소가 대형 도미토리와 파티 중심에서 프라이버시, 소셜 공간, 지역 경험을 함께 제공하는 방향으로 바뀌고 있다고 소개했습니다. 도착 초반 숙소를 잡을 때 위치와 장기 숙박 할인도 함께 비교해보세요.",
@@ -83,6 +88,7 @@ const NEWS_ARTICLES = [
   {
     title: "2026 호주 생활비 가이드 — 도시별 예산 먼저 잡기",
     date: "2026년",
+    publishedAt: "2026-01-01",
     year: 2026,
     tag: "생활비",
     summary: "2026년 호주 생활비는 도시와 숙소 형태에 따라 차이가 큽니다. 입국 전 첫 4주 숙소비, 교통카드, 유심, 식비, 보증금까지 계산해두면 첫 구직 기간을 훨씬 안정적으로 버틸 수 있습니다.",
@@ -103,7 +109,9 @@ const TAG_COLORS: Record<string, string> = {
 };
 
 const CURRENT_NEWS_YEAR = 2026;
-const CURRENT_NEWS_ARTICLES = NEWS_ARTICLES.filter((article) => article.year === CURRENT_NEWS_YEAR);
+const CURRENT_NEWS_ARTICLES = NEWS_ARTICLES
+  .filter((article) => article.year === CURRENT_NEWS_YEAR)
+  .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 
 function faviconUrl(domain: string) {
   return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
