@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
 import { Header } from "@/components/Header";
 import { RefreshCw, ExternalLink, ArrowRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface RateData {
   aud: number;
@@ -11,6 +12,7 @@ interface RateData {
   jpy: number;
   eur: number;
   date: string;
+  updatedAt: string;
 }
 
 const CONVERSION_AMOUNTS = [100_000, 500_000, 1_000_000, 5_000_000];
@@ -37,6 +39,7 @@ const NEWS_ARTICLES = [
     summary: "ABC는 로트네스트 아일랜드는 원격 지역으로 인정되지만 마가렛 리버 등 일부 관광지는 인정되지 않아, 2차 비자를 준비하는 워홀러와 지역 카페·숙박업체 모두 인력 확보에 어려움을 겪고 있다고 보도했습니다.",
     link: "https://www.abc.net.au/news/2026-04-03/backpacker-visa-rules-south-west-wa-rottnest/106478874",
     source: "ABC News",
+    domain: "abc.net.au",
   },
   {
     title: "2026 최저임금 인상 논의 — 워홀 일자리 임금도 영향",
@@ -46,6 +49,7 @@ const NEWS_ARTICLES = [
     summary: "연방정부가 2026년 연례 임금 심사에서 물가상승률보다 높은 최저·어워드 임금 인상을 요청했습니다. 카페, 식당, 리테일 등 워홀러가 많이 일하는 업종의 시급 기준을 확인해두면 좋습니다.",
     link: "https://www.abc.net.au/news/2026-03-26/lift-minimum-wage-above-inflation-federal-government-says/106497922",
     source: "ABC News",
+    domain: "abc.net.au",
   },
   {
     title: "이주 노동자 임금 체불 보고서 — 현금잡 주의",
@@ -55,6 +59,7 @@ const NEWS_ARTICLES = [
     summary: "Migrant Justice Institute의 새 보고서를 인용한 보도에 따르면 임금 체불, 슈퍼 미지급, 불법 공제 등 임시비자 노동자 착취가 여전히 큰 문제입니다. 출국 전에는 페이슬립, TFN, 슈퍼 계좌, 고용계약을 꼭 확인하세요.",
     link: "https://www.news.com.au/finance/work/at-work/international-students-cheated-out-of318bn-in-annual-wages-new-report-finds/news-story/28981750cb1f6db3b0f1ea9095165ed4",
     source: "news.com.au",
+    domain: "news.com.au",
   },
   {
     title: "아웃백 일자리 감소 — 연료비 상승이 지역 워홀 구직에 영향",
@@ -64,6 +69,7 @@ const NEWS_ARTICLES = [
     summary: "ABC는 연료비 부담과 관광객 감소로 일부 아웃백 로드하우스와 지역 사업장이 시즌 직원을 줄이고 있다고 보도했습니다. 88일 지역 근무를 계획한다면 숙소·교통·실제 근무 가능 여부를 먼저 확인하는 편이 안전합니다.",
     link: "https://www.abc.net.au/news/2026-04-15/outback-workers-cut-as-tourists-stay-away-fuel-crisis-sa/106537958",
     source: "ABC News",
+    domain: "abc.net.au",
   },
   {
     title: "호주 호스텔 트렌드 변화 — 조용한 숙소·개인공간 수요 증가",
@@ -73,6 +79,7 @@ const NEWS_ARTICLES = [
     summary: "가디언은 호주 백패커 숙소가 대형 도미토리와 파티 중심에서 프라이버시, 소셜 공간, 지역 경험을 함께 제공하는 방향으로 바뀌고 있다고 소개했습니다. 도착 초반 숙소를 잡을 때 위치와 장기 숙박 할인도 함께 비교해보세요.",
     link: "https://www.theguardian.com/travel/2026/apr/22/backpacking-hostel-changes-private-rooms-luxury",
     source: "The Guardian",
+    domain: "theguardian.com",
   },
   {
     title: "2026 호주 생활비 가이드 — 도시별 예산 먼저 잡기",
@@ -82,6 +89,7 @@ const NEWS_ARTICLES = [
     summary: "2026년 호주 생활비는 도시와 숙소 형태에 따라 차이가 큽니다. 입국 전 첫 4주 숙소비, 교통카드, 유심, 식비, 보증금까지 계산해두면 첫 구직 기간을 훨씬 안정적으로 버틸 수 있습니다.",
     link: "https://www.switchliving.com.au/en/student-guide/cost-of-living-in-australia-for-international-students-in-2026-a-complete-guide/",
     source: "Switch Living",
+    domain: "switchliving.com.au",
   },
 ];
 
@@ -98,19 +106,50 @@ const TAG_COLORS: Record<string, string> = {
 const CURRENT_NEWS_YEAR = 2026;
 const CURRENT_NEWS_ARTICLES = NEWS_ARTICLES.filter((article) => article.year === CURRENT_NEWS_YEAR);
 
-function skyscannerUrl(from: string, to: string) {
-  const d = new Date();
-  d.setMonth(d.getMonth() + 1);
-  d.setDate(1);
-  const yy = String(d.getFullYear()).slice(2);
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
+function faviconUrl(domain: string) {
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+}
+
+function formatRateUpdatedAt(date: Date) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Australia/Sydney",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
+function monthKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function monthLabel(key: string) {
+  const [year, month] = key.split("-");
+  return `${year}년 ${Number(month)}월`;
+}
+
+function getUpcomingFlightMonths() {
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + i + 1);
+    const value = monthKey(d);
+    return { value, label: monthLabel(value) };
+  });
+}
+
+function skyscannerUrl(from: string, to: string, selectedMonth: string) {
+  const [year, month] = selectedMonth.split("-");
+  const yy = year.slice(2);
+  const mm = month.padStart(2, "0");
   return `https://www.skyscanner.net/transport/flights/${from}/${to}/${yy}${mm}01/?adults=1&rtn=0&cabinclass=economy`;
 }
 
-function nextMonthLabel() {
-  const d = new Date();
-  d.setMonth(d.getMonth() + 1);
-  return `${d.getMonth() + 1}월 1일`;
+function flightPrice(price: number) {
+  return `A$${price.toLocaleString()}`;
 }
 
 const FLIGHT_ROUTES = [
@@ -118,46 +157,40 @@ const FLIGHT_ROUTES = [
     flag: "🇦🇺",
     label: "시드니",
     codes: "ICN → SYD",
-    duration: "약 10시간 10분",
-    direct: true,
-    fromPrice: "A$400",
-    airlines: [
-      { iata: "KE", name: "대한항공" },
-      { iata: "JQ", name: "제트스타" },
-      { iata: "QF", name: "콴타스" },
-    ],
     from: "icn",
     to: "syd",
+    deals: [
+      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 10시간 10분", direct: true, priceByMonth: [420, 430, 450, 470, 520, 610, 560, 500, 470, 440, 430, 580] },
+      { airline: { iata: "KE", name: "대한항공" }, duration: "약 10시간 10분", direct: true, priceByMonth: [680, 710, 740, 760, 820, 960, 900, 820, 760, 720, 700, 980] },
+      { airline: { iata: "QF", name: "콴타스" }, duration: "약 10시간 10분", direct: true, priceByMonth: [650, 690, 720, 750, 790, 940, 890, 810, 750, 700, 680, 940] },
+      { airline: { iata: "CZ", name: "중국남방항공" }, duration: "약 15–18시간", direct: false, priceByMonth: [390, 405, 430, 455, 500, 590, 540, 480, 440, 410, 400, 560] },
+    ],
   },
   {
     flag: "🇦🇺",
     label: "멜버른",
     codes: "ICN → MEL",
-    duration: "약 13–16시간",
-    direct: false,
-    fromPrice: "A$270",
-    airlines: [
-      { iata: "SQ", name: "싱가포르항공" },
-      { iata: "CX", name: "캐세이퍼시픽" },
-      { iata: "MH", name: "말레이시아항공" },
-    ],
     from: "icn",
     to: "mel",
+    deals: [
+      { airline: { iata: "MU", name: "중국동방항공" }, duration: "약 14–17시간", direct: false, priceByMonth: [310, 320, 350, 380, 430, 520, 480, 420, 380, 340, 325, 500] },
+      { airline: { iata: "CZ", name: "중국남방항공" }, duration: "약 13–16시간", direct: false, priceByMonth: [330, 340, 365, 390, 450, 540, 500, 440, 395, 360, 345, 520] },
+      { airline: { iata: "SQ", name: "싱가포르항공" }, duration: "약 14–18시간", direct: false, priceByMonth: [590, 620, 650, 700, 760, 920, 860, 780, 710, 660, 630, 900] },
+      { airline: { iata: "CX", name: "캐세이퍼시픽" }, duration: "약 14–17시간", direct: false, priceByMonth: [560, 590, 630, 680, 730, 880, 830, 750, 690, 630, 600, 850] },
+    ],
   },
   {
     flag: "🇦🇺",
     label: "브리즈번",
     codes: "ICN → BNE",
-    duration: "약 9시간 35분",
-    direct: true,
-    fromPrice: "A$350",
-    airlines: [
-      { iata: "KE", name: "대한항공" },
-      { iata: "JQ", name: "제트스타" },
-      { iata: "SQ", name: "싱가포르항공" },
-    ],
     from: "icn",
     to: "bne",
+    deals: [
+      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 9시간 35분", direct: true, priceByMonth: [360, 375, 395, 420, 470, 560, 520, 470, 430, 390, 380, 540] },
+      { airline: { iata: "KE", name: "대한항공" }, duration: "약 9시간 35분", direct: true, priceByMonth: [650, 680, 710, 760, 820, 960, 900, 820, 770, 710, 690, 940] },
+      { airline: { iata: "SQ", name: "싱가포르항공" }, duration: "약 14–17시간", direct: false, priceByMonth: [560, 590, 630, 680, 740, 890, 840, 760, 700, 640, 610, 860] },
+      { airline: { iata: "CZ", name: "중국남방항공" }, duration: "약 14–18시간", direct: false, priceByMonth: [340, 355, 380, 410, 460, 550, 510, 450, 410, 370, 360, 520] },
+    ],
   },
 ];
 
@@ -167,6 +200,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [rates, setRates] = useState<RateData | null>(null);
   const [loadingRate, setLoadingRate] = useState(true);
+  const [selectedFlightMonth, setSelectedFlightMonth] = useState(() => getUpcomingFlightMonths()[0].value);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) navigate("/");
@@ -182,7 +216,15 @@ export default function Dashboard() {
       const res = await fetch("https://open.er-api.com/v6/latest/KRW");
       const data = await res.json();
       if (data.result === "success") {
-        setRates({ aud: data.rates.AUD, usd: data.rates.USD, jpy: data.rates.JPY, eur: data.rates.EUR, date: new Date().toISOString().slice(0, 10) });
+        const updatedDate = data.time_last_update_unix ? new Date(data.time_last_update_unix * 1000) : new Date();
+        setRates({
+          aud: data.rates.AUD,
+          usd: data.rates.USD,
+          jpy: data.rates.JPY,
+          eur: data.rates.EUR,
+          date: updatedDate.toISOString().slice(0, 10),
+          updatedAt: formatRateUpdatedAt(updatedDate),
+        });
         setLoadingRate(false);
         return;
       }
@@ -191,7 +233,15 @@ export default function Dashboard() {
       try {
         const res = await fetch("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/krw.json");
         const data = await res.json();
-        setRates({ aud: data.krw.aud, usd: data.krw.usd, jpy: data.krw.jpy, eur: data.krw.eur, date: new Date().toISOString().slice(0, 10) });
+        const updatedDate = new Date();
+        setRates({
+          aud: data.krw.aud,
+          usd: data.krw.usd,
+          jpy: data.krw.jpy,
+          eur: data.krw.eur,
+          date: updatedDate.toISOString().slice(0, 10),
+          updatedAt: formatRateUpdatedAt(updatedDate),
+        });
       } catch {
         setRates(null);
       }
@@ -203,6 +253,8 @@ export default function Dashboard() {
   if (!isAdmin) return null;
 
   const rateForCode = (code: string) => rates?.[code.toLowerCase() as keyof RateData] as number | undefined;
+  const flightMonths = getUpcomingFlightMonths();
+  const selectedFlightMonthIndex = Number(selectedFlightMonth.split("-")[1]) - 1;
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
@@ -229,7 +281,10 @@ export default function Dashboard() {
                     ₩1,000 = <span className="text-primary">A${(rates.aud * 1000).toFixed(3)}</span>
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    🇦🇺 A$1 = ₩{Math.round(1 / rates.aud).toLocaleString()} · {rates.date}
+                    🇦🇺 A$1 = ₩{Math.round(1 / rates.aud).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    마지막 업데이트: {rates.updatedAt} (AEST/AEDT)
                   </p>
                 </div>
                 <div className="divide-y border-b">
@@ -263,49 +318,74 @@ export default function Dashboard() {
 
           {/* Flights */}
           <div className="rounded-lg border bg-card overflow-hidden">
-            <div className="px-4 py-3 border-b">
-              <h2 className="text-sm font-bold text-foreground">🇰🇷 최저가 항공편</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">{nextMonthLabel()} 편도 기준 · Skyscanner</p>
+            <div className="flex items-start justify-between gap-3 px-4 py-3 border-b">
+              <div>
+                <h2 className="text-sm font-bold text-foreground">🇰🇷 최저가 항공편</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">인천 출발 편도 기준 · Skyscanner 확인</p>
+              </div>
+              <Select value={selectedFlightMonth} onValueChange={setSelectedFlightMonth}>
+                <SelectTrigger className="h-8 w-[116px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  {flightMonths.map((month) => (
+                    <SelectItem key={month.value} value={month.value}>
+                      {month.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="divide-y">
-              {FLIGHT_ROUTES.map((route) => (
-                <a
-                  key={route.codes}
-                  href={skyscannerUrl(route.from, route.to)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-start gap-3 px-4 py-3.5 hover:bg-muted/40 transition-colors group"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+              {FLIGHT_ROUTES.map((route) => {
+                const bestDeals = route.deals
+                  .map((deal) => ({ ...deal, price: deal.priceByMonth[selectedFlightMonthIndex] }))
+                  .sort((a, b) => a.price - b.price)
+                  .slice(0, 2);
+
+                return (
+                  <div key={route.codes} className="px-4 py-3.5">
+                    <div className="mb-2 flex items-center gap-2">
+                      <p className="text-sm font-semibold text-foreground">
                         {route.flag} {route.label}
                       </p>
                       <span className="text-[10px] text-muted-foreground">{route.codes}</span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${route.direct ? "bg-green-50 text-green-700" : "bg-muted text-muted-foreground"}`}>
-                        {route.direct ? "직항" : "경유"}
-                      </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{route.duration}</p>
-                    <div className="flex items-center gap-1.5 mt-2">
-                      {route.airlines.map((a) => (
-                        <img
-                          key={a.iata}
-                          src={`https://www.gstatic.com/flights/airline_logos/70px/${a.iata}.png`}
-                          alt={a.name}
-                          title={a.name}
-                          className="h-5 w-5 rounded object-contain"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                        />
+                    <div className="space-y-2">
+                      {bestDeals.map((deal) => (
+                        <a
+                          key={`${route.codes}-${deal.airline.iata}`}
+                          href={skyscannerUrl(route.from, route.to, selectedFlightMonth)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 rounded-md border border-border/70 bg-white px-3 py-2 hover:border-primary/30 hover:bg-muted/30 transition-colors group"
+                        >
+                          <img
+                            src={`https://www.gstatic.com/flights/airline_logos/70px/${deal.airline.iata}.png`}
+                            alt=""
+                            title={deal.airline.name}
+                            className="h-6 w-6 rounded object-contain"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">{deal.airline.name}</p>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${deal.direct ? "bg-green-50 text-green-700" : "bg-muted text-muted-foreground"}`}>
+                                {deal.direct ? "직항" : "경유"}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">{deal.duration}</p>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <p className="text-sm font-bold text-primary">{flightPrice(deal.price)}~</p>
+                            <ExternalLink className="h-3 w-3 text-muted-foreground mt-1 ml-auto" />
+                          </div>
+                        </a>
                       ))}
                     </div>
                   </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-sm font-bold text-primary">{route.fromPrice}~</p>
-                    <ExternalLink className="h-3 w-3 text-muted-foreground mt-1 ml-auto" />
-                  </div>
-                </a>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -325,6 +405,12 @@ export default function Dashboard() {
                 rel="noopener noreferrer"
                 className="flex items-start gap-3 px-4 py-3.5 hover:bg-muted/40 transition-colors group"
               >
+                <img
+                  src={faviconUrl(article.domain)}
+                  alt=""
+                  className="h-5 w-5 rounded-sm object-contain mt-0.5"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${TAG_COLORS[article.tag] ?? "bg-muted text-muted-foreground"}`}>

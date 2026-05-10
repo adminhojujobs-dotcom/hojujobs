@@ -18,6 +18,7 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isInfoActive = location.pathname === "/blog" || location.pathname.startsWith("/blog/") || location.pathname === "/dashboard";
+  const infoLabel = location.pathname === "/dashboard" ? "뉴스" : "블로그";
 
   return (
     <header className="bg-white border-b border-border">
@@ -138,7 +139,7 @@ export function Header() {
                   : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
               )}
             >
-              블로그
+              {infoLabel}
               <ChevronDown className="h-3 w-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
