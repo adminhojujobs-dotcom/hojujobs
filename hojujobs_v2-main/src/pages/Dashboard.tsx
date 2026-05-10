@@ -63,11 +63,26 @@ export default function Dashboard() {
   const fetchRate = async () => {
     setLoadingRate(true);
     try {
-      const res = await fetch("https://api.frankfurter.app/latest?from=KRW&to=AUD");
+      // Primary: open.er-api.com (free, no key, CORS-friendly)
+      const res = await fetch("https://open.er-api.com/v6/latest/KRW");
       const data = await res.json();
-      setRate({ rate: data.rates.AUD, date: data.date });
+      if (data.result === "success") {
+        const today = new Date().toISOString().slice(0, 10);
+        setRate({ rate: data.rates.AUD, date: today });
+        setLoadingRate(false);
+        return;
+      }
+      throw new Error("bad response");
     } catch {
-      setRate(null);
+      try {
+        // Fallback: cdn.jsdelivr.net fawazahmed0 currency API
+        const res = await fetch("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/krw.json");
+        const data = await res.json();
+        const today = new Date().toISOString().slice(0, 10);
+        setRate({ rate: data.krw.aud, date: today });
+      } catch {
+        setRate(null);
+      }
     }
     setLoadingRate(false);
   };
