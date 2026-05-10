@@ -307,7 +307,7 @@ export default function Dashboard() {
       const res = await fetch(`https://open.er-api.com/v6/latest/KRW?${cacheBuster}`);
       const data = await res.json();
       if (data.result === "success") {
-        const updatedDate = data.time_last_update_unix ? new Date(data.time_last_update_unix * 1000) : new Date();
+        const updatedDate = new Date();
         setRates({
           aud: data.rates.AUD,
           usd: data.rates.USD,
