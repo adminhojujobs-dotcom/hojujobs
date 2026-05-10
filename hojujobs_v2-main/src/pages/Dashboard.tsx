@@ -13,14 +13,6 @@ interface RateData {
   date: string;
 }
 
-interface NewsItem {
-  title: string;
-  link: string;
-  pubDate: string;
-  thumbnail: string | null;
-  description: string;
-}
-
 const CONVERSION_AMOUNTS = [100_000, 500_000, 1_000_000, 5_000_000];
 
 const EXTRA_RATES = [
@@ -35,6 +27,66 @@ const CITY_LINKS = [
   { label: "브리즈번 구인구직", path: "/brisbane", sub: "QLD 전 지역" },
   { label: "애들레이드 구인구직", path: "/adelaide", sub: "SA 전 지역" },
 ];
+
+const NEWS_ARTICLES = [
+  {
+    title: "워킹홀리데이 비자 신청 수수료 A$670으로 인상",
+    date: "2025년 7월 1일",
+    tag: "비자",
+    summary: "2025년 7월 1일부터 워킹홀리데이 비자(417·462) 신청 수수료가 $635에서 $670으로 인상됐습니다. CPI에 따른 정기 조정으로, 7월 이후 신청자는 새 수수료를 적용받습니다.",
+    link: "https://pvtistes.net/en/australia-whv-fee-increase/",
+    source: "pvtistes.net",
+  },
+  {
+    title: "호주 최저임금 3.5% 인상 — 시간당 A$24.95",
+    date: "2025년 7월 1일",
+    tag: "임금",
+    summary: "공정근로위원회가 2025년 7월 1일부터 최저임금을 시간당 $24.95(주 38시간 기준 주당 $948)로 확정했습니다. 워킹홀리데이 소지자도 동일 적용되며, 미달 지급 시 Fair Work Ombudsman에 신고 가능합니다.",
+    link: "https://www.fairwork.gov.au/about-us/workplace-laws/annual-wage-review/annual-wage-review-2024-2025",
+    source: "fairwork.gov.au",
+  },
+  {
+    title: "슈퍼애뉴에이션 12%로 인상 — 출국 시 환급 가능",
+    date: "2025년 7월 1일",
+    tag: "연금",
+    summary: "고용주 의무 연금 기여율이 11.5%에서 12%로 최종 인상됐습니다. 워홀러는 출국 시 DASP를 통해 적립금을 환급받을 수 있으나, 환급액의 65%가 세금으로 공제되므로 주의가 필요합니다.",
+    link: "https://gettingdownunder.com/working-holiday-visa-australia-updates-from-july-2025/",
+    source: "gettingdownunder.com",
+  },
+  {
+    title: "2차 비자 지역 근무 인정 지역 확대 — 재해 복구 포함",
+    date: "2025년 4월",
+    tag: "2차 비자",
+    summary: "2차·3차 워킹홀리데이 비자를 위한 지정 업무 인정 지역이 확대돼 산불·홍수·사이클론 피해 복구 작업도 88일 조건에 포함됩니다. 농업·과수원·수산업 등 기존 인정 업종은 그대로 유지됩니다.",
+    link: "https://crossborderedu.org/news/big-changes-in-australia-s-2025-working-holiday-visa-program",
+    source: "crossborderedu.org",
+  },
+  {
+    title: "이주 노동자 착취 방지 신법 — 워홀러 보호 강화",
+    date: "2024–2025",
+    tag: "법률",
+    summary: "비자 소지 근로자를 착취하는 고용주에 형사처벌이 가능해졌습니다. 착취 피해 워홀러는 '직장 정의 비자(6개월)'를 신청할 수 있으며, 신고해도 비자가 취소되지 않는 보호 장치가 마련됐습니다.",
+    link: "https://www.roammigrationlaw.com/new-migration-laws-will-help-protect-exploited-workers/",
+    source: "roammigrationlaw.com",
+  },
+  {
+    title: "2026년 생활비 현황 — 시드니·멜번·브리즈번 비교",
+    date: "2026년",
+    tag: "생활비",
+    summary: "1인 기준 방 1개 아파트 월세는 시드니 약 $2,700, 멜번 $2,460, 브리즈번 $2,600 수준입니다. 쉐어하우스를 활용하면 주당 $200~$350까지 절감 가능하며, Aldi 이용 시 식료품비도 20~30% 낮출 수 있습니다.",
+    link: "https://lifecalculators.com.au/guides/cost-living-australia",
+    source: "lifecalculators.com.au",
+  },
+];
+
+const TAG_COLORS: Record<string, string> = {
+  "비자": "bg-blue-50 text-blue-700",
+  "임금": "bg-green-50 text-green-700",
+  "연금": "bg-purple-50 text-purple-700",
+  "2차 비자": "bg-orange-50 text-orange-700",
+  "법률": "bg-red-50 text-red-700",
+  "생활비": "bg-yellow-50 text-yellow-700",
+};
 
 function skyscannerUrl(from: string, to: string) {
   const d = new Date();
@@ -99,30 +151,19 @@ const FLIGHT_ROUTES = [
   },
 ];
 
-function todayLabel() {
-  const d = new Date();
-  const days = ["일", "월", "화", "수", "목", "금", "토"];
-  return `${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}(${days[d.getDay()]})`;
-}
-
 export default function Dashboard() {
   useSEO({ title: "대시보드 | 호주잡스", description: "호주잡스 관리자 대시보드", noindex: true });
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [rates, setRates] = useState<RateData | null>(null);
   const [loadingRate, setLoadingRate] = useState(true);
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [loadingNews, setLoadingNews] = useState(true);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) navigate("/");
   }, [user, isAdmin, loading]);
 
   useEffect(() => {
-    if (isAdmin) {
-      fetchRate();
-      fetchNews();
-    }
+    if (isAdmin) fetchRate();
   }, [isAdmin]);
 
   const fetchRate = async () => {
@@ -131,13 +172,7 @@ export default function Dashboard() {
       const res = await fetch("https://open.er-api.com/v6/latest/KRW");
       const data = await res.json();
       if (data.result === "success") {
-        setRates({
-          aud: data.rates.AUD,
-          usd: data.rates.USD,
-          jpy: data.rates.JPY,
-          eur: data.rates.EUR,
-          date: new Date().toISOString().slice(0, 10),
-        });
+        setRates({ aud: data.rates.AUD, usd: data.rates.USD, jpy: data.rates.JPY, eur: data.rates.EUR, date: new Date().toISOString().slice(0, 10) });
         setLoadingRate(false);
         return;
       }
@@ -146,13 +181,7 @@ export default function Dashboard() {
       try {
         const res = await fetch("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/krw.json");
         const data = await res.json();
-        setRates({
-          aud: data.krw.aud,
-          usd: data.krw.usd,
-          jpy: data.krw.jpy,
-          eur: data.krw.eur,
-          date: new Date().toISOString().slice(0, 10),
-        });
+        setRates({ aud: data.krw.aud, usd: data.krw.usd, jpy: data.krw.jpy, eur: data.krw.eur, date: new Date().toISOString().slice(0, 10) });
       } catch {
         setRates(null);
       }
@@ -160,44 +189,15 @@ export default function Dashboard() {
     setLoadingRate(false);
   };
 
-  const fetchNews = async () => {
-    setLoadingNews(true);
-    try {
-      const feed = encodeURIComponent("https://www.abc.net.au/news/feed/51120/rss.xml");
-      const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${feed}&count=6`);
-      const data = await res.json();
-      if (data.status === "ok") {
-        setNews(data.items.map((item: { title: string; link: string; pubDate: string; thumbnail: string | null; description: string }) => ({
-          title: item.title,
-          link: item.link,
-          pubDate: item.pubDate,
-          thumbnail: item.thumbnail || null,
-          description: item.description?.replace(/<[^>]+>/g, "").slice(0, 100) ?? "",
-        })));
-      }
-    } catch {
-      setNews([]);
-    }
-    setLoadingNews(false);
-  };
-
   if (loading) return <div className="flex w-full min-h-0 flex-1 items-center justify-center text-muted-foreground">로딩 중...</div>;
   if (!isAdmin) return null;
 
-  const rateForCode = (code: string) => {
-    if (!rates) return null;
-    return rates[code.toLowerCase() as keyof RateData] as number;
-  };
+  const rateForCode = (code: string) => rates?.[code.toLowerCase() as keyof RateData] as number | undefined;
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
       <Header />
-      <div className="max-w-4xl mx-auto px-4 py-8 w-full space-y-6">
-
-        {/* Date */}
-        <div className="flex items-center justify-end">
-          <span className="text-sm text-muted-foreground">{todayLabel()}</span>
-        </div>
+      <div className="max-w-4xl mx-auto px-4 pt-4 pb-8 w-full space-y-5">
 
         {/* Exchange rate + Flights */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -214,7 +214,6 @@ export default function Dashboard() {
               <div className="px-4 py-8 text-sm text-muted-foreground text-center">불러오는 중...</div>
             ) : rates ? (
               <div>
-                {/* Main KRW → AUD rate */}
                 <div className="px-4 py-4 border-b">
                   <p className="text-2xl font-bold text-foreground">
                     ₩1,000 = <span className="text-primary">A${(rates.aud * 1000).toFixed(3)}</span>
@@ -223,7 +222,6 @@ export default function Dashboard() {
                     🇦🇺 A$1 = ₩{Math.round(1 / rates.aud).toLocaleString()} · {rates.date}
                   </p>
                 </div>
-                {/* KRW → AUD conversion table */}
                 <div className="divide-y border-b">
                   {CONVERSION_AMOUNTS.map((krw) => (
                     <div key={krw} className="flex items-center justify-between px-4 py-2">
@@ -232,7 +230,6 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-                {/* Extra rates */}
                 <div className="px-4 py-3 space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">기타 환율 (₩10,000 기준)</p>
                   {EXTRA_RATES.map(({ code, flag, label }) => {
@@ -305,42 +302,34 @@ export default function Dashboard() {
 
         {/* News */}
         <div className="rounded-lg border bg-card overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b">
-            <div>
-              <h2 className="text-sm font-bold text-foreground">🇦🇺 호주 최신 뉴스</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">ABC News Australia</p>
-            </div>
-            <button onClick={fetchNews} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
-              <RefreshCw className="h-3 w-3" /> 새로고침
-            </button>
+          <div className="px-4 py-3 border-b">
+            <h2 className="text-sm font-bold text-foreground">📰 워킹홀리데이 최신 뉴스</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">호주 워킹홀리데이 관련 최신 정보</p>
           </div>
-          {loadingNews ? (
-            <div className="px-4 py-8 text-sm text-muted-foreground text-center">불러오는 중...</div>
-          ) : news.length === 0 ? (
-            <div className="px-4 py-8 text-sm text-muted-foreground text-center">뉴스를 불러올 수 없습니다.</div>
-          ) : (
-            <div className="divide-y">
-              {news.map((item, i) => (
-                <a
-                  key={i}
-                  href={item.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-start gap-3 px-4 py-3.5 hover:bg-muted/40 transition-colors group"
-                >
-                  {item.thumbnail && (
-                    <img src={item.thumbnail} alt="" className="h-14 w-20 rounded object-cover shrink-0" />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">{item.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.description}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{new Date(item.pubDate).toLocaleDateString("ko-KR")}</p>
+          <div className="divide-y">
+            {NEWS_ARTICLES.map((article, i) => (
+              <a
+                key={i}
+                href={article.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-3 px-4 py-3.5 hover:bg-muted/40 transition-colors group"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${TAG_COLORS[article.tag] ?? "bg-muted text-muted-foreground"}`}>
+                      {article.tag}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{article.date}</span>
                   </div>
-                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                </a>
-              ))}
-            </div>
-          )}
+                  <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{article.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{article.summary}</p>
+                  <p className="text-xs text-muted-foreground mt-1 opacity-60">{article.source}</p>
+                </div>
+                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+              </a>
+            ))}
+          </div>
         </div>
 
         {/* City redirects */}
