@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
 import { Header } from "@/components/Header";
-import { RefreshCw, ExternalLink, ArrowRight } from "lucide-react";
+import { RefreshCw, ExternalLink, ArrowRight, CalendarDays } from "lucide-react";
 
 interface RateData {
   aud: number;
@@ -136,6 +136,11 @@ function monthKey(date: Date) {
 function monthLabel(key: string) {
   const [year, month] = key.split("-");
   return `${year}년 ${Number(month)}월`;
+}
+
+function monthShortLabel(key: string) {
+  const [, month] = key.split("-");
+  return `${Number(month)}월`;
 }
 
 function getUpcomingFlightMonths() {
@@ -325,23 +330,35 @@ export default function Dashboard() {
 
           {/* Flights */}
           <div className="rounded-lg border bg-card overflow-hidden">
-            <div className="flex items-start justify-between gap-3 px-4 py-3 border-b">
-              <div>
-                <h2 className="text-sm font-bold text-foreground">🇰🇷 최저가 항공편</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">인천 출발 편도 기준 · Skyscanner 확인</p>
+            <div className="px-4 py-3 border-b">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold text-foreground">🇰🇷 최저가 항공편</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">인천 출발 편도 기준 · Skyscanner 확인</p>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2 py-1 text-xs font-semibold text-primary">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  {monthLabel(selectedFlightMonth)}
+                </div>
               </div>
-              <select
-                value={selectedFlightMonth}
-                onChange={(event) => setSelectedFlightMonth(event.target.value)}
-                className="h-8 w-[116px] rounded-md border border-input bg-background px-2 text-xs font-medium text-foreground outline-none transition-colors hover:border-primary/40 focus:border-primary focus:ring-2 focus:ring-ring focus:ring-offset-1"
-                aria-label="항공편 월 선택"
-              >
+              <div className="mt-3 grid grid-cols-3 gap-1.5" aria-label="항공편 월 선택">
                 {flightMonths.map((month) => (
-                  <option key={month.value} value={month.value}>
-                    {month.label}
-                  </option>
+                  <button
+                    key={month.value}
+                    type="button"
+                    onClick={() => setSelectedFlightMonth(month.value)}
+                    className={`h-8 rounded-md border px-2 text-xs font-semibold transition-colors ${
+                      selectedFlightMonth === month.value
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border bg-white text-muted-foreground hover:border-primary/40 hover:bg-muted/40 hover:text-foreground"
+                    }`}
+                    aria-pressed={selectedFlightMonth === month.value}
+                  >
+                    <span className="block leading-none">{monthShortLabel(month.value)}</span>
+                    <span className="mt-0.5 block text-[10px] leading-none opacity-70">{month.value.slice(0, 4)}</span>
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
             <div className="divide-y">
               {FLIGHT_ROUTES.map((route) => {
