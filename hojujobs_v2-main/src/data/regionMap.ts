@@ -39,7 +39,7 @@ export const REGION_GROUPS: RegionGroup[] = [
   ]},
   { state: "NSW", region: "힐스 지구", suburbs: [
     "노웨스트", "켈리빌", "라우스 힐", "스탠호프 가든스", "체리브룩", "카슬힐", "듀럴", "노스 록스", "스카트필드", "칼링포드", "페넌트 힐스",
-    "리버스톤", "매스든 파크", "엘라라", "스코필드", "버큼힐", "윈스턴 힐스",
+    "리버스톤", "매스든 파크", "엘라라", "스코필드", "버큼힐", "윈스턴 힐스", "보몬트 힐스",
   ]},
   { state: "NSW", region: "사우스 시드니", suburbs: [
     "허스트빌", "사우스 허스트빌", "마스콧", "본다이", "본다이 정션",
@@ -387,6 +387,9 @@ export const SUBURB_EN: Record<string, string> = {
   // SA - Adelaide
   "애들레이드": "Adelaide SA",
   "글렌리그": "Glenelg SA",
+  "보몬트 힐스": "Beaumont Hills NSW",
+  // WA - Perth
+  "아드로스": "Ardross WA",
   // ACT
   "캔버라": "Canberra ACT",
 };
