@@ -6,7 +6,7 @@
 export interface RegionGroup {
   region: string;
   suburbs: string[];
-  state: "NSW" | "VIC" | "QLD" | "SA" | "ACT" | "WA";
+  state: "NSW" | "VIC" | "QLD" | "SA" | "ACT";
 }
 
 export const REGION_GROUPS: RegionGroup[] = [
@@ -84,9 +84,6 @@ export const REGION_GROUPS: RegionGroup[] = [
   // QLD - Brisbane
   { state: "QLD", region: "골드코스트", suburbs: ["골드코스트"] },
   { state: "QLD", region: "기타 퀸즐랜드", suburbs: ["타운스빌", "케언즈", "선샤인 코스트"] },
-
-  // WA - Perth
-  { state: "WA", region: "퍼스", suburbs: ["아드로스"] },
 
 ];
 
@@ -391,8 +388,6 @@ export const SUBURB_EN: Record<string, string> = {
   "애들레이드": "Adelaide SA",
   "글렌리그": "Glenelg SA",
   "보몬트 힐스": "Beaumont Hills NSW",
-  // WA - Perth
-  "아드로스": "Perth WA",
   // ACT
   "캔버라": "Canberra ACT",
 };
