@@ -106,24 +106,39 @@ export function Header() {
         </div>
 
         {/* City tabs */}
-        <div className="flex gap-0 -mx-1">
-          {CITY_TABS.map(({ label, path }) => (
-            <NavLink
-              key={path}
-              to={path}
-              end={path === "/"}
-              className={({ isActive }) =>
-                cn(
-                  "flex-1 sm:flex-none text-center px-2.5 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap",
-                  isActive
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-                )
-              }
-            >
-              {label}
-            </NavLink>
-          ))}
+        <div className="-mx-1 flex items-center gap-0">
+          <nav className="flex min-w-0 flex-1 gap-0" aria-label="지역별 공고">
+            {CITY_TABS.map(({ label, path }) => (
+              <NavLink
+                key={path}
+                to={path}
+                end={path === "/"}
+                className={({ isActive }) =>
+                  cn(
+                    "flex-1 sm:flex-none text-center px-2.5 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap",
+                    isActive
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                  )
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
+          </nav>
+          <NavLink
+            to="/blog"
+            className={({ isActive }) =>
+              cn(
+                "ml-auto flex-none px-2.5 py-2 text-center text-xs font-medium border-b-2 transition-colors whitespace-nowrap",
+                isActive
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+              )
+            }
+          >
+            블로그
+          </NavLink>
         </div>
       </div>
     </header>
