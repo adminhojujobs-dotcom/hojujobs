@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { MobileLocationFilter } from "@/components/MobileLocationFilter";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { JobCard } from "@/components/JobCard";
 import { PromotedJobCard } from "@/components/PromotedJobCard";
 import { Pagination } from "@/components/Pagination";
@@ -332,15 +333,16 @@ const Index = ({ cityFilter }: IndexProps) => {
               </p>
               <div className="flex items-center gap-1.5">
                 <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
-                <Select value={sortBy} onValueChange={(v) => { setSortBy(v as SortOption); setPage(1); }}>
-                  <SelectTrigger className="w-[130px] h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="recent">최신순</SelectItem>
-                    <SelectItem value="views">조회순</SelectItem>
-                  </SelectContent>
-                </Select>
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger className="flex items-center justify-between gap-2 w-[130px] h-8 px-3 rounded-md border border-input bg-background text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                    <span>{sortBy === "recent" ? "최신순" : "조회순"}</span>
+                    <ArrowUpDown className="h-3 w-3 opacity-50" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => { setSortBy("recent"); setPage(1); }} className={sortBy === "recent" ? "font-semibold" : ""}>최신순</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setSortBy("views"); setPage(1); }} className={sortBy === "views" ? "font-semibold" : ""}>조회순</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
