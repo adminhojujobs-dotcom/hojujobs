@@ -11,9 +11,30 @@ interface ExchangeRate {
 }
 
 const FLIGHT_ROUTES = [
-  { label: "서울 → 시드니", codes: "ICN → SYD", city: "Sydney" },
-  { label: "서울 → 멜버른", codes: "ICN → MEL", city: "Melbourne" },
-  { label: "서울 → 브리즈번", codes: "ICN → BNE", city: "Brisbane" },
+  {
+    label: "서울 → 시드니",
+    codes: "ICN → SYD",
+    duration: "약 10시간 10분 (직항)",
+    fromPrice: "A$400",
+    airlines: "대한항공, 제트스타, 콴타스",
+    skyscanner: "https://www.skyscanner.net/routes/icn/syd/incheon-to-sydney.html",
+  },
+  {
+    label: "서울 → 멜버른",
+    codes: "ICN → MEL",
+    duration: "약 10시간 (경유 1회)",
+    fromPrice: "A$270",
+    airlines: "싱가포르항공, 캐세이퍼시픽 등 경유",
+    skyscanner: "https://www.skyscanner.net/routes/icn/mel/incheon-to-melbourne.html",
+  },
+  {
+    label: "서울 → 브리즈번",
+    codes: "ICN → BNE",
+    duration: "약 9시간 35분 (직항)",
+    fromPrice: "A$350",
+    airlines: "대한항공, 제트스타",
+    skyscanner: "https://www.skyscanner.net/routes/icn/bne/incheon-to-brisbane.html",
+  },
 ];
 
 const CONVERSION_AMOUNTS = [100_000, 500_000, 1_000_000, 5_000_000];
@@ -114,26 +135,32 @@ export default function Dashboard() {
           <div className="rounded-lg border bg-card overflow-hidden">
             <div className="px-4 py-3 border-b">
               <h2 className="text-sm font-bold text-foreground">서울 출발 항공편</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Google Flights 최저가 검색</p>
+              <p className="text-xs text-muted-foreground mt-0.5">참고가 기준 · Skyscanner에서 검색</p>
             </div>
             <div className="divide-y">
               {FLIGHT_ROUTES.map((route) => (
                 <a
-                  key={route.city}
-                  href={`https://www.google.com/travel/flights?q=flights+from+Seoul+to+${route.city}`}
+                  key={route.codes}
+                  href={route.skyscanner}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between px-4 py-4 hover:bg-muted/40 transition-colors group"
+                  className="flex items-start justify-between px-4 py-3.5 hover:bg-muted/40 transition-colors group gap-3"
                 >
-                  <div>
-                    <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                      {route.label}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{route.codes}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {route.label}
+                      </p>
+                      <span className="text-xs text-muted-foreground">{route.codes}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{route.duration} · {route.airlines}</p>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-primary font-medium">
-                    최저가 검색
-                    <ExternalLink className="h-3 w-3" />
+                  <div className="shrink-0 text-right">
+                    <p className="text-sm font-bold text-primary">{route.fromPrice}~</p>
+                    <div className="flex items-center gap-0.5 justify-end mt-0.5">
+                      <span className="text-xs text-muted-foreground">검색</span>
+                      <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                    </div>
                   </div>
                 </a>
               ))}
