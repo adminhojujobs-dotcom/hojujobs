@@ -133,10 +133,10 @@ export function Header() {
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger
               className={cn(
-                "ml-auto flex flex-none items-center gap-1 px-2.5 py-2 text-center text-xs font-semibold border-b-2 transition-colors whitespace-nowrap outline-none",
+                "ml-auto flex flex-none items-center gap-1 px-2.5 py-1.5 text-center text-xs font-semibold border-b-2 transition-colors whitespace-nowrap outline-none rounded-md",
                 isInfoActive
-                  ? "border-primary text-primary"
-                  : "border-transparent text-primary/70 hover:text-primary hover:border-primary/40"
+                  ? "border-primary text-primary bg-primary/8"
+                  : "border-transparent text-primary bg-primary/10 hover:bg-primary/15 hover:text-primary"
               )}
             >
               {infoLabel}
