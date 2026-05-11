@@ -206,14 +206,14 @@ const Index = ({ cityFilter }: IndexProps) => {
       }
 
       const firstPageJobs = (initial.data as unknown as Job[]) || [];
-      setJobsData(firstPageJobs);
-      setLoadingJobs(false);
+      let all = firstPageJobs;
 
       if (firstPageJobs.length < ITEMS_PER_PAGE) {
+        setJobsData(all);
+        setLoadingJobs(false);
         return;
       }
 
-      let all = firstPageJobs;
       let from = ITEMS_PER_PAGE;
       while (true) {
         const { data, error } = await buildJobsQuery(from, from + BACKGROUND_FETCH_PAGE_SIZE - 1);
@@ -223,11 +223,13 @@ const Index = ({ cityFilter }: IndexProps) => {
         if (!data || data.length === 0) break;
 
         all = all.concat(data as unknown as Job[]);
-        setJobsData(all);
 
         if (data.length < BACKGROUND_FETCH_PAGE_SIZE) break;
         from += BACKGROUND_FETCH_PAGE_SIZE;
       }
+
+      setJobsData(all);
+      setLoadingJobs(false);
     }
 
     fetchJobs();
