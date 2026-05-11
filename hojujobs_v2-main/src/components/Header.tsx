@@ -18,7 +18,7 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isInfoActive = location.pathname === "/blog" || location.pathname.startsWith("/blog/") || location.pathname === "/dashboard";
-  const infoLabel = location.pathname === "/dashboard" ? "뉴스" : "블로그";
+  const infoLabel = location.pathname === "/dashboard" ? "워홀정보" : "블로그";
 
   return (
     <header className="bg-white border-b border-border">
@@ -144,7 +144,7 @@ export function Header() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => navigate("/blog")}>블로그</DropdownMenuItem>
-              {isAdmin && <DropdownMenuItem onClick={() => navigate("/dashboard")}>뉴스</DropdownMenuItem>}
+              {isAdmin && <DropdownMenuItem onClick={() => navigate("/dashboard")}>워홀정보</DropdownMenuItem>}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
