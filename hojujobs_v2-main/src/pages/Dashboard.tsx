@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
-import { RefreshCw, ExternalLink, ArrowRight } from "lucide-react";
+import { ExternalLink, ArrowRight } from "lucide-react";
 
 interface RateData {
   aud: number;
@@ -348,9 +348,7 @@ export default function Dashboard() {
           <div className="rounded-lg border bg-card overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b">
               <h2 className="text-sm font-bold text-foreground">🇰🇷 → 🇦🇺 환율</h2>
-              <button onClick={() => fetchRate()} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
-                <RefreshCw className="h-3 w-3" /> 새로고침
-              </button>
+              {rates && <span className="text-xs text-muted-foreground">업데이트: {rates.updatedAt}</span>}
             </div>
             {loadingRate ? (
               <div className="px-4 py-8 text-sm text-muted-foreground text-center">불러오는 중...</div>
@@ -362,9 +360,6 @@ export default function Dashboard() {
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     🇦🇺 A$1 = ₩{Math.round(1 / rates.aud).toLocaleString()}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    업데이트: {rates.updatedAt}
                   </p>
                 </div>
                 <div className="divide-y border-b">
