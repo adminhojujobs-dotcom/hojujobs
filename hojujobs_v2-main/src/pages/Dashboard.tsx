@@ -199,10 +199,8 @@ const FLIGHT_ROUTES = [
     from: "icn",
     to: "syd",
     deals: [
-      { airline: { iata: "MU", name: "중국동방항공" }, duration: "약 15시간 35분", direct: false, priceByMonth: [360, 370, 390, 415, 455, 365, 480, 435, 398, 372, 385, 520] },
-      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 10시간 15분", direct: true, priceByMonth: [420, 430, 450, 470, 520, 449, 555, 492, 462, 435, 458, 580] },
-      { airline: { iata: "TW", name: "티웨이항공" }, duration: "약 10시간 45분", direct: true, priceByMonth: [520, 540, 570, 610, 660, 589, 699, 635, 582, 542, 561, 740] },
-      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 33시간 05분", direct: false, priceByMonth: [470, 490, 520, 560, 620, 499, 655, 592, 542, 495, 515, 700] },
+      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–23시간", direct: false, priceByMonth: [486, 334, 307, 566, 327, 302, 426, 282, 290, 282, 280, 334] },
+      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 10시간 15분", direct: true, priceByMonth: [486, 382, 306, 566, 327, 351, 426, 308, 290, 414, 308, 382] },
     ],
   },
   {
@@ -212,10 +210,8 @@ const FLIGHT_ROUTES = [
     from: "icn",
     to: "mel",
     deals: [
-      { airline: { iata: "MU", name: "중국동방항공" }, duration: "약 14–17시간", direct: false, priceByMonth: [310, 320, 350, 380, 430, 355, 472, 412, 372, 338, 358, 500] },
-      { airline: { iata: "CZ", name: "중국남방항공" }, duration: "약 13–16시간", direct: false, priceByMonth: [330, 340, 365, 390, 450, 385, 492, 432, 388, 355, 375, 520] },
-      { airline: { iata: "VN", name: "베트남항공" }, duration: "약 17–20시간", direct: false, priceByMonth: [390, 410, 445, 480, 540, 428, 569, 509, 469, 425, 445, 610] },
-      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–24시간", direct: false, priceByMonth: [410, 430, 465, 505, 560, 458, 599, 539, 495, 452, 472, 640] },
+      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–23시간", direct: false, priceByMonth: [791, 349, 349, 690, 335, 347, 543, 304, 305, 304, 304, 349] },
+      { airline: { iata: "D7", name: "에어아시아 X" }, duration: "약 17–22시간", direct: false, priceByMonth: [791, 349, 349, 690, 335, 347, 543, 304, 305, 304, 304, 349] },
     ],
   },
   {
@@ -225,10 +221,8 @@ const FLIGHT_ROUTES = [
     from: "icn",
     to: "bne",
     deals: [
-      { airline: { iata: "CZ", name: "중국남방항공" }, duration: "약 14–18시간", direct: false, priceByMonth: [340, 355, 380, 410, 460, 379, 502, 442, 402, 362, 378, 520] },
-      { airline: { iata: "MU", name: "중국동방항공" }, duration: "약 18–22시간", direct: false, priceByMonth: [360, 375, 405, 440, 490, 412, 522, 465, 425, 385, 405, 550] },
-      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 9시간 35분", direct: true, priceByMonth: [360, 375, 395, 420, 470, 455, 512, 458, 418, 378, 398, 540] },
-      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–25시간", direct: false, priceByMonth: [420, 440, 475, 520, 570, 479, 605, 542, 498, 452, 472, 650] },
+      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–24시간", direct: false, priceByMonth: [451, 370, 306, 315, 309, 259, 368, 315, 269, 273, 284, 306] },
+      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 9시간 35분", direct: true, priceByMonth: [451, 370, 306, 315, 309, 374, 419, 362, 396, 374, 352, 362] },
     ],
   },
 ];
@@ -241,10 +235,8 @@ const NAVER_FLIGHT_ROUTES = [
     from: "icn",
     to: "syd",
     deals: [
-      { airline: { iata: "MU", name: "중국동방항공" }, duration: "약 43시간 45분", direct: false, priceByMonth: [430000, 450000, 490000, 520000, 560000, 356300, 620000, 560000, 520000, 480000, 455000, 660000] },
-      { airline: { iata: "HU", name: "해남 항공" }, duration: "약 15시간 35분", direct: false, priceByMonth: [480000, 500000, 535000, 570000, 620000, 403597, 690000, 620000, 570000, 520000, 500000, 720000] },
-      { airline: { iata: "JQ", name: "제트스타 항공" }, duration: "약 10시간 15분", direct: true, priceByMonth: [560000, 575000, 610000, 640000, 700000, 487900, 760000, 690000, 640000, 590000, 575000, 790000] },
-      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 33시간 05분", direct: false, priceByMonth: [520000, 545000, 580000, 620000, 680000, 521100, 740000, 670000, 620000, 570000, 545000, 760000] },
+      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–23시간", direct: false, priceByMonth: [455564, 312784, 287216, 530439, 306211, 282713, 399322, 264340, 271603, 264340, 262321, 312784] },
+      { airline: { iata: "JQ", name: "제트스타 항공" }, duration: "약 10시간 15분", direct: true, priceByMonth: [455564, 357938, 287216, 530439, 306211, 329001, 399322, 288993, 271603, 387942, 288993, 357938] },
     ],
   },
   {
@@ -254,10 +246,8 @@ const NAVER_FLIGHT_ROUTES = [
     from: "icn",
     to: "mel",
     deals: [
-      { airline: { iata: "MU", name: "중국동방항공" }, duration: "약 14–17시간", direct: false, priceByMonth: [380000, 400000, 430000, 460000, 500000, 386300, 540000, 490000, 450000, 410000, 390000, 580000] },
-      { airline: { iata: "CZ", name: "중국남방항공" }, duration: "약 13–16시간", direct: false, priceByMonth: [410000, 425000, 455000, 490000, 540000, 421700, 575000, 515000, 475000, 435000, 415000, 610000] },
-      { airline: { iata: "VN", name: "베트남항공" }, duration: "약 17–20시간", direct: false, priceByMonth: [455000, 475000, 515000, 560000, 610000, 463900, 640000, 580000, 535000, 490000, 470000, 665000] },
-      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–24시간", direct: false, priceByMonth: [470000, 490000, 525000, 570000, 620000, 498500, 665000, 600000, 550000, 505000, 485000, 690000] },
+      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–23시간", direct: false, priceByMonth: [740000, 326000, 326000, 645000, 313000, 324000, 508000, 284000, 285000, 284000, 284000, 326000] },
+      { airline: { iata: "D7", name: "에어아시아 X" }, duration: "약 17–22시간", direct: false, priceByMonth: [740000, 326000, 326000, 645000, 313000, 324000, 508000, 284000, 285000, 284000, 284000, 326000] },
     ],
   },
   {
@@ -267,10 +257,8 @@ const NAVER_FLIGHT_ROUTES = [
     from: "icn",
     to: "bne",
     deals: [
-      { airline: { iata: "CZ", name: "중국남방항공" }, duration: "약 14–18시간", direct: false, priceByMonth: [420000, 440000, 470000, 510000, 560000, 412800, 600000, 540000, 500000, 455000, 435000, 620000] },
-      { airline: { iata: "MU", name: "중국동방항공" }, duration: "약 18–22시간", direct: false, priceByMonth: [445000, 465000, 500000, 540000, 590000, 448200, 630000, 570000, 525000, 480000, 460000, 650000] },
-      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 9시간 35분", direct: true, priceByMonth: [510000, 530000, 565000, 600000, 670000, 496900, 740000, 670000, 610000, 560000, 540000, 770000] },
-      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–25시간", direct: false, priceByMonth: [500000, 520000, 555000, 600000, 660000, 523400, 705000, 640000, 590000, 545000, 520000, 735000] },
+      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–24시간", direct: false, priceByMonth: [477002, 350005, 329275, 568421, 368826, 350005, 391999, 338995, 370994, 350005, 329413, 338995] },
+      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 9시간 35분", direct: true, priceByMonth: [477002, 350005, 329275, 568421, 368826, 350005, 391999, 338995, 370994, 350005, 329413, 338995] },
     ],
   },
 ];
