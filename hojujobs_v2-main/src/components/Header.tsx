@@ -10,7 +10,6 @@ const CITY_TABS = [
   { label: "시드니", path: "/sydney" },
   { label: "멜버른", path: "/melbourne" },
   { label: "브리즈번", path: "/brisbane" },
-  { label: "애들레이드", path: "/adelaide" },
 ];
 
 const INFO_TABS = [
