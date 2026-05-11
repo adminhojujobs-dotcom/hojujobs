@@ -440,7 +440,7 @@ export default function Dashboard() {
                       key={source.id}
                       type="button"
                       onClick={() => setSelectedFlightSource(source.id)}
-                      className={`flex h-7 w-[84px] items-center justify-center gap-1.5 rounded px-2 text-[11px] font-semibold transition-colors ${
+                      className={`flex h-8 w-[100px] items-center justify-center gap-1.5 rounded px-3 text-[11px] font-semibold transition-colors ${
                         selectedFlightSource === source.id
                           ? source.id === "skyscanner"
                             ? "bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200"
