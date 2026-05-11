@@ -13,6 +13,11 @@ const CITY_TABS = [
   { label: "애들레이드", path: "/adelaide" },
 ];
 
+const INFO_TABS = [
+  { label: "워홀정보", path: "/dashboard" },
+  { label: "블로그", path: "/blog" },
+];
+
 export function Header() {
   const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -130,10 +135,28 @@ export function Header() {
               </NavLink>
             ))}
           </nav>
+          <nav className="hidden flex-none items-center gap-0 sm:flex" aria-label="정보">
+            {INFO_TABS.map(({ label, path }) => (
+              <NavLink
+                key={path}
+                to={path}
+                className={({ isActive }) =>
+                  cn(
+                    "px-2.5 py-2 text-center text-xs font-medium border-b-2 transition-colors whitespace-nowrap",
+                    isActive
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                  )
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
+          </nav>
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger
               className={cn(
-                "ml-auto flex flex-none items-center gap-1 px-2.5 py-1.5 text-center text-xs font-semibold border-b-2 transition-colors whitespace-nowrap outline-none rounded-md",
+                "ml-auto flex flex-none items-center gap-0.5 px-1.5 py-1.5 text-center text-xs font-semibold border-b-2 transition-colors whitespace-nowrap outline-none rounded-md sm:hidden",
                 isInfoActive
                   ? "border-primary text-primary bg-primary/8"
                   : "border-transparent text-primary bg-primary/10 hover:bg-primary/15 hover:text-primary"

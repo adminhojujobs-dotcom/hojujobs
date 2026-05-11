@@ -276,7 +276,7 @@ const NAVER_FLIGHT_ROUTES = [
 ];
 
 export default function Dashboard() {
-  useSEO({ title: "워홀정보 | 호주잡스", description: "호주 워킹홀리데이 환율, 항공, 최신 뉴스 정보" });
+  useSEO({ title: "워홀정보", description: "호주 워킹홀리데이 환율, 항공, 최신 뉴스 정보" });
   const [rates, setRates] = useState<RateData | null>(null);
   const [loadingRate, setLoadingRate] = useState(true);
   const [selectedFlightMonth, setSelectedFlightMonth] = useState(() => getUpcomingFlightMonths()[0].value);
