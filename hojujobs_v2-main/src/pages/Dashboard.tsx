@@ -442,7 +442,9 @@ export default function Dashboard() {
                       onClick={() => setSelectedFlightSource(source.id)}
                       className={`flex h-7 items-center justify-center gap-1.5 rounded px-1.5 text-[11px] font-semibold transition-colors ${
                         selectedFlightSource === source.id
-                          ? "bg-white text-primary shadow-sm"
+                          ? source.id === "skyscanner"
+                            ? "bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200"
+                            : "bg-green-50 text-green-700 shadow-sm ring-1 ring-green-200"
                           : "text-muted-foreground hover:bg-white/70 hover:text-foreground"
                       }`}
                       aria-pressed={selectedFlightSource === source.id}
