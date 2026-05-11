@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
 import { Header } from "@/components/Header";
+import { supabase } from "@/integrations/supabase/client";
 import { RefreshCw, ExternalLink, ArrowRight } from "lucide-react";
 
 interface RateData {
@@ -16,7 +17,7 @@ interface RateData {
 
 const CONVERSION_AMOUNTS = [100_000, 500_000, 1_000_000, 5_000_000];
 const CALCULATOR_PRESETS = [500_000, 1_000_000, 3_000_000];
-const RATE_REFRESH_INTERVAL_MS = 10 * 60 * 1000;
+const RATE_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 const EXTRA_RATES = [
   { code: "USD", flag: "🇺🇸", label: "미국 달러" },
@@ -294,48 +295,32 @@ export default function Dashboard() {
 
     fetchRate();
     const intervalId = window.setInterval(() => {
-      fetchRate({ silent: true });
+      fetchRate(true);
     }, RATE_REFRESH_INTERVAL_MS);
 
     return () => window.clearInterval(intervalId);
   }, [isAdmin]);
 
-  const fetchRate = async ({ silent = false } = {}) => {
+  const fetchRate = async (silent = false) => {
     if (!silent) setLoadingRate(true);
-    const cacheBuster = `t=${Date.now()}`;
     try {
-      const res = await fetch(`https://open.er-api.com/v6/latest/KRW?${cacheBuster}`);
-      const data = await res.json();
-      if (data.result === "success") {
-        const updatedDate = new Date();
-        setRates({
-          aud: data.rates.AUD,
-          usd: data.rates.USD,
-          jpy: data.rates.JPY,
-          eur: data.rates.EUR,
-          date: updatedDate.toISOString().slice(0, 10),
-          updatedAt: formatRateUpdatedAt(updatedDate),
-        });
-        setLoadingRate(false);
-        return;
-      }
-      throw new Error();
+      const { data, error } = await supabase
+        .from("exchange_rates")
+        .select("aud, usd, jpy, eur, fetched_at")
+        .eq("base_currency", "KRW")
+        .single();
+      if (error || !data) throw error;
+      const fetchedAt = new Date(data.fetched_at);
+      setRates({
+        aud: Number(data.aud),
+        usd: Number(data.usd),
+        jpy: Number(data.jpy),
+        eur: Number(data.eur),
+        date: fetchedAt.toISOString().slice(0, 10),
+        updatedAt: formatRateUpdatedAt(fetchedAt),
+      });
     } catch {
-      try {
-        const res = await fetch(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/krw.json?${cacheBuster}`);
-        const data = await res.json();
-        const updatedDate = new Date();
-        setRates({
-          aud: data.krw.aud,
-          usd: data.krw.usd,
-          jpy: data.krw.jpy,
-          eur: data.krw.eur,
-          date: updatedDate.toISOString().slice(0, 10),
-          updatedAt: formatRateUpdatedAt(updatedDate),
-        });
-      } catch {
-        setRates(null);
-      }
+      setRates(null);
     }
     if (!silent) setLoadingRate(false);
   };
@@ -363,7 +348,7 @@ export default function Dashboard() {
           <div className="rounded-lg border bg-card overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b">
               <h2 className="text-sm font-bold text-foreground">🇰🇷 → 🇦🇺 환율</h2>
-              <button onClick={fetchRate} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
+              <button onClick={() => fetchRate()} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
                 <RefreshCw className="h-3 w-3" /> 새로고침
               </button>
             </div>

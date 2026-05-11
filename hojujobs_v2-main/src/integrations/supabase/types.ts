@@ -7,49 +7,84 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
+      exchange_rates: {
+        Row: {
+          aud: number | null
+          base_currency: string
+          eur: number | null
+          fetched_at: string | null
+          jpy: number | null
+          usd: number | null
+        }
+        Insert: {
+          aud?: number | null
+          base_currency?: string
+          eur?: number | null
+          fetched_at?: string | null
+          jpy?: number | null
+          usd?: number | null
+        }
+        Update: {
+          aud?: number | null
+          base_currency?: string
+          eur?: number | null
+          fetched_at?: string | null
+          jpy?: number | null
+          usd?: number | null
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
-          id: number
-          title: string | null
-          description: string | null
-          uploaded_at: string | null
-          location: string[] | null
-          industry: string | null
           contact: string | null
+          description: string | null
           email: string | null
-          kakaoid: string | null
           google_search: string | null
+          id: number
+          industry: string | null
+          kakaoid: string | null
+          location: string[] | null
+          Promoted: boolean | null
+          Source: string | null
+          title: string | null
+          uploaded_at: string | null
           user_id: string | null
         }
         Insert: {
-          id?: number
-          title?: string | null
-          description?: string | null
-          uploaded_at?: string | null
-          location?: string[] | null
-          industry?: string | null
           contact?: string | null
+          description?: string | null
           email?: string | null
-          kakaoid?: string | null
           google_search?: string | null
+          id?: never
+          industry?: string | null
+          kakaoid?: string | null
+          location?: string[] | null
+          Promoted?: boolean | null
+          Source?: string | null
+          title?: string | null
+          uploaded_at?: string | null
           user_id?: string | null
         }
         Update: {
-          id?: number
-          title?: string | null
-          description?: string | null
-          uploaded_at?: string | null
-          location?: string[] | null
-          industry?: string | null
           contact?: string | null
+          description?: string | null
           email?: string | null
-          kakaoid?: string | null
           google_search?: string | null
+          id?: never
+          industry?: string | null
+          kakaoid?: string | null
+          location?: string[] | null
+          Promoted?: boolean | null
+          Source?: string | null
+          title?: string | null
+          uploaded_at?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -62,7 +97,7 @@ export type Database = {
         }
         Insert: {
           id?: string
-          role: string
+          role?: string
           user_id: string
         }
         Update: {
@@ -91,18 +126,44 @@ export type Database = {
           job_id?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_view_counts_job_id"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: { _role: string; _user_id: string }
-        Returns: boolean
-      }
-      increment_view_count: { Args: { p_job_id: number }; Returns: number }
+      has_role:
+        | { Args: { _role: string; _user_id: string }; Returns: boolean }
+        | {
+            Args: {
+              _role: Database["public"]["Enums"]["app_role"]
+              _user_id: string
+            }
+            Returns: boolean
+          }
+      increment_view_count:
+        | {
+            Args: { p_job_id: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.increment_view_count(p_job_id => int8), public.increment_view_count(p_job_id => int4). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+          }
+        | {
+            Args: { p_job_id: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.increment_view_count(p_job_id => int8), public.increment_view_count(p_job_id => int4). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+          }
+      map_location_to_region: { Args: { suburbs: string[] }; Returns: string[] }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
@@ -114,6 +175,7 @@ export type Database = {
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
@@ -137,13 +199,13 @@ export type Tables<
     : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
         DefaultSchema["Views"])
-  ? (DefaultSchema["Tables"] &
-      DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-      Row: infer R
-    }
-    ? R
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
     : never
-  : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
@@ -163,12 +225,12 @@ export type TablesInsert<
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-      Insert: infer I
-    }
-    ? I
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
     : never
-  : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
@@ -188,12 +250,12 @@ export type TablesUpdate<
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-      Update: infer U
-    }
-    ? U
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
     : never
-  : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
@@ -209,8 +271,25 @@ export type Enums<
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-  : never
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
 
 export const Constants = {
   public: {
