@@ -25,6 +25,7 @@ const EXTRA_RATES = [
 ];
 
 const CITY_LINKS = [
+  { label: "호주 전체 구인구직", path: "/", sub: "전국 공고 모아보기" },
   { label: "시드니 구인구직", path: "/sydney", sub: "NSW 전 지역" },
   { label: "멜버른 구인구직", path: "/melbourne", sub: "VIC 전 지역" },
   { label: "브리즈번 구인구직", path: "/brisbane", sub: "QLD 전 지역" },
