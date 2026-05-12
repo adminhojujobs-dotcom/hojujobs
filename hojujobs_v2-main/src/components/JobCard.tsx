@@ -12,10 +12,15 @@ interface Job {
 function formatDate(dateStr?: string) {
   if (!dateStr) return "";
   const tz = "Australia/Sydney";
-  const nowSyd = new Date().toLocaleDateString("en-CA", { timeZone: tz });
-  const dateSyd = new Date(dateStr).toLocaleDateString("en-CA", { timeZone: tz });
-  if (dateSyd >= nowSyd) return "오늘";
-  const diffDays = Math.round((new Date(nowSyd).getTime() - new Date(dateSyd).getTime()) / (1000 * 60 * 60 * 24));
+  const now = new Date();
+  const posted = new Date(dateStr);
+  const diffMs = now.getTime() - posted.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 60) return `${Math.max(1, diffMins)}분 전`;
+  const nowDay = now.toLocaleDateString("en-CA", { timeZone: tz });
+  const postedDay = posted.toLocaleDateString("en-CA", { timeZone: tz });
+  if (postedDay === nowDay) return `${Math.floor(diffMins / 60)}시간 전`;
+  const diffDays = Math.round((new Date(nowDay).getTime() - new Date(postedDay).getTime()) / 86400000);
   if (diffDays === 1) return "어제";
   return `${diffDays}일 전`;
 }

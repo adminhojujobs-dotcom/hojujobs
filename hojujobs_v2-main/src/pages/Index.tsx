@@ -182,7 +182,8 @@ const Index = ({ cityFilter }: IndexProps) => {
       let query = supabase
         .from("jobs")
         .select("id, title, location, industry, uploaded_at, Promoted")
-        .gte("uploaded_at", cutoff.toISOString());
+        .gte("uploaded_at", cutoff.toISOString())
+        .lte("uploaded_at", new Date().toISOString());
 
       if (cityLocations.length > 0) {
         query = query.overlaps("location", cityLocations);
