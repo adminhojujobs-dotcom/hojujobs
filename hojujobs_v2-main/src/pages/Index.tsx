@@ -142,7 +142,19 @@ function readListingCache(key: string): ListingCache | null {
 
 function writeListingCache(key: string, cache: Omit<ListingCache, "cachedAt" | "version">) {
   try {
-    sessionStorage.setItem(key, JSON.stringify({ ...cache, version: LISTING_CACHE_VERSION, cachedAt: Date.now() }));
+    const existing = readListingCache(key);
+    const mergedJobs = existing ? mergeJobsById(existing.jobsData, cache.jobsData) : cache.jobsData;
+    const mergedCounts = existing ? { ...existing.counts, ...cache.counts } : cache.counts;
+    const filterJobs = cache.filterJobs.length > 0 ? cache.filterJobs : existing?.filterJobs ?? [];
+
+    sessionStorage.setItem(key, JSON.stringify({
+      ...cache,
+      jobsData: mergedJobs,
+      filterJobs,
+      counts: mergedCounts,
+      version: LISTING_CACHE_VERSION,
+      cachedAt: Date.now(),
+    }));
   } catch {}
 }
 
@@ -379,6 +391,13 @@ const Index = ({ cityFilter }: IndexProps) => {
         countSnapshot = { ...countSnapshot, ...batchCounts };
         hydrateCounts(batchCounts);
         all = mergeJobsById(all, batchJobs);
+        writeListingCache(listingCacheKey, {
+          jobsData: all,
+          filterJobs: resolvedFilterJobs,
+          totalJobsCount: totalCount,
+          allJobsLoaded: false,
+          counts: countSnapshot,
+        });
 
         if (data.length < BACKGROUND_FETCH_PAGE_SIZE) break;
         from += BACKGROUND_FETCH_PAGE_SIZE;
