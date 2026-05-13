@@ -26,16 +26,6 @@ interface Job {
   uploaded_at: string | null;
 }
 
-function readCachedViewCount(id?: string) {
-  if (!id) return null;
-
-  const cached = sessionStorage.getItem(`hoju_job_view_count_${id}`);
-  if (cached == null) return null;
-
-  const count = Number(cached);
-  return Number.isFinite(count) ? count : null;
-}
-
 function cacheViewCount(jobId: number, count: number) {
   sessionStorage.setItem(`hoju_job_view_count_${jobId}`, String(count));
 }
@@ -44,14 +34,13 @@ export default function JobDetail() {
   const { id } = useParams();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
-  const [viewCount, setViewCount] = useState<number | null>(() => readCachedViewCount(id));
+  const [viewCount, setViewCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
 
     async function fetchJob() {
       setLoading(true);
-      setViewCount(readCachedViewCount(id));
 
       const { data, error } = await supabase
         .from("jobs")
@@ -62,13 +51,11 @@ export default function JobDetail() {
       if (cancelled) return;
 
       if (!error && data) {
-        setJob(data as Job);
-        setLoading(false);
-
         const storageKey = `job_viewed_${data.id}`;
         const lastViewedRaw = window.localStorage.getItem(storageKey);
         const now = Date.now();
         const THIRTY_MINUTES = 30 * 60 * 1000;
+        let count = 0;
 
         if (lastViewedRaw) {
           const lastViewed = Number(lastViewedRaw);
@@ -79,18 +66,21 @@ export default function JobDetail() {
               .eq("job_id", data.id)
               .maybeSingle();
             if (cancelled) return;
-            const count = vcRow?.count ?? 0;
-            setViewCount(count);
-            cacheViewCount(data.id, count);
-            return;
+            count = vcRow?.count ?? 0;
+          } else {
+            count = await incrementViewCount(data.id);
+            window.localStorage.setItem(storageKey, String(now));
           }
+        } else {
+          count = await incrementViewCount(data.id);
+          window.localStorage.setItem(storageKey, String(now));
         }
 
-        const newCount = await incrementViewCount(data.id);
         if (cancelled) return;
-        setViewCount(newCount);
-        cacheViewCount(data.id, newCount);
-        window.localStorage.setItem(storageKey, String(now));
+        setJob(data as Job);
+        setViewCount(count);
+        cacheViewCount(data.id, count);
+        setLoading(false);
         return;
       }
 
@@ -197,7 +187,7 @@ export default function JobDetail() {
           </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" />등록일: {formatDate(job.uploaded_at)}</span>
-            <span className="flex items-center gap-1.5"><Eye className="h-3.5 w-3.5" />조회 {viewCount ?? "-"}회</span>
+            <span className="flex items-center gap-1.5"><Eye className="h-3.5 w-3.5" />조회 {viewCount}회</span>
           </div>
         </div>
 
