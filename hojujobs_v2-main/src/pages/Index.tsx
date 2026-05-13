@@ -91,6 +91,20 @@ function getCityLocations(state: string) {
   return [...suburbSet];
 }
 
+function mergeJobsById(...groups: Job[][]) {
+  const seen = new Set<number>();
+  const merged: Job[] = [];
+
+  groups.flat().forEach((job) => {
+    if (!seen.has(job.id)) {
+      seen.add(job.id);
+      merged.push(job);
+    }
+  });
+
+  return merged;
+}
+
 interface IndexProps {
   cityFilter?: string;
 }
@@ -194,13 +208,31 @@ const Index = ({ cityFilter }: IndexProps) => {
       return query.order("uploaded_at", { ascending: false }).range(from, to);
     }
 
+    function buildPromotedJobsQuery() {
+      let query = supabase
+        .from("jobs")
+        .select("id, title, location, industry, uploaded_at, Promoted")
+        .eq("Promoted", true)
+        .gte("uploaded_at", cutoff.toISOString())
+        .lte("uploaded_at", new Date().toISOString());
+
+      if (cityLocations.length > 0) {
+        query = query.overlaps("location", cityLocations);
+      }
+
+      return query.order("uploaded_at", { ascending: false });
+    }
+
     async function fetchJobs() {
       setLoadingJobs(true);
       setAllJobsLoaded(false);
       setTotalJobsCount(null);
 
       const initialTo = Math.max(page * ITEMS_PER_PAGE - 1, ITEMS_PER_PAGE - 1);
-      const initial = await buildJobsQuery(0, initialTo, true);
+      const [initial, promoted] = await Promise.all([
+        buildJobsQuery(0, initialTo, true),
+        buildPromotedJobsQuery(),
+      ]);
 
       if (cancelled) return;
 
@@ -214,8 +246,13 @@ const Index = ({ cityFilter }: IndexProps) => {
       }
 
       const initialJobs = (initial.data as unknown as Job[]) || [];
-      let all = initialJobs;
+      const promotedJobs = promoted.error ? [] : ((promoted.data as unknown as Job[]) || []);
+      let all = mergeJobsById(promotedJobs, initialJobs);
       const totalCount = initial.count ?? initialJobs.length;
+
+      if (promoted.error) {
+        console.error("promoted jobs fetch error:", promoted.error);
+      }
 
       setJobsData(all);
       setTotalJobsCount(totalCount);
@@ -235,7 +272,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         if (error) { console.error("jobs fetch error:", error); break; }
         if (!data || data.length === 0) break;
 
-        all = all.concat(data as unknown as Job[]);
+        all = mergeJobsById(all, data as unknown as Job[]);
 
         if (data.length < BACKGROUND_FETCH_PAGE_SIZE) break;
         from += BACKGROUND_FETCH_PAGE_SIZE;
@@ -330,6 +367,10 @@ const Index = ({ cityFilter }: IndexProps) => {
   const displayTotalPages = Math.ceil((displayTotalCount ?? filtered.length) / ITEMS_PER_PAGE);
   const currentPage = Math.min(page, displayTotalPages || 1);
   const paginatedJobs = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const showPromotedSection = currentPage === 1 && !hasActiveFilters && promotedJobs.length > 0;
+  const regularPaginatedJobs = showPromotedSection
+    ? paginatedJobs.filter((job) => job.Promoted !== true)
+    : paginatedJobs;
 
   const handleReset = () => {
     setSelectedLocations([]);
@@ -425,7 +466,7 @@ const Index = ({ cityFilter }: IndexProps) => {
             </div>
 
             {/* Promoted jobs - only on page 1 with no active filters */}
-            {currentPage === 1 && !keyword && selectedLocations.length === 0 && industry === "all" && promotedJobs.length > 0 && (
+            {showPromotedSection && (
               <div className="space-y-2 mb-5">
                 <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide">추천 공고</p>
                 {promotedJobs.map((job) => (
@@ -447,10 +488,12 @@ const Index = ({ cityFilter }: IndexProps) => {
             <div className="space-y-3">
               {loadingJobs ? (
                 <div className="text-center py-16 text-muted-foreground">불러오는 중...</div>
-              ) : paginatedJobs.length > 0 ? (
-                paginatedJobs.map((job) => (
+              ) : regularPaginatedJobs.length > 0 ? (
+                regularPaginatedJobs.map((job) => (
                   <JobCard key={job.id} job={job} viewCount={getCount(job.id)} />
                 ))
+              ) : showPromotedSection ? (
+                null
               ) : (
                 <div className="text-center py-16 text-muted-foreground">검색 결과가 없습니다.</div>
               )}
