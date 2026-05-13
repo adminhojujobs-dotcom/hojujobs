@@ -75,8 +75,8 @@ export async function fetchViewCountsByJobIds(jobIds: number[]): Promise<Record<
   return counts;
 }
 
-export function useViewCounts() {
-  const [counts, setCounts] = useState<Record<number, number>>({});
+export function useViewCounts(initialCounts: Record<number, number> = {}) {
+  const [counts, setCounts] = useState<Record<number, number>>(initialCounts);
 
   useEffect(() => {
     fetchAllViewCounts().then(setCounts);
