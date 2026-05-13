@@ -64,8 +64,7 @@ export function Header() {
                   className="gap-1 border-border bg-white px-2 text-xs hover:border-primary/40 hover:bg-slate-50 hover:text-primary sm:gap-1.5 sm:px-3 sm:text-sm"
                 >
                   <FileText className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">내 공고</span>
-                  <span className="sm:hidden">내 프로필</span>
+                  <span>내 프로필</span>
                 </Button>
                 {isAdmin && (
                   <Button
