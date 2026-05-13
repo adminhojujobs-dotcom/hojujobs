@@ -113,6 +113,8 @@ const Index = ({ cityFilter }: IndexProps) => {
   const [sortBy, setSortBy] = useState<SortOption>(saved?.sortBy ?? "recent");
   const [jobsData, setJobsData] = useState<Job[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
+  const [allJobsLoaded, setAllJobsLoaded] = useState(false);
+  const [totalJobsCount, setTotalJobsCount] = useState<number | null>(null);
 
   const { counts, getCount } = useViewCounts();
 
@@ -178,10 +180,10 @@ const Index = ({ cityFilter }: IndexProps) => {
 
     const cityLocations = cityFilter ? getCityLocations(cityFilter) : [];
 
-    function buildJobsQuery(from: number, to: number) {
+    function buildJobsQuery(from: number, to: number, withCount = false) {
       let query = supabase
         .from("jobs")
-        .select("id, title, location, industry, uploaded_at, Promoted")
+        .select("id, title, location, industry, uploaded_at, Promoted", withCount ? { count: "exact" } : undefined)
         .gte("uploaded_at", cutoff.toISOString())
         .lte("uploaded_at", new Date().toISOString());
 
@@ -194,28 +196,38 @@ const Index = ({ cityFilter }: IndexProps) => {
 
     async function fetchJobs() {
       setLoadingJobs(true);
+      setAllJobsLoaded(false);
+      setTotalJobsCount(null);
 
-      const initial = await buildJobsQuery(0, ITEMS_PER_PAGE - 1);
+      const initialTo = Math.max(page * ITEMS_PER_PAGE - 1, ITEMS_PER_PAGE - 1);
+      const initial = await buildJobsQuery(0, initialTo, true);
 
       if (cancelled) return;
 
       if (initial.error) {
         console.error("jobs fetch error:", initial.error);
         setJobsData([]);
+        setTotalJobsCount(0);
+        setAllJobsLoaded(true);
         setLoadingJobs(false);
         return;
       }
 
-      const firstPageJobs = (initial.data as unknown as Job[]) || [];
-      let all = firstPageJobs;
+      const initialJobs = (initial.data as unknown as Job[]) || [];
+      let all = initialJobs;
+      const totalCount = initial.count ?? initialJobs.length;
 
-      if (firstPageJobs.length < ITEMS_PER_PAGE) {
+      setJobsData(all);
+      setTotalJobsCount(totalCount);
+      setLoadingJobs(false);
+
+      if (initialJobs.length >= totalCount) {
+        setAllJobsLoaded(true);
         setJobsData(all);
-        setLoadingJobs(false);
         return;
       }
 
-      let from = ITEMS_PER_PAGE;
+      let from = initialJobs.length;
       while (true) {
         const { data, error } = await buildJobsQuery(from, from + BACKGROUND_FETCH_PAGE_SIZE - 1);
         if (cancelled) return;
@@ -230,14 +242,14 @@ const Index = ({ cityFilter }: IndexProps) => {
       }
 
       setJobsData(all);
-      setLoadingJobs(false);
+      setAllJobsLoaded(true);
     }
 
     fetchJobs();
     return () => {
       cancelled = true;
     };
-  }, [cityFilter]);
+  }, [cityFilter, page]);
 
   const scrollRestored = useRef(false);
   useEffect(() => {
@@ -311,8 +323,12 @@ const Index = ({ cityFilter }: IndexProps) => {
       .sort((a, b) => (industryCounts[b] || 0) - (industryCounts[a] || 0));
   }, [cityJobs, industryCounts]);
 
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const currentPage = Math.min(page, totalPages || 1);
+  const hasActiveFilters = !!keyword || selectedLocations.length > 0 || industry !== "all";
+  const displayTotalCount = hasActiveFilters
+    ? (allJobsLoaded ? filtered.length : null)
+    : (totalJobsCount ?? filtered.length);
+  const displayTotalPages = Math.ceil((displayTotalCount ?? filtered.length) / ITEMS_PER_PAGE);
+  const currentPage = Math.min(page, displayTotalPages || 1);
   const paginatedJobs = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const handleReset = () => {
@@ -391,7 +407,7 @@ const Index = ({ cityFilter }: IndexProps) => {
 
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm text-muted-foreground">
-                총 <span className="font-semibold text-foreground">{filtered.length}</span>개의 공고
+                총 <span className="font-semibold text-foreground">{displayTotalCount ?? "계산 중"}</span>개의 공고
               </p>
               <div className="flex items-center gap-1.5">
                 <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -440,7 +456,7 @@ const Index = ({ cityFilter }: IndexProps) => {
               )}
             </div>
 
-            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(p) => { setPage(p); sessionStorage.removeItem("hoju_scroll_y"); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
+            <Pagination currentPage={currentPage} totalPages={displayTotalPages} onPageChange={(p) => { setPage(p); sessionStorage.removeItem("hoju_scroll_y"); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
           </div>
         </div>
       </div>

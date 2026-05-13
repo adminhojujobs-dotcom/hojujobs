@@ -33,15 +33,23 @@ export default function JobDetail() {
   const [viewCount, setViewCount] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchJob() {
+      setLoading(true);
+
       const { data, error } = await supabase
         .from("jobs")
         .select("id, title, location, industry, contact, email, kakaoid, description, google_search, uploaded_at")
         .eq("id", Number(id))
         .single();
 
+      if (cancelled) return;
+
       if (!error && data) {
         setJob(data as Job);
+        setLoading(false);
+
         const storageKey = `job_viewed_${data.id}`;
         const lastViewedRaw = window.localStorage.getItem(storageKey);
         const now = Date.now();
@@ -55,19 +63,26 @@ export default function JobDetail() {
               .select("count")
               .eq("job_id", data.id)
               .maybeSingle();
+            if (cancelled) return;
             setViewCount(vcRow?.count ?? 0);
-            setLoading(false);
             return;
           }
         }
 
         const newCount = await incrementViewCount(data.id);
+        if (cancelled) return;
         setViewCount(newCount);
         window.localStorage.setItem(storageKey, String(now));
+        return;
       }
+
       setLoading(false);
     }
+
     fetchJob();
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const jobJsonLd = useMemo(() => {
