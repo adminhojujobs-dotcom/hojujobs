@@ -4,6 +4,8 @@ export interface BlogPostMeta {
   metaTitle: string;
   metaDescription: string;
   description: string;
+  imageSrc: string;
+  imageAlt: string;
   ctaLabel: string;
   ctaPath: string;
   content: string;
@@ -17,6 +19,8 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     metaDescription:
       "한국에서 호주 워킹홀리데이 비자를 준비하는 방법부터 멜버른·시드니 도착 전 카페 알바, 한인 일자리, 이력서 준비까지 현실적으로 정리했습니다.",
     description: "한국에서 호주 워홀 비자를 준비하는 단계부터 멜버른·시드니 카페 일자리 준비까지 정리했습니다.",
+    imageSrc: "/blog/working-holiday-visa-cafe-jobs.svg",
+    imageAlt: "한국에서 호주 워킹홀리데이 비자와 카페 일자리를 준비하는 모습",
     ctaLabel: "호주 전체 공고 보기",
     ctaPath: "/",
     content: `
@@ -118,6 +122,8 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     metaDescription:
       "영어가 부족한 워홀러가 멜버른·시드니에서 한인 카페와 호스피탈리티 일자리를 구하는 현실적인 방법과 지원 전략을 정리했습니다.",
     description: "영어가 완벽하지 않아도 카페 일을 시작할 수 있는 현실적인 전략과 트라이얼 팁을 정리했습니다.",
+    imageSrc: "/blog/english-cafe-job.svg",
+    imageAlt: "영어가 부족한 워홀러가 호주 카페에서 주문 응대를 연습하는 모습",
     ctaLabel: "시드니 공고 보기",
     ctaPath: "/sydney",
     content: `
@@ -215,6 +221,8 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     metaDescription:
       "호주 워홀러를 위해 멜버른과 시드니의 한인 카페, 호스피탈리티 일자리, 생활비, 구직 난이도를 현실적으로 비교했습니다.",
     description: "멜버른과 시드니 중 첫 카페 일자리를 어디서 찾을지 고민하는 워홀러를 위한 현실 비교입니다.",
+    imageSrc: "/blog/melbourne-vs-sydney-cafe-jobs.svg",
+    imageAlt: "멜버른과 시드니 카페 일자리를 비교하는 일러스트",
     ctaLabel: "멜버른 공고 보기",
     ctaPath: "/melbourne",
     content: `
@@ -318,6 +326,8 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     metaDescription:
       "호주 워홀로 멜버른·시드니 도착 후 빠르게 카페 일자리를 구하는 7일 플랜. 한인 카페, 이력서, 지원 방법, 구인 사이트 활용법까지 정리했습니다.",
     description: "멜버른·시드니에 막 도착한 워홀러가 첫 카페 일을 빠르게 잡기 위한 7일 실행 플랜입니다.",
+    imageSrc: "/blog/first-week-cafe-job.svg",
+    imageAlt: "호주 도착 후 7일 안에 카페 일자리를 구하기 위한 체크리스트",
     ctaLabel: "호주 전체 공고 보기",
     ctaPath: "/",
     content: `
@@ -411,6 +421,8 @@ Hoju Jobs에서는 호주 한인 일자리를 지역별로 확인할 수 있고,
     metaDescription:
       "멜버른·시드니에서 카페 일자리에 계속 떨어지는 워홀러를 위한 현실적인 원인 분석과 바로 고칠 수 있는 지원 전략을 정리했습니다.",
     description: "지원해도 답장이 없거나 트라이얼 뒤 연락이 끊기는 이유와 바로 고칠 수 있는 방법을 정리했습니다.",
+    imageSrc: "/blog/cafe-job-rejection.svg",
+    imageAlt: "호주 카페 알바 지원에서 떨어지는 이유를 점검하는 이력서 일러스트",
     ctaLabel: "시드니 공고 보기",
     ctaPath: "/sydney",
     content: `
@@ -498,6 +510,8 @@ Hoju Jobs에서는 호주 한인 일자리를 지역별로 확인할 수 있고,
     metaDescription:
       "멜버른에서 한인 카페 일자리를 찾는 워홀러를 위한 구인 정보 확인법. 페이스북, 카카오방의 한계와 지역별 구인 사이트 활용법을 정리했습니다.",
     description: "흩어진 멜버른 한인 카페 공고를 더 빠르게 확인하고 지원하는 방법을 안내합니다.",
+    imageSrc: "/blog/melbourne-korean-cafe-jobs.svg",
+    imageAlt: "멜버른 한인 카페 일자리 공고를 한곳에서 모아보는 모습",
     ctaLabel: "멜버른 공고 보기",
     ctaPath: "/melbourne",
     content: `

@@ -61,19 +61,29 @@ export default function Blog() {
 
         <section className="grid gap-4 sm:grid-cols-3" aria-label="Blog posts">
           {BLOG_POSTS.map((post) => (
-            <article key={post.slug} className="flex h-full flex-col rounded-xl border border-border bg-white p-5 shadow-sm">
-              <div className="flex-1 space-y-2">
+            <article key={post.slug} className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-white shadow-sm">
+              <Link to={`/blog/${post.slug}`} className="block bg-slate-100">
+                <img
+                  src={post.imageSrc}
+                  alt={post.imageAlt}
+                  loading="lazy"
+                  className="aspect-[16/9] w-full object-cover transition-transform duration-200 hover:scale-[1.02]"
+                />
+              </Link>
+              <div className="flex flex-1 flex-col p-5">
+                <div className="flex-1 space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Guide</p>
                 <h2 className="text-lg font-semibold text-foreground">{post.title}</h2>
                 <p className="text-sm leading-relaxed text-muted-foreground">{post.description}</p>
+                </div>
+                <Link
+                  to={`/blog/${post.slug}`}
+                  className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                >
+                  글 읽기
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
-              <Link
-                to={`/blog/${post.slug}`}
-                className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
-              >
-                글 읽기
-                <ArrowRight className="h-4 w-4" />
-              </Link>
             </article>
           ))}
         </section>

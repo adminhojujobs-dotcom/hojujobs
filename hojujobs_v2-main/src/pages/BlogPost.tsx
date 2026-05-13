@@ -106,15 +106,6 @@ export default function BlogPost() {
             <p className="text-sm leading-relaxed text-muted-foreground">{post.description}</p>
           </header>
 
-          <section className="rounded-xl border border-border bg-slate-50 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Meta title</p>
-            <p className="mt-1 text-sm font-medium text-foreground">{post.metaTitle}</p>
-            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Meta description
-            </p>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{post.metaDescription}</p>
-          </section>
-
           <section className="space-y-5">{renderArticleContent(post.content)}</section>
 
           <section className="rounded-xl border border-primary/20 bg-primary/5 p-5">
