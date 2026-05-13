@@ -19,6 +19,7 @@ import { useSEO } from "@/hooks/useSEO";
 const ITEMS_PER_PAGE = 50;
 const BACKGROUND_FETCH_PAGE_SIZE = 1000;
 const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
+const LISTING_CACHE_VERSION = 2;
 
 type SortOption = "recent" | "views";
 
@@ -29,6 +30,11 @@ interface Job {
   industry: string;
   uploaded_at: string;
   Promoted?: boolean | null;
+}
+
+interface JobFilterMeta {
+  location: string[];
+  industry: string;
 }
 
 const CITY_META: Record<string, { title: string; description: string; canonical: string; h1: string; tagline: string; keywords: string }> = {
@@ -108,7 +114,9 @@ function mergeJobsById(...groups: Job[][]) {
 }
 
 interface ListingCache {
+  version: number;
   jobsData: Job[];
+  filterJobs: JobFilterMeta[];
   totalJobsCount: number | null;
   allJobsLoaded: boolean;
   counts: Record<number, number>;
@@ -121,7 +129,7 @@ function readListingCache(key: string): ListingCache | null {
     if (!raw) return null;
 
     const parsed = JSON.parse(raw) as ListingCache;
-    if (!parsed.cachedAt || Date.now() - parsed.cachedAt > LISTING_CACHE_TTL_MS) {
+    if (parsed.version !== LISTING_CACHE_VERSION || !parsed.cachedAt || Date.now() - parsed.cachedAt > LISTING_CACHE_TTL_MS) {
       sessionStorage.removeItem(key);
       return null;
     }
@@ -132,9 +140,9 @@ function readListingCache(key: string): ListingCache | null {
   }
 }
 
-function writeListingCache(key: string, cache: Omit<ListingCache, "cachedAt">) {
+function writeListingCache(key: string, cache: Omit<ListingCache, "cachedAt" | "version">) {
   try {
-    sessionStorage.setItem(key, JSON.stringify({ ...cache, cachedAt: Date.now() }));
+    sessionStorage.setItem(key, JSON.stringify({ ...cache, version: LISTING_CACHE_VERSION, cachedAt: Date.now() }));
   } catch {}
 }
 
@@ -162,6 +170,7 @@ const Index = ({ cityFilter }: IndexProps) => {
   const [page, setPage] = useState(saved?.page ?? 1);
   const [sortBy, setSortBy] = useState<SortOption>(saved?.sortBy ?? "recent");
   const [jobsData, setJobsData] = useState<Job[]>(cachedListing?.jobsData ?? []);
+  const [filterJobs, setFilterJobs] = useState<JobFilterMeta[]>(cachedListing?.filterJobs ?? []);
   const [loadingJobs, setLoadingJobs] = useState(!cachedListing);
   const [allJobsLoaded, setAllJobsLoaded] = useState(cachedListing?.allJobsLoaded ?? false);
   const [totalJobsCount, setTotalJobsCount] = useState<number | null>(cachedListing?.totalJobsCount ?? null);
@@ -260,6 +269,41 @@ const Index = ({ cityFilter }: IndexProps) => {
       return query.order("uploaded_at", { ascending: false });
     }
 
+    function buildFilterJobsQuery(from: number, to: number) {
+      let query = supabase
+        .from("jobs")
+        .select("location, industry")
+        .gte("uploaded_at", cutoff.toISOString())
+        .lte("uploaded_at", new Date().toISOString());
+
+      if (cityLocations.length > 0) {
+        query = query.overlaps("location", cityLocations);
+      }
+
+      return query.order("uploaded_at", { ascending: false }).range(from, to);
+    }
+
+    async function fetchFilterJobs() {
+      const PAGE = 1000;
+      let from = 0;
+      let all: JobFilterMeta[] = [];
+
+      while (true) {
+        const { data, error } = await buildFilterJobsQuery(from, from + PAGE - 1);
+        if (error) {
+          console.error("filter jobs fetch error:", error);
+          return all;
+        }
+        if (!data || data.length === 0) break;
+
+        all = all.concat(data as unknown as JobFilterMeta[]);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+
+      return all;
+    }
+
     async function fetchJobs() {
       const initialTo = Math.max(page * ITEMS_PER_PAGE - 1, ITEMS_PER_PAGE - 1);
       const cacheCoversPage = !!cachedListing && (cachedListing.allJobsLoaded || cachedListing.jobsData.length > initialTo);
@@ -270,9 +314,10 @@ const Index = ({ cityFilter }: IndexProps) => {
         setTotalJobsCount(null);
       }
 
-      const [initial, promoted] = await Promise.all([
+      const [initial, promoted, nextFilterJobs] = await Promise.all([
         buildJobsQuery(0, initialTo, true),
         buildPromotedJobsQuery(),
+        fetchFilterJobs(),
       ]);
 
       if (cancelled) return;
@@ -289,6 +334,7 @@ const Index = ({ cityFilter }: IndexProps) => {
       const initialJobs = (initial.data as unknown as Job[]) || [];
       const promotedJobs = promoted.error ? [] : ((promoted.data as unknown as Job[]) || []);
       let all = mergeJobsById(promotedJobs, initialJobs);
+      const resolvedFilterJobs = nextFilterJobs.length > 0 ? nextFilterJobs : all;
       const totalCount = initial.count ?? initialJobs.length;
 
       if (promoted.error) {
@@ -302,11 +348,13 @@ const Index = ({ cityFilter }: IndexProps) => {
       hydrateCounts(countSnapshot);
       writeListingCache(listingCacheKey, {
         jobsData: all,
+        filterJobs: resolvedFilterJobs,
         totalJobsCount: totalCount,
         allJobsLoaded: initialJobs.length >= totalCount,
         counts: countSnapshot,
       });
       setJobsData(all);
+      setFilterJobs(resolvedFilterJobs);
       setTotalJobsCount(totalCount);
       setLoadingJobs(false);
 
@@ -340,6 +388,7 @@ const Index = ({ cityFilter }: IndexProps) => {
       setAllJobsLoaded(true);
       writeListingCache(listingCacheKey, {
         jobsData: all,
+        filterJobs: resolvedFilterJobs,
         totalJobsCount: totalCount,
         allJobsLoaded: true,
         counts: countSnapshot,
@@ -373,15 +422,16 @@ const Index = ({ cityFilter }: IndexProps) => {
   }, [jobsData, cityFilter]);
 
   const promotedJobs = useMemo(() => jobsData.filter((j) => j.Promoted === true), [jobsData]);
+  const filterSourceJobs = filterJobs.length > 0 ? filterJobs : cityJobs;
 
   const locations = useMemo(() => {
-    const cityLocs = cityJobs.flatMap((j) =>
+    const cityLocs = filterSourceJobs.flatMap((j) =>
       cityFilter ? j.location.filter((loc) => (SUBURB_EN[loc] ?? "").endsWith(` ${cityFilter}`)) : j.location
     );
     const countMap: Record<string, number> = {};
     cityLocs.forEach((loc) => { countMap[loc] = (countMap[loc] || 0) + 1; });
     return [...new Set(cityLocs)].sort((a, b) => (countMap[b] || 0) - (countMap[a] || 0));
-  }, [cityJobs, cityFilter]);
+  }, [filterSourceJobs, cityFilter]);
 
   const filtered = useMemo(() => {
     const result = cityJobs.filter((job) => {
@@ -403,26 +453,26 @@ const Index = ({ cityFilter }: IndexProps) => {
 
   const locationCounts = useMemo(() => {
     const c: Record<string, number> = {};
-    cityJobs.forEach((j) => {
+    filterSourceJobs.forEach((j) => {
       (cityFilter ? j.location.filter((loc) => (SUBURB_EN[loc] ?? "").endsWith(` ${cityFilter}`)) : j.location)
         .forEach((loc) => { c[loc] = (c[loc] || 0) + 1; });
     });
     return c;
-  }, [cityJobs, cityFilter]);
+  }, [filterSourceJobs, cityFilter]);
 
   const industryCounts = useMemo(() => {
     const c: Record<string, number> = {};
-    cityJobs.forEach((j) => { c[j.industry] = (c[j.industry] || 0) + 1; });
+    filterSourceJobs.forEach((j) => { c[j.industry] = (c[j.industry] || 0) + 1; });
     return c;
-  }, [cityJobs]);
+  }, [filterSourceJobs]);
 
   const industries = useMemo(() => {
     const seen = new Set<string>();
-    return cityJobs
+    return filterSourceJobs
       .map((j) => j.industry)
       .filter((i): i is string => !!i && !seen.has(i) && !!seen.add(i))
       .sort((a, b) => (industryCounts[b] || 0) - (industryCounts[a] || 0));
-  }, [cityJobs, industryCounts]);
+  }, [filterSourceJobs, industryCounts]);
 
   const hasActiveFilters = !!keyword || selectedLocations.length > 0 || industry !== "all";
   const displayTotalCount = hasActiveFilters
