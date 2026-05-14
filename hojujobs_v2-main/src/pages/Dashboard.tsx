@@ -239,7 +239,8 @@ const NAVER_FLIGHT_ROUTES = [
     from: "icn",
     to: "syd",
     deals: [
-      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–24시간", direct: false, priceByMonth: [308000, 293000, 287000, 299000, 287000, 274000, 265000, 273000, 289000, 271000, 308000, 350000] },
+      { airline: { iata: "CZ", name: "중국남방항공" }, duration: "약 18–22시간", direct: false, priceByMonth: [318000, 306000, 302000, 308000, 304000, 298000, 312000, 296000, 304000, 292000, 318000, 365000] },
+      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–23시간", direct: false, priceByMonth: [308000, 293000, 287000, 299000, 287000, 274000, 265000, 273000, 289000, 271000, 308000, 350000] },
       { airline: { iata: "D7", name: "에어아시아 X" }, duration: "약 17–23시간", direct: false, priceByMonth: [304000, 290000, 281000, 294000, 281000, 282000, 237000, 290000, 280000, 285000, 308000, 363000] },
       { airline: { iata: "JQ", name: "제트스타" }, duration: "약 10시간 15분", direct: true, priceByMonth: [442000, 377000, 350000, 396000, 359000, 362000, 315000, 222000, 275000, 315000, 336000, 414000] },
     ],
@@ -251,10 +252,11 @@ const NAVER_FLIGHT_ROUTES = [
     from: "icn",
     to: "mel",
     deals: [
+      { airline: { iata: "ZH", name: "선전항공" }, duration: "약 18–22시간", direct: false, priceByMonth: [315000, 302000, 296000, 300000, 292000, 261000, 338000, 285000, 298000, 294000, 309000, 398000] },
+      { airline: { iata: "MU", name: "중국동방항공" }, duration: "약 17–22시간", direct: false, priceByMonth: [322000, 310000, 304000, 308000, 298000, 294000, 345000, 292000, 301000, 296000, 314000, 405000] },
       { airline: { iata: "D7", name: "에어아시아 X" }, duration: "약 17–23시간", direct: false, priceByMonth: [331000, 304000, 294000, 290000, 276000, 238000, 234000, 262000, 285000, 276000, 294000, 377000] },
-      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–24시간", direct: false, priceByMonth: [336000, 299000, 285000, 290000, 281000, 294000, 311000, 261000, 295000, 282000, 309000, 396000] },
-      { airline: { iata: "ZH", name: "선전항공" }, duration: "약 18–22시간", direct: false, priceByMonth: [350000, 313000, 304000, 308000, 294000, 261000, 363000, 290000, 305000, 294000, 309000, 414000] },
-      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–25시간", direct: false, priceByMonth: [359000, 322000, 308000, 313000, 294000, 304000, 331000, 290000, 259000, 304000, 322000, 432000] },
+      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–23시간", direct: false, priceByMonth: [336000, 299000, 285000, 290000, 281000, 294000, 311000, 261000, 295000, 282000, 309000, 396000] },
+      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–23시간", direct: false, priceByMonth: [359000, 322000, 308000, 313000, 294000, 304000, 331000, 290000, 259000, 304000, 322000, 432000] },
     ],
   },
   {
@@ -264,8 +266,9 @@ const NAVER_FLIGHT_ROUTES = [
     from: "icn",
     to: "bne",
     deals: [
-      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–24시간", direct: false, priceByMonth: [304000, 294000, 282000, 290000, 284000, 238000, 339000, 290000, 247000, 251000, 261000, 282000] },
+      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–23시간", direct: false, priceByMonth: [304000, 294000, 282000, 290000, 284000, 238000, 339000, 290000, 247000, 251000, 261000, 282000] },
       { airline: { iata: "JQ", name: "제트스타" }, duration: "약 9시간 35분", direct: true, priceByMonth: [348000, 331000, 313000, 317000, 348000, 314000, 378000, 359000, 331000, 340000, 350000, 377000] },
+      { airline: { iata: "KE", name: "대한항공" }, duration: "약 9시간 30분", direct: true, priceByMonth: [760000, 720000, 690000, 710000, 730000, 690000, 740000, 720000, 700000, 720000, 730000, 820000] },
     ],
   },
 ];
@@ -414,7 +417,9 @@ export default function Dashboard() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-sm font-bold text-foreground">🇰🇷 최저가 항공편</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">인천 출발 편도 기준</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {selectedFlightSource === "naver" ? "인천 출발 편도, 24시간 미만 기준" : "인천 출발 편도 기준"}
+                  </p>
                 </div>
                 <div className="flex shrink-0 gap-1 rounded-md border border-border bg-muted/40 p-1" aria-label="항공권 검색 소스 선택">
                   {FLIGHT_SOURCE_OPTIONS.map((source) => (
