@@ -27,7 +27,7 @@ export const REGION_GROUPS: RegionGroup[] = [
     "브룩베일", "나라위나", "디 와이", "워링가",
     "노스쇼어", "뉴포트", "노던 비치스", "콜라로이", "포레스트빌", "헌터스 힐", "크로즈 네스트",
     "쿠강갈라", "욀로비", "투라무라", "윌로비", "프레시워터", "노먼허스트", "뉴트럴베이", "뉴트럴 베이", "프렌치스 포레스트",
-    "핌블", "핌불",
+    "핌블", "핌불", "아스퀴스",
   ]},
   { state: "NSW", region: "라이드 / 이스트우드", suburbs: [
     "라이드", "이스트우드", "에핑", "웨스트 라이드", "탑라이드", "메도우뱅크", "맥쿼리", "맥쿼리빌", "어밍톤",
@@ -55,7 +55,7 @@ export const REGION_GROUPS: RegionGroup[] = [
     "캠벨타운", "마운트 드루이트", "스프링우드", "리버풀", "뱅크스타운", "페어필드", "펜리스", "웨스턴 에어리어",
     "블랙타운", "캐브라마타", "웨더릴 파크", "카술라", "라켐바", "벨모어", "세인트 메리스", "스미스필드", "빌라우드", "레브즈비", "출로라",
   ]},
-  { state: "NSW", region: "센트럴 코스트", suburbs: ["센트럴 코스트", "고스포드"] },
+  { state: "NSW", region: "센트럴 코스트", suburbs: ["센트럴 코스트", "고스포드", "테리갈"] },
   { state: "NSW", region: "기타 NSW", suburbs: [
     "포트 맥쿼리", "울릉공", "울굴가", "굴번", "배서스트",
     "코프스 하버", "웬트워스", "윈덤", "샌디 비치", "쿠퍼스 하버",
@@ -72,7 +72,7 @@ export const REGION_GROUPS: RegionGroup[] = [
   ]},
   { state: "VIC", region: "이너 이스트 멜버른", suburbs: [
     "큐", "캠버웰", "헤이쏜", "버우드 이스트", "블랙번", "글렌 웨이버리", "글렌 웨이벌리", "Mt 웨이버리", "마운트 웨이버리", "마운트 웨이벌리",
-    "말번", "볼윈", "돈캐스터", "링우드", "미첨", "누나와딩", "박스 힐", "보로니아",
+    "말번", "볼윈", "돈캐스터", "링우드", "미첨", "누나와딩", "박스 힐", "보로니아", "호손",
   ]},
   { state: "VIC", region: "사우스 이스트 멜버른", suburbs: [
     "사우스 이스트 멜버른", "채드스톤", "오클리", "오클리 이스트", "글렌 헌틀리", "헌팅데일", "카네기", "단데농", "댄드농", "녹스", "비스",
@@ -155,6 +155,7 @@ export const SUBURB_EN: Record<string, string> = {
   "린필드": "Lindfield NSW",
   "핌블": "Pymble NSW",
   "핌불": "Pymble NSW",
+  "아스퀴스": "Asquith NSW",
   "맨리": "Manly NSW",
   "발고울라": "Balgowlah NSW",
   "브룩베일": "Brookvale NSW",
@@ -283,6 +284,7 @@ export const SUBURB_EN: Record<string, string> = {
   "레브즈비": "Revesby NSW",
   "센트럴 코스트": "Central Coast NSW",
   "고스포드": "Gosford NSW",
+  "테리갈": "Terrigal NSW",
   "포트 맥쿼리": "Port Macquarie NSW",
   "울릉공": "Wollongong NSW",
   "울굴가": "Woolgoolga NSW",
@@ -342,6 +344,7 @@ export const SUBURB_EN: Record<string, string> = {
   "큐": "Kew VIC",
   "캠버웰": "Camberwell VIC",
   "헤이쏜": "Hawthorn VIC",
+  "호손": "Hawthorn VIC",
   "버우드 이스트": "Burwood East VIC",
   "블랙번": "Blackburn VIC",
   "글렌 웨이버리": "Glen Waverley VIC",
