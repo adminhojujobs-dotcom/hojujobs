@@ -30,7 +30,7 @@ export const REGION_GROUPS: RegionGroup[] = [
     "핌블", "핌불", "아스퀴스",
   ]},
   { state: "NSW", region: "라이드 / 이스트우드", suburbs: [
-    "라이드", "이스트우드", "에핑", "웨스트 라이드", "탑라이드", "메도우뱅크", "맥쿼리", "맥쿼리빌", "어밍톤",
+    "라이드", "이스트우드", "에핑", "웨스트 라이드", "탑라이드", "메도우뱅크", "매도뱅크", "맥쿼리", "맥쿼리빌", "어밍톤",
     "리달미어", "맥쿼리 파크", "글레이즈빌", "멜로즈 파크", "노스 라이드",
   ]},
   { state: "NSW", region: "파라마타 / 웨스트", suburbs: [
@@ -182,6 +182,7 @@ export const SUBURB_EN: Record<string, string> = {
   "웨스트 라이드": "West Ryde NSW",
   "탑라이드": "Top Ryde NSW",
   "메도우뱅크": "Meadowbank NSW",
+  "매도뱅크": "Meadowbank NSW",
   "맥쿼리": "Macquarie Park NSW",
   "맥쿼리빌": "Macquarie Fields NSW",
   "어밍톤": "Ermington NSW",
