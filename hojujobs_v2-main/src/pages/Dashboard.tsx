@@ -200,8 +200,9 @@ const FLIGHT_ROUTES = [
     from: "icn",
     to: "syd",
     deals: [
-      { airline: { iata: "D7", name: "에어아시아 X" }, duration: "약 17–22시간", direct: false, priceByMonth: [274, 286, 264, 274, 258, 264, 264, 278, 266, 265, 269, 274] },
-      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 10시간 15분", direct: true, priceByMonth: [486, 334, 299, 566, 327, 335, 426, 253, 250, 365, 294, 365] },
+      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–24시간", direct: false, priceByMonth: [335, 318, 312, 325, 312, 298, 288, 297, 314, 295, 335, 380] },
+      { airline: { iata: "D7", name: "에어아시아 X" }, duration: "약 17–23시간", direct: false, priceByMonth: [330, 315, 305, 320, 306, 306, 257, 315, 304, 310, 335, 395] },
+      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 10시간 15분", direct: true, priceByMonth: [480, 410, 380, 430, 390, 393, 342, 241, 299, 342, 365, 450] },
     ],
   },
   {
@@ -211,8 +212,10 @@ const FLIGHT_ROUTES = [
     from: "icn",
     to: "mel",
     deals: [
-      { airline: { iata: "D7", name: "에어아시아 X" }, duration: "약 17–22시간", direct: false, priceByMonth: [791, 349, 349, 690, 335, 255, 253, 255, 255, 255, 264, 266] },
-      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–23시간", direct: false, priceByMonth: [791, 349, 349, 690, 335, 347, 543, 304, 305, 304, 304, 349] },
+      { airline: { iata: "D7", name: "에어아시아 X" }, duration: "약 17–23시간", direct: false, priceByMonth: [360, 330, 320, 315, 300, 259, 254, 285, 310, 300, 320, 410] },
+      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–24시간", direct: false, priceByMonth: [365, 325, 310, 315, 305, 320, 338, 284, 321, 307, 336, 430] },
+      { airline: { iata: "ZH", name: "선전항공" }, duration: "약 18–22시간", direct: false, priceByMonth: [380, 340, 330, 335, 320, 284, 395, 315, 331, 320, 336, 450] },
+      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–25시간", direct: false, priceByMonth: [390, 350, 335, 340, 320, 330, 360, 315, 281, 330, 350, 470] },
     ],
   },
   {
@@ -222,8 +225,8 @@ const FLIGHT_ROUTES = [
     from: "icn",
     to: "bne",
     deals: [
-      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 9시간 35분", direct: true, priceByMonth: [451, 370, 306, 315, 309, 303, 500, 303, 298, 358, 330, 344] },
-      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–24시간", direct: false, priceByMonth: [451, 370, 306, 315, 309, 356, 509, 362, 396, 374, 352, 362] },
+      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–24시간", direct: false, priceByMonth: [330, 320, 306, 315, 309, 259, 368, 315, 269, 273, 284, 306] },
+      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 9시간 35분", direct: true, priceByMonth: [378, 360, 340, 345, 378, 341, 411, 390, 360, 370, 380, 410] },
     ],
   },
 ];
@@ -236,8 +239,9 @@ const NAVER_FLIGHT_ROUTES = [
     from: "icn",
     to: "syd",
     deals: [
-      { airline: { iata: "D7", name: "에어아시아 X" }, duration: "약 17–22시간", direct: false, priceByMonth: [291000, 304000, 280000, 291000, 274000, 280000, 280000, 296000, 283000, 282000, 286000, 291000] },
-      { airline: { iata: "JQ", name: "제트스타 항공" }, duration: "약 10시간 15분", direct: true, priceByMonth: [516000, 355000, 318000, 601000, 347000, 356000, 453000, 269000, 266000, 388000, 312000, 388000] },
+      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–24시간", direct: false, priceByMonth: [308000, 293000, 287000, 299000, 287000, 274000, 265000, 273000, 289000, 271000, 308000, 350000] },
+      { airline: { iata: "D7", name: "에어아시아 X" }, duration: "약 17–23시간", direct: false, priceByMonth: [304000, 290000, 281000, 294000, 281000, 282000, 237000, 290000, 280000, 285000, 308000, 363000] },
+      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 10시간 15분", direct: true, priceByMonth: [442000, 377000, 350000, 396000, 359000, 362000, 315000, 222000, 275000, 315000, 336000, 414000] },
     ],
   },
   {
@@ -247,8 +251,10 @@ const NAVER_FLIGHT_ROUTES = [
     from: "icn",
     to: "mel",
     deals: [
-      { airline: { iata: "D7", name: "에어아시아 X" }, duration: "약 17–22시간", direct: false, priceByMonth: [740000, 326000, 326000, 645000, 313000, 271000, 269000, 271000, 271000, 271000, 281000, 283000] },
-      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–23시간", direct: false, priceByMonth: [740000, 326000, 326000, 645000, 313000, 369000, 577000, 323000, 324000, 323000, 323000, 371000] },
+      { airline: { iata: "D7", name: "에어아시아 X" }, duration: "약 17–23시간", direct: false, priceByMonth: [331000, 304000, 294000, 290000, 276000, 238000, 234000, 262000, 285000, 276000, 294000, 377000] },
+      { airline: { iata: "TR", name: "스쿠트" }, duration: "약 18–24시간", direct: false, priceByMonth: [336000, 299000, 285000, 290000, 281000, 294000, 311000, 261000, 295000, 282000, 309000, 396000] },
+      { airline: { iata: "ZH", name: "선전항공" }, duration: "약 18–22시간", direct: false, priceByMonth: [350000, 313000, 304000, 308000, 294000, 261000, 363000, 290000, 305000, 294000, 309000, 414000] },
+      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–25시간", direct: false, priceByMonth: [359000, 322000, 308000, 313000, 294000, 304000, 331000, 290000, 259000, 304000, 322000, 432000] },
     ],
   },
   {
@@ -258,8 +264,8 @@ const NAVER_FLIGHT_ROUTES = [
     from: "icn",
     to: "bne",
     deals: [
-      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 9시간 35분", direct: true, priceByMonth: [477000, 392000, 324000, 334000, 328000, 322000, 531000, 322000, 317000, 381000, 351000, 366000] },
-      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–24시간", direct: false, priceByMonth: [477000, 392000, 324000, 334000, 328000, 378000, 541000, 385000, 421000, 397000, 374000, 385000] },
+      { airline: { iata: "VJ", name: "비엣젯항공" }, duration: "약 20–24시간", direct: false, priceByMonth: [304000, 294000, 282000, 290000, 284000, 238000, 339000, 290000, 247000, 251000, 261000, 282000] },
+      { airline: { iata: "JQ", name: "제트스타" }, duration: "약 9시간 35분", direct: true, priceByMonth: [348000, 331000, 313000, 317000, 348000, 314000, 378000, 359000, 331000, 340000, 350000, 377000] },
     ],
   },
 ];
