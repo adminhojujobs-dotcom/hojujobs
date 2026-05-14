@@ -13,7 +13,7 @@ const CITY_TABS = [
 ];
 
 const INFO_TABS = [
-  { label: "워홀정보", path: "/dashboard" },
+  { label: "워홀정보", path: "/news" },
   { label: "블로그", path: "/blog" },
 ];
 
@@ -21,7 +21,7 @@ export function Header() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const isInfoActive = location.pathname === "/blog" || location.pathname.startsWith("/blog/") || location.pathname === "/dashboard";
+  const isInfoActive = location.pathname === "/blog" || location.pathname.startsWith("/blog/") || location.pathname === "/news" || location.pathname === "/dashboard";
   const infoLabel = (location.pathname === "/blog" || location.pathname.startsWith("/blog/")) ? "블로그" : "워홀정보";
 
   return (
@@ -155,7 +155,7 @@ export function Header() {
               <ChevronDown className="h-3 w-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigate("/dashboard")}>워홀정보</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/news")}>워홀정보</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/blog")}>블로그</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
