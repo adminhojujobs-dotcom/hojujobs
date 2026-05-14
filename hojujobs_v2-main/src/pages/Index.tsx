@@ -642,17 +642,17 @@ const Index = ({ cityFilter }: IndexProps) => {
             {/* Promoted jobs - only on page 1 with no active filters */}
             {showPromotedSection && (
               <div className="space-y-2 mb-2">
-                <div className="rounded-lg border border-teal-100 bg-gradient-to-r from-teal-50/80 to-indigo-50/70 px-4 py-3 shadow-sm">
+                <div className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 px-4 py-3 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-extrabold text-slate-900 mb-0.5">호주 생활 정보도 확인해보세요</p>
-                      <p className="text-xs text-slate-600 leading-relaxed">환율, 최신 호주 뉴스, 구직 팁을 한곳에서 볼 수 있습니다.</p>
+                      <p className="text-xs text-blue-900/75 leading-relaxed">환율, 최신 호주 뉴스, 구직 팁을 한곳에서 볼 수 있습니다.</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
-                      <Link to="/news" className="inline-flex h-9 items-center justify-center rounded-md border border-teal-200 bg-teal-100 px-3 text-xs font-semibold text-teal-800 hover:bg-teal-200">
+                      <Link to="/news" className="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white/80 px-3 text-xs font-semibold text-blue-800 hover:bg-blue-100">
                         워홀정보
                       </Link>
-                      <Link to="/blog" className="inline-flex h-9 items-center justify-center rounded-md border border-indigo-200 bg-indigo-100 px-3 text-xs font-semibold text-indigo-800 hover:bg-indigo-200">
+                      <Link to="/blog" className="inline-flex h-9 items-center justify-center rounded-md border border-cyan-200 bg-cyan-100 px-3 text-xs font-semibold text-cyan-900 hover:bg-cyan-200">
                         블로그
                       </Link>
                     </div>
@@ -663,11 +663,11 @@ const Index = ({ cityFilter }: IndexProps) => {
                   <PromotedJobCard key={job.id} job={job} viewCount={getCount(job.id)} showEditButton={isAdmin} onDelete={isAdmin ? handleDeleteJob : undefined} />
                 ))}
                 {/* Promote-your-post CTA */}
-                <div className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 px-4 py-3 shadow-sm">
+                <div className="rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-blue-800 mb-0.5">📣 내 공고를 상단에 올리세요</p>
-                      <p className="text-xs text-blue-900/75 leading-relaxed">추천 공고는 일반 공고보다 <span className="font-semibold">3배 더 많이 조회</span>되고 지원 전환율이 <span className="font-semibold">60% 높습니다</span>. 문의: <a href="mailto:admin.hojujobs@gmail.com" className="font-semibold underline underline-offset-2 hover:text-blue-950">admin.hojujobs@gmail.com</a></p>
+                      <p className="text-xs font-bold text-amber-700 mb-0.5">📣 내 공고를 상단에 올리세요</p>
+                      <p className="text-xs text-amber-800/70 leading-relaxed">추천 공고는 일반 공고보다 <span className="font-semibold">3배 더 많이 조회</span>되고 지원 전환율이 <span className="font-semibold">60% 높습니다</span>. 문의: <a href="mailto:admin.hojujobs@gmail.com" className="font-semibold underline underline-offset-2 hover:text-amber-900">admin.hojujobs@gmail.com</a></p>
                     </div>
                   </div>
                 </div>
