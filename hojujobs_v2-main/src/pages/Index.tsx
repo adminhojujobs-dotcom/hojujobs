@@ -663,11 +663,11 @@ const Index = ({ cityFilter }: IndexProps) => {
                   <PromotedJobCard key={job.id} job={job} viewCount={getCount(job.id)} showEditButton={isAdmin} onDelete={isAdmin ? handleDeleteJob : undefined} />
                 ))}
                 {/* Promote-your-post CTA */}
-                <div className="rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-3">
+                <div className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 px-4 py-3 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-amber-700 mb-0.5">📣 내 공고를 상단에 올리세요</p>
-                      <p className="text-xs text-amber-800/70 leading-relaxed">추천 공고는 일반 공고보다 <span className="font-semibold">3배 더 많이 조회</span>되고 지원 전환율이 <span className="font-semibold">60% 높습니다</span>. 문의: <a href="mailto:admin.hojujobs@gmail.com" className="font-semibold underline underline-offset-2 hover:text-amber-900">admin.hojujobs@gmail.com</a></p>
+                      <p className="text-xs font-bold text-blue-800 mb-0.5">📣 내 공고를 상단에 올리세요</p>
+                      <p className="text-xs text-blue-900/75 leading-relaxed">추천 공고는 일반 공고보다 <span className="font-semibold">3배 더 많이 조회</span>되고 지원 전환율이 <span className="font-semibold">60% 높습니다</span>. 문의: <a href="mailto:admin.hojujobs@gmail.com" className="font-semibold underline underline-offset-2 hover:text-blue-950">admin.hojujobs@gmail.com</a></p>
                     </div>
                   </div>
                 </div>
