@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Search, ArrowUpDown, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/Header";
@@ -611,6 +612,22 @@ const Index = ({ cityFilter }: IndexProps) => {
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-amber-700 mb-0.5">📣 내 공고를 상단에 올리세요</p>
                       <p className="text-xs text-amber-800/70 leading-relaxed">추천 공고는 일반 공고보다 <span className="font-semibold">3배 더 많이 조회</span>되고 지원 전환율이 <span className="font-semibold">60% 높습니다</span>. 문의: <a href="mailto:admin.hojujobs@gmail.com" className="font-semibold underline underline-offset-2 hover:text-amber-900">admin.hojujobs@gmail.com</a></p>
+                    </div>
+                  </div>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-foreground mb-0.5">호주 생활 정보도 확인해보세요</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">워홀 준비와 구직 팁을 한곳에서 볼 수 있습니다.</p>
+                    </div>
+                    <div className="flex shrink-0 gap-2">
+                      <Link to="/dashboard" className="inline-flex h-8 items-center rounded-md border border-input bg-background px-3 text-xs font-medium text-foreground hover:bg-muted">
+                        워홀정보
+                      </Link>
+                      <Link to="/blog" className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:opacity-90">
+                        블로그
+                      </Link>
                     </div>
                   </div>
                 </div>
