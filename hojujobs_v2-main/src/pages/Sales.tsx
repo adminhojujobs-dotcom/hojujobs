@@ -5,7 +5,6 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
-import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 interface Deal {
@@ -23,6 +22,28 @@ interface Deal {
   dealUrl: string;
 }
 
+const CURRENT_DEALS: Deal[] = [
+  {
+    id: "ozbargain-959504",
+    title: "삼성 55인치 U8500F 크리스탈 UHD 4K 스마트 TV (2025)",
+    price: "$552",
+    originalPrice: "$691",
+    delivery: "무료 클릭앤콜렉트 / 매장 수령",
+    productType: "전자제품",
+    retailer: "JB Hi-Fi",
+    retailerDomain: "jbhifi.com.au",
+    sourceUrl: "https://www.ozbargain.com.au/node/959504",
+    description: [
+      "55인치 TV로 괜찮아 보이는 딜입니다.",
+      "화면: 강력한 4K 업스케일링을 지원하는 55인치 4K UHD LED 디스플레이",
+      "게임 시 자동 저지연 모드를 지원하는 100 스무스 모션 레이트",
+      "스마트 기능: 자동 콘텐츠 추천 기능이 있는 One UI Tizen OS",
+    ],
+    imageUrl: "https://files.ozbargain.com.au/n/04/959504.jpg?h=4d1259c8",
+    dealUrl: "https://www.ozbargain.com.au/goto/959504",
+  },
+];
+
 function faviconUrl(domain: string) {
   return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 }
@@ -31,9 +52,6 @@ export default function Sales() {
   useSEO({ title: "세일중 | Hoju Jobs", description: "관리자용 현재 세일 정보", noindex: true });
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [loadingDeals, setLoadingDeals] = useState(true);
-  const [dealsError, setDealsError] = useState<string | null>(null);
   const [selectedProductType, setSelectedProductType] = useState("all");
 
   useEffect(() => {
@@ -42,56 +60,17 @@ export default function Sales() {
     }
   }, [user, isAdmin, loading, navigate]);
 
-  useEffect(() => {
-    if (!user || !isAdmin) return;
-
-    const fetchDeals = async () => {
-      setLoadingDeals(true);
-      setDealsError(null);
-      const { data, error } = await supabase
-        .from("sales_deals")
-        .select("id, title_ko, price, original_price, delivery_ko, product_type_ko, retailer, retailer_domain, source_url, description_ko, image_url, deal_url")
-        .eq("is_active", true)
-        .order("posted_at", { ascending: false });
-
-      if (error) {
-        setDeals([]);
-        setDealsError("딜 정보를 불러올 수 없습니다. sales_deals 테이블 마이그레이션을 확인해 주세요.");
-        setLoadingDeals(false);
-        return;
-      }
-
-      setDeals((data ?? []).map((deal) => ({
-        id: deal.id,
-        title: deal.title_ko,
-        price: deal.price,
-        originalPrice: deal.original_price ?? undefined,
-        delivery: deal.delivery_ko ?? undefined,
-        productType: deal.product_type_ko,
-        retailer: deal.retailer,
-        retailerDomain: deal.retailer_domain,
-        sourceUrl: deal.source_url,
-        description: deal.description_ko,
-        imageUrl: deal.image_url ?? undefined,
-        dealUrl: deal.deal_url,
-      })));
-      setLoadingDeals(false);
-    };
-
-    fetchDeals();
-  }, [user, isAdmin]);
-
-  const productTypes = useMemo(() => [...new Set(deals.map((deal) => deal.productType))].sort(), [deals]);
+  const productTypes = useMemo(() => [...new Set(CURRENT_DEALS.map((deal) => deal.productType))].sort(), []);
   const productTypeCounts = useMemo(() => {
-    return deals.reduce<Record<string, number>>((counts, deal) => {
+    return CURRENT_DEALS.reduce<Record<string, number>>((counts, deal) => {
       counts[deal.productType] = (counts[deal.productType] || 0) + 1;
       return counts;
     }, {});
-  }, [deals]);
+  }, []);
   const filteredDeals = useMemo(() => {
-    if (selectedProductType === "all") return deals;
-    return deals.filter((deal) => deal.productType === selectedProductType);
-  }, [deals, selectedProductType]);
+    if (selectedProductType === "all") return CURRENT_DEALS;
+    return CURRENT_DEALS.filter((deal) => deal.productType === selectedProductType);
+  }, [selectedProductType]);
 
   if (loading) {
     return (
@@ -140,7 +119,7 @@ export default function Sales() {
               <ul className="space-y-0.5">
                 <SalesFilterItem
                   label="전체 상품"
-                  count={deals.length}
+                  count={CURRENT_DEALS.length}
                   active={selectedProductType === "all"}
                   onClick={() => setSelectedProductType("all")}
                 />
@@ -158,15 +137,7 @@ export default function Sales() {
           </aside>
 
           <section className="space-y-3">
-            {loadingDeals ? (
-              <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
-                딜 정보를 불러오는 중...
-              </div>
-            ) : dealsError ? (
-              <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
-                {dealsError}
-              </div>
-            ) : deals.length === 0 ? (
+            {CURRENT_DEALS.length === 0 ? (
               <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
                 현재 등록된 딜이 없습니다.
               </div>
