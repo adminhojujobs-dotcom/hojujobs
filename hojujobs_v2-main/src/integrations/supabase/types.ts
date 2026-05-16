@@ -103,6 +103,7 @@ export type Database = {
           posted_at: string | null
           posted_by: string | null
           price: string
+          promo_code: string | null
           product_type_ko: string
           retailer: string
           retailer_domain: string
@@ -126,6 +127,7 @@ export type Database = {
           posted_at?: string | null
           posted_by?: string | null
           price: string
+          promo_code?: string | null
           product_type_ko?: string
           retailer: string
           retailer_domain: string
@@ -149,6 +151,7 @@ export type Database = {
           posted_at?: string | null
           posted_by?: string | null
           price?: string
+          promo_code?: string | null
           product_type_ko?: string
           retailer?: string
           retailer_domain?: string

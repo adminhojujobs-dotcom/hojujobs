@@ -1,0 +1,66 @@
+ALTER TABLE public.sales_deals
+ADD COLUMN IF NOT EXISTS promo_code text;
+
+INSERT INTO public.sales_deals (
+  source_node_id,
+  title_ko,
+  price,
+  original_price,
+  delivery_ko,
+  product_type_ko,
+  retailer,
+  retailer_domain,
+  source_url,
+  deal_url,
+  retailer_url,
+  posted_by,
+  posted_at,
+  score,
+  comments_count,
+  description_ko,
+  image_url,
+  promo_code
+) VALUES (
+  959326,
+  '삼성 갤럭시 S25 Edge 5G 듀얼심 256GB/12GB 6.7인치',
+  '$899',
+  NULL,
+  '무료 배송',
+  '모바일',
+  'Mobileciti eBay',
+  'ebay.com.au',
+  'https://www.ozbargain.com.au/node/959326',
+  'https://www.ozbargain.com.au/goto/959326',
+  'https://www.ebay.com.au/itm/377060693342',
+  'hamza23',
+  '2026-05-15T10:10:51+10:00',
+  61,
+  37,
+  ARRAY[
+    '지난달 딜보다 $29 저렴한 갤럭시 S25 Edge 5G 딜입니다.',
+    '스냅드래곤 8 Elite, 6.7인치 QHD+ Dynamic AMOLED 2X 120Hz 화면, 200MP 카메라를 갖춘 모델입니다.',
+    '7회 OS 업데이트와 7년 보안 업데이트를 지원하며, 두께 5.8mm와 163g의 얇고 가벼운 디자인입니다.',
+    'eBay Plus가 필요합니다. 체험이나 프로모션 대상이 아니면 1개월 $4.99로 가입할 수 있습니다.'
+  ],
+  'https://files.ozbargain.com.au/n/26/959326.jpg?h=24e07803',
+  'S25EDGE'
+)
+ON CONFLICT (source_node_id) DO UPDATE SET
+  title_ko = excluded.title_ko,
+  price = excluded.price,
+  original_price = excluded.original_price,
+  delivery_ko = excluded.delivery_ko,
+  product_type_ko = excluded.product_type_ko,
+  retailer = excluded.retailer,
+  retailer_domain = excluded.retailer_domain,
+  source_url = excluded.source_url,
+  deal_url = excluded.deal_url,
+  retailer_url = excluded.retailer_url,
+  posted_by = excluded.posted_by,
+  posted_at = excluded.posted_at,
+  score = excluded.score,
+  comments_count = excluded.comments_count,
+  description_ko = excluded.description_ko,
+  image_url = excluded.image_url,
+  promo_code = excluded.promo_code,
+  updated_at = now();

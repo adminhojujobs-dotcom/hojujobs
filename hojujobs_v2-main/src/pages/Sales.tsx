@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ExternalLink, RotateCcw, ShoppingBag, Tags, Truck } from "lucide-react";
+import { ExternalLink, RotateCcw, ShoppingBag, Tags, Ticket, Truck } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,7 +21,11 @@ interface Deal {
   description: string[];
   imageUrl?: string;
   dealUrl: string;
+  promoCode?: string;
 }
+
+const baseDealColumns = "id, title_ko, price, original_price, delivery_ko, product_type_ko, retailer, retailer_domain, source_url, description_ko, image_url, deal_url";
+const dealColumnsWithPromoCode = `${baseDealColumns}, promo_code`;
 
 function faviconUrl(domain: string) {
   return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
@@ -66,11 +70,23 @@ export default function Sales() {
     const fetchDeals = async () => {
       setLoadingDeals(true);
       setDealsError(null);
-      const { data, error } = await supabase
+
+      let { data, error } = await supabase
         .from("sales_deals")
-        .select("id, title_ko, price, original_price, delivery_ko, product_type_ko, retailer, retailer_domain, source_url, description_ko, image_url, deal_url")
+        .select(dealColumnsWithPromoCode)
         .eq("is_active", true)
         .order("posted_at", { ascending: false });
+
+      if (error && error.message.toLowerCase().includes("promo_code")) {
+        const fallback = await supabase
+          .from("sales_deals")
+          .select(baseDealColumns)
+          .eq("is_active", true)
+          .order("posted_at", { ascending: false });
+
+        data = fallback.data?.map((deal) => ({ ...deal, promo_code: null })) ?? null;
+        error = fallback.error;
+      }
 
       if (error) {
         setDeals([]);
@@ -92,6 +108,7 @@ export default function Sales() {
         description: deal.description_ko,
         imageUrl: deal.image_url ?? undefined,
         dealUrl: deal.deal_url,
+        promoCode: deal.promo_code ?? undefined,
       })));
       setLoadingDeals(false);
     };
@@ -184,7 +201,7 @@ export default function Sales() {
               const discount = discountPercent(deal.price, deal.originalPrice);
 
               return (
-              <article key={deal.id} className="overflow-hidden rounded-md border bg-card">
+                <article key={deal.id} className="overflow-hidden rounded-md border bg-card">
                 <div className="grid gap-3 p-3 sm:grid-cols-[minmax(0,1fr)_150px]">
                   <div className="min-w-0">
                     <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
@@ -225,6 +242,12 @@ export default function Sales() {
                           {deal.delivery}
                         </span>
                       )}
+                      {deal.promoCode && (
+                        <span className="inline-flex items-center gap-1 rounded-md border border-dashed border-primary/40 bg-primary/5 px-2 py-1 text-xs font-bold text-primary">
+                          <Ticket className="h-3 w-3" />
+                          코드 {deal.promoCode}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -244,7 +267,7 @@ export default function Sales() {
                     </Button>
                   </div>
                 </div>
-              </article>
+                </article>
               );
             })}
           </section>
