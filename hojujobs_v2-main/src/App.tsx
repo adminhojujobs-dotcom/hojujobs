@@ -20,6 +20,7 @@ import Faq from "./pages/Faq";
 import Terms from "./pages/Terms";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import Sales from "./pages/Sales";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/news" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/sales" element={<Sales />} />
               <Route path="/about" element={<About />} />
               <Route path="/faq" element={<Faq />} />
               <Route path="/blog" element={<Blog />} />

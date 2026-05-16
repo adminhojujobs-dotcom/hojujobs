@@ -17,12 +17,18 @@ const INFO_TABS = [
   { label: "블로그", path: "/blog" },
 ];
 
+const ADMIN_INFO_TABS = [
+  { label: "세일중", path: "/sales" },
+];
+
 export function Header() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const isInfoActive = location.pathname === "/blog" || location.pathname.startsWith("/blog/") || location.pathname === "/news" || location.pathname === "/dashboard";
-  const infoLabel = (location.pathname === "/blog" || location.pathname.startsWith("/blog/")) ? "블로그" : "워홀정보";
+  const isSalesActive = location.pathname === "/sales";
+  const isInfoActive = location.pathname === "/blog" || location.pathname.startsWith("/blog/") || location.pathname === "/news" || location.pathname === "/dashboard" || isSalesActive;
+  const infoLabel = isSalesActive ? "세일중" : (location.pathname === "/blog" || location.pathname.startsWith("/blog/")) ? "블로그" : "워홀정보";
+  const visibleInfoTabs = isAdmin ? [...ADMIN_INFO_TABS, ...INFO_TABS] : INFO_TABS;
 
   return (
     <header className="bg-white border-b border-border">
@@ -125,7 +131,7 @@ export function Header() {
             ))}
           </nav>
           <nav className="hidden flex-none items-center gap-0 sm:flex" aria-label="정보">
-            {INFO_TABS.map(({ label, path }) => (
+            {visibleInfoTabs.map(({ label, path }) => (
               <NavLink
                 key={path}
                 to={path}
@@ -155,6 +161,7 @@ export function Header() {
               <ChevronDown className="h-3 w-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {isAdmin && <DropdownMenuItem onClick={() => navigate("/sales")}>세일중</DropdownMenuItem>}
               <DropdownMenuItem onClick={() => navigate("/news")}>워홀정보</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/blog")}>블로그</DropdownMenuItem>
             </DropdownMenuContent>

@@ -6,7 +6,7 @@
 export interface RegionGroup {
   region: string;
   suburbs: string[];
-  state: "NSW" | "VIC" | "QLD" | "SA" | "ACT";
+  state: "NSW" | "VIC" | "QLD" | "SA" | "ACT" | "TAS";
 }
 
 export const REGION_GROUPS: RegionGroup[] = [
@@ -61,7 +61,7 @@ export const REGION_GROUPS: RegionGroup[] = [
     "코프스 하버", "웬트워스", "윈덤", "샌디 비치", "쿠퍼스 하버",
     "뉴카슬", "카툼바", "헌터 밸리", "콥스 하버", "울골", "봄발라",
     "캡스 하버", "그래프턴", "싱글턴", "부카",
-    "엔스워", "웨어하우스", "래빙턴", "윈저", "오렌지",
+    "엔스워", "웨어하우스", "래빙턴", "윈저", "오렌지", "덥보",
   ]},
 
   // VIC - Melbourne
@@ -89,6 +89,9 @@ export const REGION_GROUPS: RegionGroup[] = [
   // QLD - Brisbane
   { state: "QLD", region: "골드코스트", suburbs: ["골드코스트"] },
   { state: "QLD", region: "기타 퀸즐랜드", suburbs: ["타운스빌", "케언즈", "선샤인 코스트"] },
+
+  // TAS - Tasmania
+  { state: "TAS", region: "태즈메이니아", suburbs: ["론서스턴"] },
 
 ];
 
@@ -326,6 +329,7 @@ export const SUBURB_EN: Record<string, string> = {
   "웬트워스": "Wentworth Falls NSW",
   "윈덤": "Wyndham NSW",
   "오렌지": "Orange NSW",
+  "덥보": "Dubbo NSW",
   // VIC - Melbourne
   "멜버른": "Melbourne VIC",
   "멜버른 CBD": "Melbourne CBD VIC",
@@ -412,6 +416,8 @@ export const SUBURB_EN: Record<string, string> = {
   "보몬트 힐스": "Beaumont Hills NSW",
   // ACT
   "캔버라": "Canberra ACT",
+  // TAS
+  "론서스턴": "Launceston TAS",
   // Additional suburbs
   "토트넘": "Tottenham VIC",
   "무어뱅크": "Moorebank NSW",
