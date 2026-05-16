@@ -420,4 +420,7 @@ export const SUBURB_EN: Record<string, string> = {
   "애스펜데일": "Aspendale VIC",
   "테일러스 레이크": "Taylors Lakes VIC",
   "벨라 비스타": "Bella Vista NSW",
+  "완티나": "Wantirna VIC",
+  "오피서": "Officer VIC",
+  "캔터베리": "Canterbury VIC",
 };
