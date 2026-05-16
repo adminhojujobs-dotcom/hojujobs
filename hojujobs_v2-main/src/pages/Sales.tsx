@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ExternalLink, Shield, ShoppingBag, Truck } from "lucide-react";
+import { ExternalLink, ShoppingBag, Truck } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,10 +26,10 @@ interface Deal {
 const CURRENT_DEALS: Deal[] = [
   {
     id: "samsung-55-u8500f-jb-hi-fi",
-    title: 'Samsung 55" U8500F Crystal UHD 4K Smart TV (2025)',
+    title: "삼성 55인치 U8500F 크리스탈 UHD 4K 스마트 TV (2025)",
     price: "$552",
     originalPrice: "$691",
-    delivery: "$0 C&C / In-Store",
+    delivery: "무료 클릭앤콜렉트 / 매장 수령",
     retailer: "JB Hi-Fi",
     retailerDomain: "jbhifi.com.au",
     postedBy: "Gavy1370",
@@ -37,10 +37,10 @@ const CURRENT_DEALS: Deal[] = [
     score: 13,
     comments: 0,
     description: [
-      "Seems to be a decent deal on 55 inch TV.",
-      'Screen: 55" 4K UHD LED display with powerful 4K upscaling',
-      "100 Smooth motion rate with Auto Low Latency Mode while gaming",
-      "Smart stuff: One UI Tizen OS with automated content curation.",
+      "55인치 TV로 괜찮아 보이는 딜입니다.",
+      "화면: 강력한 4K 업스케일링을 지원하는 55인치 4K UHD LED 디스플레이",
+      "게임 시 자동 저지연 모드를 지원하는 100 스무스 모션 레이트",
+      "스마트 기능: 자동 콘텐츠 추천 기능이 있는 One UI Tizen OS",
     ],
     imageUrl: "",
     dealUrl: "https://www.jbhifi.com.au/",
@@ -85,10 +85,6 @@ export default function Sales() {
               </div>
               <p className="mt-1 text-sm text-muted-foreground">현재 확인 중인 딜을 관리자만 볼 수 있습니다.</p>
             </div>
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/20 bg-primary/5 px-2.5 py-1 text-xs font-semibold text-primary">
-              <Shield className="h-3.5 w-3.5" />
-              Admin only
-            </span>
           </div>
         </section>
 
@@ -107,17 +103,17 @@ export default function Sales() {
                   <h2 className="text-xl font-bold leading-tight text-foreground sm:text-2xl">
                     {deal.title} <span className="text-primary">{deal.price}</span>
                     {deal.originalPrice && (
-                      <span className="font-semibold text-muted-foreground"> Was {deal.originalPrice}</span>
+                      <span className="font-semibold text-muted-foreground"> 정가 {deal.originalPrice}</span>
                     )}
                     {deal.delivery && (
-                      <span className="font-semibold text-foreground"> + Delivery ({deal.delivery})</span>
+                      <span className="font-semibold text-foreground"> + 배송 ({deal.delivery})</span>
                     )}
-                    <span className="font-semibold text-foreground"> @ {deal.retailer}</span>
+                    <span className="font-semibold text-foreground"> 판매처 {deal.retailer}</span>
                   </h2>
 
                   <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
                     <span className="font-semibold text-blue-700">{deal.postedBy}</span>
-                    <span>on {deal.postedAt}</span>
+                    <span>등록 {deal.postedAt}</span>
                     <img src={faviconUrl(deal.retailerDomain)} alt="" className="h-4 w-4 rounded-sm" />
                     <span className="font-semibold text-blue-700">{deal.retailerDomain}</span>
                   </div>
@@ -139,7 +135,7 @@ export default function Sales() {
                   </div>
                   <Button asChild className="gap-1.5">
                     <a href={deal.dealUrl} target="_blank" rel="noopener noreferrer">
-                      Go to Deal
+                      딜 보러가기
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                   </Button>
