@@ -17,7 +17,10 @@ if (import.meta.env.PROD && typeof window !== "undefined" && window.location.hos
   next.protocol = "https:";
   window.location.replace(next.href);
 } else {
-  inject();
+  inject({
+    framework: "react",
+    mode: import.meta.env.PROD ? "production" : "development",
+  });
 
   createRoot(document.getElementById("root")!).render(<App />);
 }
