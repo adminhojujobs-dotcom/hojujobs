@@ -10,8 +10,10 @@ import "./index.css";
  */
 const VERCEL_APP_HOST = "hojujobs.vercel.app";
 const CANONICAL_HOST = "hojujobs.com";
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+const currentHost = typeof window !== "undefined" ? window.location.hostname : "";
 
-if (import.meta.env.PROD && typeof window !== "undefined" && window.location.hostname === VERCEL_APP_HOST) {
+if (currentHost === VERCEL_APP_HOST) {
   const next = new URL(window.location.href);
   next.hostname = CANONICAL_HOST;
   next.protocol = "https:";
@@ -19,7 +21,7 @@ if (import.meta.env.PROD && typeof window !== "undefined" && window.location.hos
 } else {
   inject({
     framework: "react",
-    mode: import.meta.env.PROD ? "production" : "development",
+    mode: LOCAL_HOSTS.has(currentHost) ? "development" : "production",
   });
 
   createRoot(document.getElementById("root")!).render(<App />);
