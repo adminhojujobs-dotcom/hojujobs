@@ -89,6 +89,36 @@ export type Database = {
         }
         Relationships: []
       }
+      ozbargain_deals: {
+        Row: {
+          category: string
+          description: string | null
+          external_url: string | null
+          promo_codes: Json
+          rank: number
+          title: string
+          uploaded_at: string
+        }
+        Insert: {
+          category: string
+          description?: string | null
+          external_url?: string | null
+          promo_codes?: Json
+          rank: number
+          title: string
+          uploaded_at: string
+        }
+        Update: {
+          category?: string
+          description?: string | null
+          external_url?: string | null
+          promo_codes?: Json
+          rank?: number
+          title?: string
+          uploaded_at?: string
+        }
+        Relationships: []
+      }
       sales_deals: {
         Row: {
           comments_count: number

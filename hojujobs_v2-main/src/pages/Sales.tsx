@@ -1,92 +1,63 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ExternalLink, RotateCcw, ShoppingBag, Tags, Ticket, Truck } from "lucide-react";
+import { ExternalLink, RotateCcw, Tags, Ticket } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
 
 interface Deal {
-  id: string;
+  rank: number;
   title: string;
-  price: string;
-  originalPrice?: string;
-  delivery?: string;
-  productType: string;
-  retailer: string;
-  retailerDomain: string;
-  sourceUrl: string;
-  description: string[];
-  imageUrl?: string;
-  dealUrl: string;
-  promoCode?: string;
+  category: string;
+  description?: string;
+  externalUrl?: string;
+  uploadedAt: string;
+  promoCodes: string[];
 }
 
-const baseDealColumns = "id, title_ko, price, original_price, delivery_ko, product_type_ko, retailer, retailer_domain, source_url, description_ko, image_url, deal_url";
-const dealColumnsWithPromoCode = `${baseDealColumns}, promo_code`;
-
-function faviconUrl(domain: string) {
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+function formatUploadedAt(value: string) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Australia/Sydney",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
-function priceNumber(value?: string) {
-  if (!value) return null;
-  const parsed = Number(value.replace(/[^\d.]/g, ""));
-  return Number.isFinite(parsed) ? parsed : null;
-}
+function parsePromoCodes(value: Json): string[] {
+  if (!Array.isArray(value)) return [];
 
-function discountPercent(price: string, originalPrice?: string) {
-  const current = priceNumber(price);
-  const original = priceNumber(originalPrice);
-  if (!current || !original || current >= original) return null;
-  return Math.round(((original - current) / original) * 100);
-}
-
-function summariseDeal(deal: Deal) {
-  const detail = deal.description.find((line) => line.startsWith("화면:")) ?? deal.description[0] ?? "";
-  return detail.replace(/^화면:\s*/, "");
+  return value
+    .map((item) => {
+      if (typeof item === "string") return item;
+      if (item && typeof item === "object" && !Array.isArray(item)) {
+        const code = item.code ?? item.promo_code ?? item.promoCode;
+        return typeof code === "string" ? code : null;
+      }
+      return null;
+    })
+    .filter((code): code is string => Boolean(code?.trim()));
 }
 
 export default function Sales() {
-  useSEO({ title: "세일중 | Hoju Jobs", description: "관리자용 현재 세일 정보", noindex: true });
-  const { user, isAdmin, loading } = useAuth();
-  const navigate = useNavigate();
+  useSEO({ title: "세일중 | Hoju Jobs", description: "호주 생활에 유용한 최신 세일과 할인 코드", noindex: true });
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loadingDeals, setLoadingDeals] = useState(true);
   const [dealsError, setDealsError] = useState<string | null>(null);
   const [selectedProductType, setSelectedProductType] = useState("all");
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
-      navigate("/");
-    }
-  }, [user, isAdmin, loading, navigate]);
-
-  useEffect(() => {
-    if (!user || !isAdmin) return;
-
     const fetchDeals = async () => {
       setLoadingDeals(true);
       setDealsError(null);
 
-      let { data, error } = await supabase
-        .from("sales_deals")
-        .select(dealColumnsWithPromoCode)
-        .eq("is_active", true)
-        .order("posted_at", { ascending: false });
-
-      if (error && error.message.toLowerCase().includes("promo_code")) {
-        const fallback = await supabase
-          .from("sales_deals")
-          .select(baseDealColumns)
-          .eq("is_active", true)
-          .order("posted_at", { ascending: false });
-
-        data = fallback.data?.map((deal) => ({ ...deal, promo_code: null })) ?? null;
-        error = fallback.error;
-      }
+      const { data, error } = await supabase
+        .from("ozbargain_deals")
+        .select("rank, title, category, description, external_url, uploaded_at, promo_codes")
+        .order("rank", { ascending: true });
 
       if (error) {
         setDeals([]);
@@ -96,47 +67,31 @@ export default function Sales() {
       }
 
       setDeals((data ?? []).map((deal) => ({
-        id: deal.id,
-        title: deal.title_ko,
-        price: deal.price,
-        originalPrice: deal.original_price ?? undefined,
-        delivery: deal.delivery_ko ?? undefined,
-        productType: deal.product_type_ko,
-        retailer: deal.retailer,
-        retailerDomain: deal.retailer_domain,
-        sourceUrl: deal.source_url,
-        description: deal.description_ko,
-        imageUrl: deal.image_url ?? undefined,
-        dealUrl: deal.deal_url,
-        promoCode: deal.promo_code ?? undefined,
+        rank: deal.rank,
+        title: deal.title,
+        category: deal.category,
+        description: deal.description ?? undefined,
+        externalUrl: deal.external_url ?? undefined,
+        uploadedAt: deal.uploaded_at,
+        promoCodes: parsePromoCodes(deal.promo_codes),
       })));
       setLoadingDeals(false);
     };
 
     fetchDeals();
-  }, [user, isAdmin]);
+  }, []);
 
-  const productTypes = useMemo(() => [...new Set(deals.map((deal) => deal.productType))].sort(), [deals]);
+  const productTypes = useMemo(() => [...new Set(deals.map((deal) => deal.category))].sort(), [deals]);
   const productTypeCounts = useMemo(() => {
     return deals.reduce<Record<string, number>>((counts, deal) => {
-      counts[deal.productType] = (counts[deal.productType] || 0) + 1;
+      counts[deal.category] = (counts[deal.category] || 0) + 1;
       return counts;
     }, {});
   }, [deals]);
   const filteredDeals = useMemo(() => {
     if (selectedProductType === "all") return deals;
-    return deals.filter((deal) => deal.productType === selectedProductType);
+    return deals.filter((deal) => deal.category === selectedProductType);
   }, [deals, selectedProductType]);
-
-  if (loading) {
-    return (
-      <div className="flex w-full min-h-0 flex-1 items-center justify-center bg-background text-muted-foreground">
-        로딩 중...
-      </div>
-    );
-  }
-
-  if (!isAdmin) return null;
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
@@ -197,79 +152,46 @@ export default function Sales() {
               <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
                 선택한 상품 종류에 해당하는 딜이 없습니다.
               </div>
-            ) : filteredDeals.map((deal) => {
-              const discount = discountPercent(deal.price, deal.originalPrice);
-
-              return (
-                <article key={deal.id} className="overflow-hidden rounded-md border bg-card">
-                <div className="grid gap-3 p-3 sm:grid-cols-[minmax(0,1fr)_150px]">
-                  <div className="min-w-0">
+            ) : filteredDeals.map((deal) => (
+              <article key={deal.rank} className="overflow-hidden rounded-md border bg-card">
+                <div className="flex gap-3 p-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-sm font-bold text-primary">
+                    #{deal.rank}
+                  </div>
+                  <div className="min-w-0 flex-1">
                     <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
-                      <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary">{deal.productType}</span>
-                      <img src={faviconUrl(deal.retailerDomain)} alt="" className="h-3.5 w-3.5 rounded-sm" />
-                      <span className="text-xs font-semibold text-blue-700">{deal.retailerDomain}</span>
-                      <span className="text-xs text-muted-foreground">판매처 {deal.retailer}</span>
-                      <a href={deal.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-blue-700 hover:underline">
-                        원문 보기
-                      </a>
+                      <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary">{deal.category}</span>
+                      <span className="text-xs text-muted-foreground">{formatUploadedAt(deal.uploadedAt)} 업로드</span>
                     </div>
 
                     <h2 className="text-base font-bold leading-snug text-foreground sm:text-lg">{deal.title}</h2>
 
-                    <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                      {summariseDeal(deal)}
-                    </p>
+                    {deal.description && (
+                      <p className="mt-1.5 whitespace-pre-line text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                        {deal.description}
+                      </p>
+                    )}
 
-                    <div className="mt-3 flex flex-wrap items-end gap-x-4 gap-y-2">
-                      <div>
-                        <p className="text-[11px] font-semibold text-muted-foreground">할인가</p>
-                        <p className="text-xl font-bold text-primary">{deal.price}</p>
-                      </div>
-                      {deal.originalPrice && (
-                        <div>
-                          <p className="text-[11px] font-semibold text-muted-foreground">정가</p>
-                          <p className="text-sm font-semibold text-muted-foreground line-through">{deal.originalPrice}</p>
-                        </div>
-                      )}
-                      {discount !== null && (
-                        <span className="rounded-md bg-red-50 px-2 py-1 text-xs font-bold text-red-700">
-                          {discount}% 할인
-                        </span>
-                      )}
-                      {deal.delivery && (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
-                          <Truck className="h-3 w-3" />
-                          {deal.delivery}
-                        </span>
-                      )}
-                      {deal.promoCode && (
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      {deal.promoCodes.map((promoCode) => (
                         <span className="inline-flex items-center gap-1 rounded-md border border-dashed border-primary/40 bg-primary/5 px-2 py-1 text-xs font-bold text-primary">
                           <Ticket className="h-3 w-3" />
-                          코드 {deal.promoCode}
+                          코드 {promoCode}
                         </span>
+                      ))}
+                      {deal.externalUrl && (
+                        <Button asChild size="sm" className="h-8 gap-1.5 text-xs">
+                          <a href={deal.externalUrl} target="_blank" rel="noopener noreferrer">
+                            딜 보러가기
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </Button>
                       )}
                     </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-md border bg-white">
-                      {deal.imageUrl ? (
-                        <img src={deal.imageUrl} alt={deal.title} className="h-full w-full object-contain" />
-                      ) : (
-                        <ShoppingBag className="h-10 w-10 text-muted-foreground/50" />
-                      )}
-                    </div>
-                    <Button asChild size="sm" className="h-8 gap-1.5 text-xs">
-                      <a href={deal.dealUrl} target="_blank" rel="noopener noreferrer">
-                        딜 보러가기
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </Button>
                   </div>
                 </div>
-                </article>
-              );
-            })}
+              </article>
+            ))}
           </section>
         </div>
       </main>
