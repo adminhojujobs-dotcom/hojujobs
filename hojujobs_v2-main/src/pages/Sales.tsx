@@ -158,7 +158,7 @@ export default function Sales() {
               <article key={deal.rank} className="overflow-hidden rounded-md border bg-card transition-shadow hover:shadow-sm">
                 <Link to={`/sales/${deal.rank}`} className="flex gap-0">
                   {deal.imageUrl && (
-                    <div className="shrink-0 w-28 sm:w-36 bg-muted">
+                    <div className="shrink-0 w-24 sm:w-32 bg-muted">
                       <img
                         src={deal.imageUrl}
                         alt={deal.title}
