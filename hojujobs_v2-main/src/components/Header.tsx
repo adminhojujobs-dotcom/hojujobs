@@ -13,12 +13,9 @@ const CITY_TABS = [
 ];
 
 const INFO_TABS = [
+  { label: "온세일", path: "/sales" },
   { label: "워홀정보", path: "/news" },
   { label: "블로그", path: "/blog" },
-];
-
-const ADMIN_INFO_TABS = [
-  { label: "온세일", path: "/sales" },
 ];
 
 export function Header() {
@@ -34,7 +31,6 @@ export function Header() {
       : (location.pathname === "/news" || location.pathname === "/dashboard")
         ? "워홀정보"
         : "온세일";
-  const visibleInfoTabs = isAdmin ? [...ADMIN_INFO_TABS, ...INFO_TABS] : INFO_TABS;
 
   return (
     <header className="bg-white border-b border-border">
@@ -137,7 +133,7 @@ export function Header() {
             ))}
           </nav>
           <nav className="hidden flex-none items-center gap-0 sm:flex" aria-label="정보">
-            {visibleInfoTabs.map(({ label, path }) => (
+            {INFO_TABS.map(({ label, path }) => (
               <NavLink
                 key={path}
                 to={path}
@@ -167,7 +163,7 @@ export function Header() {
               <ChevronDown className="h-3 w-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {isAdmin && <DropdownMenuItem onClick={() => navigate("/sales")}>온세일</DropdownMenuItem>}
+              <DropdownMenuItem onClick={() => navigate("/sales")}>온세일</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/news")}>워홀정보</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/blog")}>블로그</DropdownMenuItem>
             </DropdownMenuContent>
