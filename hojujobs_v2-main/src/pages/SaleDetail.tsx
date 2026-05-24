@@ -23,10 +23,8 @@ function formatUploadedAt(value: string) {
   return new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Australia/Sydney",
     year: "numeric",
-    month: "short",
+    month: "long",
     day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   }).format(new Date(value));
 }
 
@@ -111,11 +109,11 @@ export default function SaleDetail() {
         ) : deal ? (
           <article className="rounded-lg border bg-card overflow-hidden">
             {deal.imageUrl && (
-              <div className="w-full bg-muted max-h-72 overflow-hidden flex items-center justify-center">
+              <div className="flex max-h-72 w-full items-center justify-center overflow-hidden bg-white p-4">
                 <img
                   src={deal.imageUrl}
                   alt={deal.title}
-                  className="w-full object-contain max-h-72"
+                  className="max-h-64 w-full object-contain"
                   onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
                 />
               </div>
@@ -127,7 +125,7 @@ export default function SaleDetail() {
                   {deal.category}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {formatUploadedAt(deal.uploadedAt)} 업로드
+                  {formatUploadedAt(deal.uploadedAt)}
                 </span>
               </div>
 

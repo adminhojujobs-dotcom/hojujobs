@@ -78,7 +78,7 @@ export default function Sales() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loadingDeals, setLoadingDeals] = useState(true);
   const [dealsError, setDealsError] = useState<string | null>(null);
-  const [selectedProductType, setSelectedProductType] = useState("all");
+  const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchDeals = async () => {
@@ -121,9 +121,16 @@ export default function Sales() {
     }, {});
   }, [deals]);
   const filteredDeals = useMemo(() => {
-    if (selectedProductType === "all") return deals;
-    return deals.filter((deal) => deal.category === selectedProductType);
-  }, [deals, selectedProductType]);
+    if (selectedProductTypes.length === 0) return deals;
+    return deals.filter((deal) => selectedProductTypes.includes(deal.category));
+  }, [deals, selectedProductTypes]);
+  const toggleProductType = (productType: string) => {
+    setSelectedProductTypes((current) =>
+      current.includes(productType)
+        ? current.filter((item) => item !== productType)
+        : [...current, productType]
+    );
+  };
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
@@ -132,10 +139,10 @@ export default function Sales() {
         <div className="grid gap-3 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-5">
           <aside className="space-y-2 lg:space-y-4">
             <button
-              onClick={() => setSelectedProductType("all")}
+              onClick={() => setSelectedProductTypes([])}
               className={cn(
                 "hidden h-5 items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground lg:flex",
-                selectedProductType === "all" && "invisible pointer-events-none"
+                selectedProductTypes.length === 0 && "invisible pointer-events-none"
               )}
             >
               <RotateCcw className="h-3.5 w-3.5" />
@@ -147,20 +154,20 @@ export default function Sales() {
                 <Tags className="h-4 w-4 text-accent" />
                 상품 종류
               </h3>
-              <div className="flex flex-wrap gap-2 lg:hidden">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:hidden">
                 <SalesFilterItem
                   label="전체 상품"
                   count={deals.length}
-                  active={selectedProductType === "all"}
-                  onClick={() => setSelectedProductType("all")}
+                  active={selectedProductTypes.length === 0}
+                  onClick={() => setSelectedProductTypes([])}
                 />
                 {productTypes.map((productType) => (
                   <SalesFilterItem
                     key={productType}
                     label={productType}
                     count={productTypeCounts[productType] || 0}
-                    active={selectedProductType === productType}
-                    onClick={() => setSelectedProductType(productType)}
+                    active={selectedProductTypes.includes(productType)}
+                    onClick={() => toggleProductType(productType)}
                   />
                 ))}
               </div>
@@ -168,16 +175,16 @@ export default function Sales() {
                 <SalesFilterItem
                   label="전체 상품"
                   count={deals.length}
-                  active={selectedProductType === "all"}
-                  onClick={() => setSelectedProductType("all")}
+                  active={selectedProductTypes.length === 0}
+                  onClick={() => setSelectedProductTypes([])}
                 />
                 {productTypes.map((productType) => (
                   <SalesFilterItem
                     key={productType}
                     label={productType}
                     count={productTypeCounts[productType] || 0}
-                    active={selectedProductType === productType}
-                    onClick={() => setSelectedProductType(productType)}
+                    active={selectedProductTypes.includes(productType)}
+                    onClick={() => toggleProductType(productType)}
                   />
                 ))}
               </div>
@@ -205,7 +212,7 @@ export default function Sales() {
               <article key={deal.rank} className="overflow-hidden rounded-md border bg-card transition-shadow hover:shadow-sm">
                 <Link to={`/sales/${deal.rank}`} className="flex gap-0">
                   {deal.imageUrl && (
-                    <div className="flex shrink-0 w-24 items-center justify-center bg-muted p-2 sm:w-32">
+                    <div className="flex shrink-0 w-24 items-center justify-center bg-white p-2 sm:w-32">
                       <img
                         src={deal.imageUrl}
                         alt={deal.title}
@@ -259,7 +266,7 @@ function SalesFilterItem({ label, count, active, onClick }: {
     <button
       onClick={onClick}
       className={cn(
-        "inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-semibold transition-colors lg:h-9 lg:w-full lg:justify-between lg:text-sm",
+        "inline-flex h-8 w-full min-w-0 items-center justify-between gap-1.5 rounded-md border px-3 text-xs font-semibold transition-colors lg:h-9 lg:text-sm",
         active
           ? "border-primary/30 bg-primary/10 text-primary"
           : "border-border bg-white text-muted-foreground hover:border-primary/30 hover:bg-muted/50 hover:text-foreground"
