@@ -95,7 +95,7 @@ export default function SaleDetail() {
           className="mb-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          딜 목록으로
+          온세일 목록으로
         </Link>
 
         {loading ? (

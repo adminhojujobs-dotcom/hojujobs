@@ -74,7 +74,7 @@ function highlightPrices(value: string) {
 }
 
 export default function Sales() {
-  useSEO({ title: "세일중 | Hoju Jobs", description: "호주 생활에 유용한 최신 세일과 할인 코드", noindex: true });
+  useSEO({ title: "온세일 | Hoju Jobs", description: "호주 생활에 유용한 최신 온세일과 할인 코드", noindex: true });
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loadingDeals, setLoadingDeals] = useState(true);
   const [dealsError, setDealsError] = useState<string | null>(null);
@@ -192,6 +192,11 @@ export default function Sales() {
           </aside>
 
           <section className="space-y-2.5">
+            <div className="mb-3">
+              <h1 className="text-xl font-extrabold tracking-normal text-foreground sm:text-2xl">온세일</h1>
+              <p className="mt-1 text-sm text-muted-foreground">호주 최신 인기 딜을 한곳에서 확인하세요.</p>
+            </div>
+
             {loadingDeals ? (
               <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
                 딜 정보를 불러오는 중...

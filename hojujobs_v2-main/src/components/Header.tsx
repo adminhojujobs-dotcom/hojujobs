@@ -18,7 +18,7 @@ const INFO_TABS = [
 ];
 
 const ADMIN_INFO_TABS = [
-  { label: "세일중", path: "/sales" },
+  { label: "온세일", path: "/sales" },
 ];
 
 export function Header() {
@@ -27,7 +27,7 @@ export function Header() {
   const location = useLocation();
   const isSalesActive = location.pathname === "/sales";
   const isInfoActive = location.pathname === "/blog" || location.pathname.startsWith("/blog/") || location.pathname === "/news" || location.pathname === "/dashboard" || isSalesActive;
-  const infoLabel = isSalesActive ? "세일중" : (location.pathname === "/blog" || location.pathname.startsWith("/blog/")) ? "블로그" : "워홀정보";
+  const infoLabel = isSalesActive ? "온세일" : (location.pathname === "/blog" || location.pathname.startsWith("/blog/")) ? "블로그" : "워홀정보";
   const visibleInfoTabs = isAdmin ? [...ADMIN_INFO_TABS, ...INFO_TABS] : INFO_TABS;
 
   return (
@@ -161,7 +161,7 @@ export function Header() {
               <ChevronDown className="h-3 w-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {isAdmin && <DropdownMenuItem onClick={() => navigate("/sales")}>세일중</DropdownMenuItem>}
+              {isAdmin && <DropdownMenuItem onClick={() => navigate("/sales")}>온세일</DropdownMenuItem>}
               <DropdownMenuItem onClick={() => navigate("/news")}>워홀정보</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/blog")}>블로그</DropdownMenuItem>
             </DropdownMenuContent>
