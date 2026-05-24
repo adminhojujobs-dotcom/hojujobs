@@ -22,6 +22,7 @@ const BACKGROUND_FETCH_PAGE_SIZE = 1000;
 const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
 const LISTING_CACHE_VERSION = 2;
 const PROMO_CITY_FILTERS = new Set(["NSW", "VIC", "QLD"]);
+const FEATURED_SALE_PROMO_RANKS = [26, 66];
 
 type SortOption = "recent" | "views";
 
@@ -315,8 +316,8 @@ const Index = ({ cityFilter }: IndexProps) => {
       const { data, error } = await supabase
         .from("ozbargain_deals")
         .select("rank, title, category, image_url")
-        .order("rank", { ascending: true })
-        .limit(2);
+        .in("rank", FEATURED_SALE_PROMO_RANKS)
+        .order("rank", { ascending: true });
 
       if (cancelled) return;
 
