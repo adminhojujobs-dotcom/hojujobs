@@ -735,7 +735,7 @@ const Index = ({ cityFilter }: IndexProps) => {
                         <Link
                           key={deal.rank}
                           to={`/sales/${deal.rank}`}
-                          className="flex min-w-0 gap-2 overflow-hidden rounded-md border border-white/70 bg-white/90 p-2 transition-colors hover:bg-white"
+                          className="flex min-w-0 gap-2 overflow-hidden rounded-md border border-emerald-100/70 bg-emerald-50/45 p-2 transition-colors hover:bg-emerald-50/70"
                         >
                           {deal.imageUrl && (
                             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded bg-white p-1.5">
