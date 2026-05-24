@@ -240,8 +240,14 @@ export default function Sales() {
                 선택한 상품 종류에 해당하는 딜이 없습니다.
               </div>
             ) : filteredDeals.map((deal) => (
-              <article key={deal.rank} className="overflow-hidden rounded-md border bg-card transition-shadow hover:shadow-sm">
-                <Link to={`/sales/${deal.rank}`} className="flex gap-0">
+              <article key={deal.rank} className="w-full max-w-full overflow-hidden rounded-md border bg-card transition-shadow hover:shadow-sm">
+                <Link
+                  to={`/sales/${deal.rank}`}
+                  className={cn(
+                    "grid w-full min-w-0 gap-0",
+                    deal.imageUrl ? "grid-cols-[5rem_minmax(0,1fr)] sm:grid-cols-[7rem_minmax(0,1fr)]" : "grid-cols-1"
+                  )}
+                >
                   {deal.imageUrl && (
                     <div className="flex w-20 shrink-0 items-center justify-center bg-white p-1.5 sm:w-28 sm:p-2">
                       <img
@@ -253,15 +259,15 @@ export default function Sales() {
                     </div>
                   )}
                   <div className="min-w-0 flex-1 p-2.5 sm:p-3">
-                    <div className="mb-1 flex flex-wrap items-center gap-1.5">
-                      <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary">{deal.category}</span>
-                      <span className="text-xs text-muted-foreground">{formatUploadedAt(deal.uploadedAt)}</span>
+                    <div className="mb-1 flex min-w-0 items-center gap-1.5 overflow-hidden">
+                      <span className="max-w-[8.5rem] truncate rounded-md bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary sm:max-w-[12rem]">{deal.category}</span>
+                      <span className="shrink-0 truncate text-xs text-muted-foreground">{formatUploadedAt(deal.uploadedAt)}</span>
                     </div>
 
-                    <h2 className="text-sm font-bold leading-snug text-foreground sm:text-base line-clamp-2">{highlightPrices(deal.title)}</h2>
+                    <h2 className="line-clamp-2 max-w-full overflow-hidden break-words text-sm font-bold leading-snug text-foreground sm:text-base">{highlightPrices(deal.title)}</h2>
 
                     {deal.teaserDescription && (
-                      <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                      <p className="mt-1.5 line-clamp-2 max-w-full overflow-hidden break-words text-xs leading-relaxed text-muted-foreground">
                         {highlightPrices(cleanTeaserText(deal.teaserDescription))}
                       </p>
                     )}
