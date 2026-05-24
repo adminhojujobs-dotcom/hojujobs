@@ -308,11 +308,6 @@ const Index = ({ cityFilter }: IndexProps) => {
     let cancelled = false;
 
     async function fetchSalePromoDeals() {
-      if (!isAdmin) {
-        setSalePromoDeals([]);
-        return;
-      }
-
       const { data, error } = await supabase
         .from("ozbargain_deals")
         .select("rank, title, category, image_url")
@@ -339,7 +334,7 @@ const Index = ({ cityFilter }: IndexProps) => {
     return () => {
       cancelled = true;
     };
-  }, [isAdmin]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -723,7 +718,7 @@ const Index = ({ cityFilter }: IndexProps) => {
                     </div>
                   </div>
                 </div>
-                {isAdmin && salePromoDeals.length > 0 && (
+                {salePromoDeals.length > 0 && (
                   <div className="rounded-lg border border-emerald-200 bg-gradient-to-r from-emerald-50 to-sky-50 px-4 py-3 shadow-sm">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div className="min-w-0 flex-1">
