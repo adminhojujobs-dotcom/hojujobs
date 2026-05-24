@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { RotateCcw, Tags, Ticket } from "lucide-react";
+import { ChevronDown, RotateCcw, Tags, Ticket } from "lucide-react";
 import { Header } from "@/components/Header";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
@@ -124,6 +125,11 @@ export default function Sales() {
     if (selectedProductTypes.length === 0) return deals;
     return deals.filter((deal) => selectedProductTypes.includes(deal.category));
   }, [deals, selectedProductTypes]);
+  const productFilterLabel = selectedProductTypes.length === 0
+    ? "전체 상품"
+    : selectedProductTypes.length === 1
+      ? selectedProductTypes[0]
+      : `${selectedProductTypes.length}개 상품 선택`;
   const toggleProductType = (productType: string) => {
     setSelectedProductTypes((current) =>
       current.includes(productType)
@@ -154,22 +160,42 @@ export default function Sales() {
                 <Tags className="h-4 w-4 text-accent" />
                 상품 종류
               </h3>
-              <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 sm:grid-cols-3 lg:hidden">
-                <SalesFilterItem
-                  label="전체 상품"
-                  count={deals.length}
-                  active={selectedProductTypes.length === 0}
-                  onClick={() => setSelectedProductTypes([])}
-                />
-                {productTypes.map((productType) => (
-                  <SalesFilterItem
-                    key={productType}
-                    label={productType}
-                    count={productTypeCounts[productType] || 0}
-                    active={selectedProductTypes.includes(productType)}
-                    onClick={() => toggleProductType(productType)}
-                  />
-                ))}
+              <div className="lg:hidden">
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger className={cn(
+                    "flex h-10 w-full items-center justify-between rounded-md border px-3 text-sm outline-none transition-colors",
+                    selectedProductTypes.length > 0
+                      ? "border-primary/50 bg-primary/5 text-primary"
+                      : "border-input bg-muted/40 text-muted-foreground"
+                  )}>
+                    <span className="flex min-w-0 items-center gap-2">
+                      <Tags className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{productFilterLabel}</span>
+                    </span>
+                    <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-[calc(100vw-2rem)] max-w-sm">
+                    <DropdownMenuItem
+                      onSelect={() => setSelectedProductTypes([])}
+                      className={cn("justify-between", selectedProductTypes.length === 0 && "font-semibold text-primary")}
+                    >
+                      <span>전체 상품</span>
+                      <span className="text-xs tabular-nums text-muted-foreground/70">{deals.length}</span>
+                    </DropdownMenuItem>
+                    {productTypes.map((productType) => (
+                      <DropdownMenuCheckboxItem
+                        key={productType}
+                        checked={selectedProductTypes.includes(productType)}
+                        onSelect={(event) => event.preventDefault()}
+                        onCheckedChange={() => toggleProductType(productType)}
+                        className="justify-between"
+                      >
+                        <span className="truncate">{productType}</span>
+                        <span className="ml-3 text-xs tabular-nums text-muted-foreground/70">{productTypeCounts[productType] || 0}</span>
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <div className="hidden space-y-0.5 lg:block">
                 <SalesFilterItem
@@ -191,7 +217,7 @@ export default function Sales() {
             </div>
           </aside>
 
-          <section className="space-y-2.5">
+          <section className="mx-auto w-full max-w-3xl space-y-2.5 lg:max-w-none">
             <div className="mb-3">
               <h1 className="text-xl font-extrabold tracking-normal text-foreground sm:text-2xl">온세일</h1>
               <p className="mt-1 text-sm text-muted-foreground">호주 최신 인기 딜을 한곳에서 확인하세요.</p>
@@ -217,16 +243,16 @@ export default function Sales() {
               <article key={deal.rank} className="overflow-hidden rounded-md border bg-card transition-shadow hover:shadow-sm">
                 <Link to={`/sales/${deal.rank}`} className="flex gap-0">
                   {deal.imageUrl && (
-                    <div className="flex shrink-0 w-24 items-center justify-center bg-white p-2 sm:w-32">
+                    <div className="flex w-20 shrink-0 items-center justify-center bg-white p-1.5 sm:w-28 sm:p-2">
                       <img
                         src={deal.imageUrl}
                         alt={deal.title}
-                        className="max-h-24 w-full rounded object-contain sm:max-h-28"
+                        className="max-h-20 w-full rounded object-contain sm:max-h-24"
                         onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
                       />
                     </div>
                   )}
-                  <div className="min-w-0 flex-1 p-3">
+                  <div className="min-w-0 flex-1 p-2.5 sm:p-3">
                     <div className="mb-1 flex flex-wrap items-center gap-1.5">
                       <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary">{deal.category}</span>
                       <span className="text-xs text-muted-foreground">{formatUploadedAt(deal.uploadedAt)}</span>
