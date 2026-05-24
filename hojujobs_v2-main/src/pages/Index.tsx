@@ -21,6 +21,7 @@ const ITEMS_PER_PAGE = 50;
 const BACKGROUND_FETCH_PAGE_SIZE = 1000;
 const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
 const LISTING_CACHE_VERSION = 2;
+const PROMO_CITY_FILTERS = new Set(["NSW", "VIC", "QLD"]);
 
 type SortOption = "recent" | "views";
 
@@ -354,7 +355,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         .gte("uploaded_at", cutoff.toISOString())
         .lte("uploaded_at", new Date().toISOString());
 
-      if (cityLocations.length > 0) {
+      if (cityLocations.length > 0 && !PROMO_CITY_FILTERS.has(cityFilter ?? "")) {
         query = query.overlaps("location", cityLocations);
       }
 
@@ -595,8 +596,8 @@ const Index = ({ cityFilter }: IndexProps) => {
   const displayTotalPages = Math.ceil((displayTotalCount ?? filtered.length) / ITEMS_PER_PAGE);
   const currentPage = Math.min(page, displayTotalPages || 1);
   const paginatedJobs = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-  const showPromotedSection = currentPage === 1 && !hasActiveFilters && promotedJobs.length > 0;
-  const regularPaginatedJobs = showPromotedSection
+  const showPromoSection = currentPage === 1 && !hasActiveFilters && (!cityFilter || PROMO_CITY_FILTERS.has(cityFilter));
+  const regularPaginatedJobs = showPromoSection
     ? paginatedJobs.filter((job) => job.Promoted !== true)
     : paginatedJobs;
 
@@ -703,7 +704,7 @@ const Index = ({ cityFilter }: IndexProps) => {
             </div>
 
             {/* Promoted jobs - only on page 1 with no active filters */}
-            {showPromotedSection && (
+            {showPromoSection && (
               <div className="space-y-2 mb-2">
                 <div className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 px-4 py-3 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
@@ -785,7 +786,7 @@ const Index = ({ cityFilter }: IndexProps) => {
                 regularPaginatedJobs.map((job) => (
                   <JobCard key={job.id} job={job} viewCount={getCount(job.id)} showEditButton={isAdmin} onDelete={isAdmin ? handleDeleteJob : undefined} />
                 ))
-              ) : showPromotedSection ? (
+              ) : showPromoSection ? (
                 null
               ) : (
                 <div className="text-center py-16 text-muted-foreground">검색 결과가 없습니다.</div>
