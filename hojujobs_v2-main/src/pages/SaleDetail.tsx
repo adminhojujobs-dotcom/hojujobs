@@ -28,6 +28,15 @@ function formatUploadedAt(value: string) {
   }).format(new Date(value));
 }
 
+function cleanDescription(raw: string): string {
+  return raw
+    .split("\n")
+    .filter((line) => !/^제목\s*:/.test(line.trim()))
+    .map((line) => line.replace(/^내용\s*:\s*/u, ""))
+    .join("\n")
+    .trim();
+}
+
 function parsePromoCodes(value: Json): string[] {
   if (!Array.isArray(value)) return [];
   return value
@@ -74,7 +83,7 @@ export default function SaleDetail() {
         rank: data.rank,
         title: data.title,
         category: data.category,
-        description: data.description ?? undefined,
+        description: data.description ? cleanDescription(data.description) : undefined,
         imageUrl: data.image_url ?? undefined,
         externalUrl: data.external_url ?? undefined,
         uploadedAt: data.uploaded_at,
