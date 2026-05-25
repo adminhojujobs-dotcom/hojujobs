@@ -29,12 +29,39 @@ function formatUploadedAt(value: string) {
 }
 
 function cleanDescription(raw: string): string {
-  return raw
-    .split("\n")
-    .filter((line) => !/^제목\s*:/.test(line.trim()))
-    .map((line) => line.replace(/^내용\s*:\s*/u, ""))
-    .join("\n")
-    .trim();
+  const lines = raw.split("\n");
+  const result: string[] = [];
+  let skipNext = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (skipNext) {
+      skipNext = false;
+      continue;
+    }
+
+    // Standalone title header (e.g. "Title:" or "제목:") — skip it and the next line
+    if (/^(제목|Title)\s*:?\s*$/i.test(trimmed)) {
+      skipNext = true;
+      continue;
+    }
+
+    // Inline title (e.g. "제목: some title") — skip whole line (already in h1)
+    if (/^(제목|Title)\s*:/i.test(trimmed)) {
+      continue;
+    }
+
+    // Standalone description header (e.g. "Description part:" or "내용:") — skip label line only
+    if (/^(내용|Description(\s*part)?)\s*:?\s*$/i.test(trimmed)) {
+      continue;
+    }
+
+    // Inline description label — strip prefix, keep content
+    result.push(line.replace(/^(내용|Description(\s*part)?)\s*:\s*/i, ""));
+  }
+
+  return result.join("\n").trim();
 }
 
 function parsePromoCodes(value: Json): string[] {
