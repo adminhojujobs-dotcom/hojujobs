@@ -1,12 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, RotateCcw, Tags, Ticket } from "lucide-react";
+import { ChevronDown, RotateCcw, Tags, Ticket, Trash2 } from "lucide-react";
 import { Header } from "@/components/Header";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Deal {
   rank: number;
@@ -76,6 +90,7 @@ function highlightPrices(value: string) {
 
 export default function Sales() {
   useSEO({ title: "온세일 | Hoju Jobs", description: "호주 생활에 유용한 최신 온세일과 할인 코드", noindex: true });
+  const { isAdmin } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loadingDeals, setLoadingDeals] = useState(true);
   const [dealsError, setDealsError] = useState<string | null>(null);
@@ -136,6 +151,18 @@ export default function Sales() {
         ? current.filter((item) => item !== productType)
         : [...current, productType]
     );
+  };
+  const handleDeleteDeal = async (deal: Deal) => {
+    if (!isAdmin) return;
+
+    const { error } = await supabase.from("ozbargain_deals").delete().eq("rank", deal.rank);
+    if (error) {
+      toast.error("삭제 실패: " + error.message);
+      return;
+    }
+
+    setDeals((current) => current.filter((item) => item.rank !== deal.rank));
+    toast.success("딜이 삭제되었습니다.");
   };
 
   return (
@@ -240,7 +267,7 @@ export default function Sales() {
                 선택한 상품 종류에 해당하는 딜이 없습니다.
               </div>
             ) : filteredDeals.map((deal) => (
-              <article key={deal.rank} className="w-full max-w-full overflow-hidden rounded-md border bg-card transition-shadow hover:shadow-sm">
+              <article key={deal.rank} className="relative w-full max-w-full overflow-hidden rounded-md border bg-card transition-shadow hover:shadow-sm">
                 <Link
                   to={`/sales/${deal.rank}`}
                   className={cn(
@@ -258,7 +285,7 @@ export default function Sales() {
                       />
                     </div>
                   )}
-                  <div className="min-w-0 flex-1 p-2.5 sm:p-3">
+                  <div className={cn("min-w-0 flex-1 p-2.5 sm:p-3", isAdmin && "pr-16 sm:pr-20")}>
                     <div className="mb-1 flex min-w-0 items-center gap-1.5 overflow-hidden">
                       <span className="max-w-[8.5rem] truncate rounded-md bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary sm:max-w-[12rem]">{deal.category}</span>
                       <span className="shrink-0 truncate text-xs text-muted-foreground">{formatUploadedAt(deal.uploadedAt)}</span>
@@ -284,6 +311,32 @@ export default function Sales() {
                     )}
                   </div>
                 </Link>
+                {isAdmin && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="absolute right-2 top-2 h-7 gap-1 border-destructive/30 bg-white/95 px-2 text-[11px] text-destructive shadow-sm hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        삭제
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>딜을 삭제하시겠습니까?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          "{deal.title}" 딜이 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>취소</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => void handleDeleteDeal(deal)}>삭제</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </article>
             ))}
           </section>
