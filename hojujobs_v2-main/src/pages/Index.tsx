@@ -18,9 +18,8 @@ import { useSEO } from "@/hooks/useSEO";
 import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 50;
-const JOB_FETCH_PAGE_SIZE = 1000;
 const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
-const LISTING_CACHE_VERSION = 2;
+const LISTING_CACHE_VERSION = 3;
 const PROMO_CITY_FILTERS = new Set(["NSW", "VIC", "QLD"]);
 const FEATURED_SALE_PROMO_RANKS = [2, 20];
 
@@ -128,7 +127,6 @@ interface ListingCache {
   jobsData: Job[];
   filterJobs: JobFilterMeta[];
   totalJobsCount: number | null;
-  allJobsLoaded: boolean;
   counts: Record<number, number>;
   cachedAt: number;
 }
@@ -148,24 +146,6 @@ function readListingCache(key: string): ListingCache | null {
   } catch {
     return null;
   }
-}
-
-function writeListingCache(key: string, cache: Omit<ListingCache, "cachedAt" | "version">) {
-  try {
-    const existing = readListingCache(key);
-    const mergedJobs = existing ? mergeJobsById(existing.jobsData, cache.jobsData) : cache.jobsData;
-    const mergedCounts = existing ? { ...existing.counts, ...cache.counts } : cache.counts;
-    const filterJobs = cache.filterJobs.length > 0 ? cache.filterJobs : existing?.filterJobs ?? [];
-
-    sessionStorage.setItem(key, JSON.stringify({
-      ...cache,
-      jobsData: mergedJobs,
-      filterJobs,
-      counts: mergedCounts,
-      version: LISTING_CACHE_VERSION,
-      cachedAt: Date.now(),
-    }));
-  } catch {}
 }
 
 function removeJobFromListingCaches(jobId: number) {
@@ -223,7 +203,6 @@ interface IndexProps {
 
 const Index = ({ cityFilter }: IndexProps) => {
   const filterKey = cityFilter ? `hoju_filters_${cityFilter}` : "hoju_filters";
-  const listingCacheKey = cityFilter ? `hoju_listing_cache_${cityFilter}` : "hoju_listing_cache_all";
 
   const saved = useMemo(() => {
     try {
@@ -233,22 +212,19 @@ const Index = ({ cityFilter }: IndexProps) => {
     return null;
   }, []);
 
-  const cachedListing = useMemo(() => readListingCache(listingCacheKey), [listingCacheKey]);
-
   const [keyword, setKeyword] = useState(saved?.keyword ?? "");
   const [selectedLocations, setSelectedLocations] = useState<string[]>(saved?.locations ?? []);
   const [industry, setIndustry] = useState(saved?.industry ?? "all");
   const [page, setPage] = useState(saved?.page ?? 1);
   const [sortBy, setSortBy] = useState<SortOption>(saved?.sortBy ?? "recent");
-  const [jobsData, setJobsData] = useState<Job[]>(cachedListing?.allJobsLoaded ? cachedListing.jobsData : []);
-  const [filterJobs, setFilterJobs] = useState<JobFilterMeta[]>(cachedListing?.allJobsLoaded ? cachedListing.filterJobs : []);
-  const [loadingJobs, setLoadingJobs] = useState(!cachedListing?.allJobsLoaded);
-  const [allJobsLoaded, setAllJobsLoaded] = useState(cachedListing?.allJobsLoaded ?? false);
-  const [totalJobsCount, setTotalJobsCount] = useState<number | null>(cachedListing?.allJobsLoaded ? cachedListing.totalJobsCount : null);
+  const [jobsData, setJobsData] = useState<Job[]>([]);
+  const [filterJobs, setFilterJobs] = useState<JobFilterMeta[]>([]);
+  const [loadingJobs, setLoadingJobs] = useState(true);
+  const [totalJobsCount, setTotalJobsCount] = useState<number | null>(null);
   const [salePromoDeals, setSalePromoDeals] = useState<SalePromoDeal[]>([]);
   const [loadingSalePromoDeals, setLoadingSalePromoDeals] = useState(true);
 
-  const { counts, getCount, hydrateCounts } = useViewCounts(cachedListing?.allJobsLoaded ? cachedListing.counts : {});
+  const { counts, getCount, hydrateCounts } = useViewCounts();
   const { isAdmin } = useAuth();
 
   const meta = cityFilter ? (CITY_META[cityFilter] ?? DEFAULT_META) : DEFAULT_META;
@@ -360,6 +336,19 @@ const Index = ({ cityFilter }: IndexProps) => {
         query = query.overlaps("location", cityLocations);
       }
 
+      if (selectedLocations.length > 0) {
+        query = query.overlaps("location", selectedLocations);
+      }
+
+      if (industry !== "all") {
+        query = query.eq("industry", industry);
+      }
+
+      const trimmedKeyword = keyword.trim();
+      if (trimmedKeyword) {
+        query = query.ilike("title", `%${trimmedKeyword.replace(/[%_]/g, "\\$&")}%`);
+      }
+
       return query.order("uploaded_at", { ascending: false }).range(from, to);
     }
 
@@ -414,87 +403,64 @@ const Index = ({ cityFilter }: IndexProps) => {
     }
 
     async function fetchJobs() {
-      if (cachedListing?.allJobsLoaded) {
-        setLoadingJobs(false);
-        setAllJobsLoaded(true);
-        setJobsData(cachedListing.jobsData);
-        setFilterJobs(cachedListing.filterJobs);
-        setTotalJobsCount(cachedListing.totalJobsCount);
-        hydrateCounts(cachedListing.counts);
-        return;
-      }
-
       setLoadingJobs(true);
-      setAllJobsLoaded(false);
       setJobsData([]);
       setTotalJobsCount(null);
 
-      const [firstPage, promoted, nextFilterJobs] = await Promise.all([
-        buildJobsQuery(0, JOB_FETCH_PAGE_SIZE - 1, true),
+      const from = (page - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      const [currentPageJobs, promoted, nextFilterJobs] = await Promise.all([
+        buildJobsQuery(from, to, true),
         buildPromotedJobsQuery(),
         fetchFilterJobs(),
       ]);
 
       if (cancelled) return;
 
-      if (firstPage.error) {
-        console.error("jobs fetch error:", firstPage.error);
+      if (currentPageJobs.error) {
+        console.error("jobs fetch error:", currentPageJobs.error);
         setJobsData([]);
         setTotalJobsCount(0);
-        setAllJobsLoaded(true);
         setLoadingJobs(false);
         return;
       }
 
-      const firstPageJobs = (firstPage.data as unknown as Job[]) || [];
+      const pageJobs = (currentPageJobs.data as unknown as Job[]) || [];
       const promotedJobs = promoted.error ? [] : ((promoted.data as unknown as Job[]) || []);
-      let fetchedJobs = firstPageJobs;
-      const totalCount = firstPage.count ?? firstPageJobs.length;
+      const totalCount = currentPageJobs.count ?? pageJobs.length;
+      const maxPage = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
+
+      if (page > maxPage) {
+        setPage(maxPage);
+        return;
+      }
 
       if (promoted.error) {
         console.error("promoted jobs fetch error:", promoted.error);
       }
 
-      let from = firstPageJobs.length;
-      while (from < totalCount) {
-        const { data, error } = await buildJobsQuery(from, from + JOB_FETCH_PAGE_SIZE - 1);
-        if (cancelled) return;
-
-        if (error) { console.error("jobs fetch error:", error); break; }
-        if (!data || data.length === 0) break;
-
-        const batchJobs = data as unknown as Job[];
-        fetchedJobs = fetchedJobs.concat(batchJobs);
-
-        if (data.length < JOB_FETCH_PAGE_SIZE) break;
-        from += JOB_FETCH_PAGE_SIZE;
-      }
-
-      const all = mergeJobsById(promotedJobs, fetchedJobs);
-      const resolvedFilterJobs = nextFilterJobs.length > 0 ? nextFilterJobs : all;
-      const countSnapshot = await fetchViewCountsByJobIds(all.map((job) => job.id));
+      const fetchHasActiveFilters = !!keyword || selectedLocations.length > 0 || industry !== "all";
+      const resolvedPageJobs = page === 1 && !fetchHasActiveFilters
+        ? mergeJobsById(promotedJobs, pageJobs)
+        : pageJobs;
+      const resolvedFilterJobs = nextFilterJobs.length > 0
+        ? nextFilterJobs
+        : resolvedPageJobs.map(({ location, industry }) => ({ location, industry }));
+      const countSnapshot = await fetchViewCountsByJobIds(resolvedPageJobs.map((job) => job.id));
       if (cancelled) return;
 
       hydrateCounts(countSnapshot);
-      setJobsData(all);
+      setJobsData(resolvedPageJobs);
       setFilterJobs(resolvedFilterJobs);
       setTotalJobsCount(totalCount);
-      setAllJobsLoaded(true);
       setLoadingJobs(false);
-      writeListingCache(listingCacheKey, {
-        jobsData: all,
-        filterJobs: resolvedFilterJobs,
-        totalJobsCount: totalCount,
-        allJobsLoaded: true,
-        counts: countSnapshot,
-      });
     }
 
     fetchJobs();
     return () => {
       cancelled = true;
     };
-  }, [cityFilter, page, hydrateCounts, cachedListing, listingCacheKey]);
+  }, [cityFilter, page, keyword, selectedLocations, industry, hydrateCounts]);
 
   const scrollRestored = useRef(false);
   useEffect(() => {
@@ -571,11 +537,11 @@ const Index = ({ cityFilter }: IndexProps) => {
 
   const hasActiveFilters = !!keyword || selectedLocations.length > 0 || industry !== "all";
   const displayTotalCount = hasActiveFilters
-    ? (allJobsLoaded ? filtered.length : null)
+    ? (totalJobsCount ?? filtered.length)
     : (totalJobsCount ?? filtered.length);
   const displayTotalPages = Math.ceil((displayTotalCount ?? filtered.length) / ITEMS_PER_PAGE);
   const currentPage = Math.min(page, displayTotalPages || 1);
-  const paginatedJobs = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const paginatedJobs = filtered;
   const showPromoSection = currentPage === 1 && !hasActiveFilters && (!cityFilter || PROMO_CITY_FILTERS.has(cityFilter));
   const showReadyPromoSection = showPromoSection && !loadingJobs && !loadingSalePromoDeals;
   const loadingCards = loadingJobs || (showPromoSection && loadingSalePromoDeals);
