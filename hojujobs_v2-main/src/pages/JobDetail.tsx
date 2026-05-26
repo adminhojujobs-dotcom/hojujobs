@@ -24,6 +24,7 @@ interface Job {
   description: string | null;
   google_search: string | null;
   uploaded_at: string | null;
+  archived?: boolean;
 }
 
 function cacheViewCount(jobId: number, count: number) {
@@ -46,7 +47,7 @@ export default function JobDetail() {
         .from("jobs")
         .select("id, title, location, industry, contact, email, kakaoid, description, google_search, uploaded_at")
         .eq("id", Number(id))
-        .single();
+        .maybeSingle();
 
       if (cancelled) return;
 
@@ -84,6 +85,21 @@ export default function JobDetail() {
         return;
       }
 
+      const { data: archivedData } = await supabase
+        .from("jobs_archive")
+        .select("id, title, location, industry, contact, email, kakaoid, description, google_search, uploaded_at")
+        .eq("id", Number(id))
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (archivedData) {
+        setJob({ ...(archivedData as Job), archived: true });
+        setViewCount(0);
+        setLoading(false);
+        return;
+      }
+
       setLoading(false);
     }
 
@@ -114,6 +130,7 @@ export default function JobDetail() {
   }, [job]);
 
   const isExpired = useMemo(() => {
+    if (job?.archived) return true;
     if (!job?.uploaded_at) return false;
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 7);

@@ -89,6 +89,54 @@ export type Database = {
         }
         Relationships: []
       }
+      jobs_archive: {
+        Row: {
+          contact: string | null
+          description: string | null
+          email: string | null
+          google_search: string | null
+          id: number
+          industry: string | null
+          kakaoid: string | null
+          location: string[] | null
+          Promoted: boolean | null
+          Source: string | null
+          title: string | null
+          uploaded_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          contact?: string | null
+          description?: string | null
+          email?: string | null
+          google_search?: string | null
+          id?: never
+          industry?: string | null
+          kakaoid?: string | null
+          location?: string[] | null
+          Promoted?: boolean | null
+          Source?: string | null
+          title?: string | null
+          uploaded_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          contact?: string | null
+          description?: string | null
+          email?: string | null
+          google_search?: string | null
+          id?: never
+          industry?: string | null
+          kakaoid?: string | null
+          location?: string[] | null
+          Promoted?: boolean | null
+          Source?: string | null
+          title?: string | null
+          uploaded_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       ozbargain_deals: {
         Row: {
           category: string
