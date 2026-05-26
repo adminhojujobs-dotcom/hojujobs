@@ -148,6 +148,43 @@ function readListingCache(key: string): ListingCache | null {
   }
 }
 
+function writeListingCache(key: string, cache: Omit<ListingCache, "cachedAt" | "version">) {
+  try {
+    sessionStorage.setItem(key, JSON.stringify({
+      ...cache,
+      version: LISTING_CACHE_VERSION,
+      cachedAt: Date.now(),
+    }));
+  } catch {}
+}
+
+function listingCacheKey({
+  cityFilter,
+  page,
+  keyword,
+  selectedLocations,
+  industry,
+  sortBy,
+}: {
+  cityFilter?: string;
+  page: number;
+  keyword: string;
+  selectedLocations: string[];
+  industry: string;
+  sortBy: SortOption;
+}) {
+  const payload = {
+    cityFilter: cityFilter ?? "all",
+    page,
+    keyword: keyword.trim().toLowerCase(),
+    selectedLocations: [...selectedLocations].sort(),
+    industry,
+    sortBy,
+  };
+
+  return `hoju_listing_cache_${encodeURIComponent(JSON.stringify(payload))}`;
+}
+
 function removeJobFromListingCaches(jobId: number) {
   try {
     Object.keys(sessionStorage).forEach((key) => {
@@ -403,6 +440,17 @@ const Index = ({ cityFilter }: IndexProps) => {
     }
 
     async function fetchJobs() {
+      const cacheKey = listingCacheKey({ cityFilter, page, keyword, selectedLocations, industry, sortBy });
+      const cached = readListingCache(cacheKey);
+      if (cached) {
+        hydrateCounts(cached.counts);
+        setJobsData(cached.jobsData);
+        setFilterJobs(cached.filterJobs);
+        setTotalJobsCount(cached.totalJobsCount);
+        setLoadingJobs(false);
+        return;
+      }
+
       setLoadingJobs(true);
       setJobsData([]);
       setTotalJobsCount(null);
@@ -454,13 +502,19 @@ const Index = ({ cityFilter }: IndexProps) => {
       setFilterJobs(resolvedFilterJobs);
       setTotalJobsCount(totalCount);
       setLoadingJobs(false);
+      writeListingCache(cacheKey, {
+        jobsData: resolvedPageJobs,
+        filterJobs: resolvedFilterJobs,
+        totalJobsCount: totalCount,
+        counts: countSnapshot,
+      });
     }
 
     fetchJobs();
     return () => {
       cancelled = true;
     };
-  }, [cityFilter, page, keyword, selectedLocations, industry, hydrateCounts]);
+  }, [cityFilter, page, keyword, selectedLocations, industry, sortBy, hydrateCounts]);
 
   const scrollRestored = useRef(false);
   useEffect(() => {
