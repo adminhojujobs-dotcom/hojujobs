@@ -246,6 +246,7 @@ const Index = ({ cityFilter }: IndexProps) => {
   const [allJobsLoaded, setAllJobsLoaded] = useState(cachedListing?.allJobsLoaded ?? false);
   const [totalJobsCount, setTotalJobsCount] = useState<number | null>(cachedListing?.allJobsLoaded ? cachedListing.totalJobsCount : null);
   const [salePromoDeals, setSalePromoDeals] = useState<SalePromoDeal[]>([]);
+  const [loadingSalePromoDeals, setLoadingSalePromoDeals] = useState(true);
 
   const { counts, getCount, hydrateCounts } = useViewCounts(cachedListing?.allJobsLoaded ? cachedListing.counts : {});
   const { isAdmin } = useAuth();
@@ -308,6 +309,8 @@ const Index = ({ cityFilter }: IndexProps) => {
     let cancelled = false;
 
     async function fetchSalePromoDeals() {
+      setLoadingSalePromoDeals(true);
+
       const { data, error } = await supabase
         .from("ozbargain_deals")
         .select("rank, title, category, image_url")
@@ -319,6 +322,7 @@ const Index = ({ cityFilter }: IndexProps) => {
       if (error) {
         console.error("sale promo deals fetch error:", error);
         setSalePromoDeals([]);
+        setLoadingSalePromoDeals(false);
         return;
       }
 
@@ -328,6 +332,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         category: deal.category,
         imageUrl: deal.image_url ?? undefined,
       })));
+      setLoadingSalePromoDeals(false);
     }
 
     fetchSalePromoDeals();
@@ -572,6 +577,8 @@ const Index = ({ cityFilter }: IndexProps) => {
   const currentPage = Math.min(page, displayTotalPages || 1);
   const paginatedJobs = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
   const showPromoSection = currentPage === 1 && !hasActiveFilters && (!cityFilter || PROMO_CITY_FILTERS.has(cityFilter));
+  const showReadyPromoSection = showPromoSection && !loadingJobs && !loadingSalePromoDeals;
+  const loadingCards = loadingJobs || (showPromoSection && loadingSalePromoDeals);
   const regularPaginatedJobs = showPromoSection
     ? paginatedJobs.filter((job) => job.Promoted !== true)
     : paginatedJobs;
@@ -679,7 +686,7 @@ const Index = ({ cityFilter }: IndexProps) => {
             </div>
 
             {/* Promoted jobs - only on page 1 with no active filters */}
-            {showPromoSection && (
+            {showReadyPromoSection && (
               <div className="space-y-2 mb-2">
                 <div className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 px-4 py-3 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
@@ -752,13 +759,13 @@ const Index = ({ cityFilter }: IndexProps) => {
             )}
 
             <div className="space-y-3">
-              {loadingJobs ? (
+              {loadingCards ? (
                 <div className="text-center py-16 text-muted-foreground">불러오는 중...</div>
               ) : regularPaginatedJobs.length > 0 ? (
                 regularPaginatedJobs.map((job) => (
                   <JobCard key={job.id} job={job} viewCount={getCount(job.id)} showEditButton={isAdmin} onDelete={isAdmin ? handleDeleteJob : undefined} />
                 ))
-              ) : showPromoSection ? (
+              ) : showReadyPromoSection ? (
                 null
               ) : (
                 <div className="text-center py-16 text-muted-foreground">검색 결과가 없습니다.</div>
