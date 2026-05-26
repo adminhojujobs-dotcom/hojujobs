@@ -490,9 +490,13 @@ const Index = ({ cityFilter }: IndexProps) => {
       const resolvedPageJobs = page === 1 && !fetchHasActiveFilters
         ? mergeJobsById(promotedJobs, pageJobs)
         : pageJobs;
-      const resolvedFilterJobs = nextFilterJobs.length > 0
+      const promotedMeta = promotedJobs.map(({ location, industry }) => ({ location, industry }));
+      const filterBase = nextFilterJobs.length > 0
         ? nextFilterJobs
         : resolvedPageJobs.map(({ location, industry }) => ({ location, industry }));
+      // Promoted jobs fetched without a row-count cap may be missing from filterBase;
+      // append their metadata so sidebar counts always reflect what's visible.
+      const resolvedFilterJobs = [...filterBase, ...promotedMeta];
       const countSnapshot = await fetchViewCountsByJobIds(resolvedPageJobs.map((job) => job.id));
       if (cancelled) return;
 
