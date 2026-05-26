@@ -543,8 +543,9 @@ const Index = ({ cityFilter }: IndexProps) => {
   const currentPage = Math.min(page, displayTotalPages || 1);
   const paginatedJobs = filtered;
   const showPromoSection = currentPage === 1 && !hasActiveFilters && (!cityFilter || PROMO_CITY_FILTERS.has(cityFilter));
-  const showReadyPromoSection = showPromoSection && !loadingJobs && !loadingSalePromoDeals;
-  const loadingCards = loadingJobs || (showPromoSection && loadingSalePromoDeals);
+  const showReadyPromoSection = showPromoSection && !loadingSalePromoDeals;
+  const showPromotedJobsInPromoSection = showReadyPromoSection && !loadingJobs;
+  const loadingCards = loadingJobs;
   const regularPaginatedJobs = showPromoSection
     ? paginatedJobs.filter((job) => job.Promoted !== true)
     : paginatedJobs;
@@ -707,10 +708,14 @@ const Index = ({ cityFilter }: IndexProps) => {
                     </div>
                   </div>
                 )}
-                <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide">추천 공고</p>
-                {promotedJobs.map((job) => (
-                  <PromotedJobCard key={job.id} job={job} viewCount={getCount(job.id)} showEditButton={isAdmin} onDelete={isAdmin ? handleDeleteJob : undefined} />
-                ))}
+                {showPromotedJobsInPromoSection && promotedJobs.length > 0 && (
+                  <>
+                    <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide">추천 공고</p>
+                    {promotedJobs.map((job) => (
+                      <PromotedJobCard key={job.id} job={job} viewCount={getCount(job.id)} showEditButton={isAdmin} onDelete={isAdmin ? handleDeleteJob : undefined} />
+                    ))}
+                  </>
+                )}
                 {/* Promote-your-post CTA */}
                 <div className="rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-3">
                   <div className="flex items-start justify-between gap-3">
@@ -731,7 +736,7 @@ const Index = ({ cityFilter }: IndexProps) => {
                 regularPaginatedJobs.map((job) => (
                   <JobCard key={job.id} job={job} viewCount={getCount(job.id)} showEditButton={isAdmin} onDelete={isAdmin ? handleDeleteJob : undefined} />
                 ))
-              ) : showReadyPromoSection ? (
+              ) : showPromotedJobsInPromoSection ? (
                 null
               ) : (
                 <div className="text-center py-16 text-muted-foreground">검색 결과가 없습니다.</div>
