@@ -17,8 +17,6 @@ const INFO_TABS = [
   { label: "워홀정보", path: "/dashboard" },
 ];
 
-const NAV_TABS = [...CITY_TABS, ...INFO_TABS];
-
 export function Header() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -102,26 +100,49 @@ export function Header() {
           </div>
         </div>
 
-        {/* City tabs */}
         <div className="-mx-1">
-          <nav className="grid grid-cols-7 items-end" aria-label="주요 페이지">
-            {NAV_TABS.map(({ label, path }) => (
-              <NavLink
-                key={path}
-                to={path}
-                end={path === "/" || path === "/dashboard" || path === "/news"}
-                className={({ isActive }) =>
-                  cn(
-                    "min-w-0 px-0.5 py-2 text-center text-[10px] font-medium border-b-2 transition-colors whitespace-nowrap sm:px-2.5 sm:text-xs",
-                    isActive
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-                  )
-                }
-              >
-                {label}
-              </NavLink>
-            ))}
+          <nav className="flex items-end gap-1 sm:gap-2" aria-label="주요 페이지">
+            <div className="grid flex-[4] grid-cols-4 items-end">
+              {CITY_TABS.map(({ label, path }) => (
+                <NavLink
+                  key={path}
+                  to={path}
+                  end={path === "/"}
+                  className={({ isActive }) =>
+                    cn(
+                      "min-w-0 px-0.5 py-2 text-center text-[11px] font-semibold border-b-2 transition-colors whitespace-nowrap sm:px-2.5 sm:text-sm",
+                      isActive
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                    )
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+
+            <div className="mb-2 h-5 w-px shrink-0 bg-border" aria-hidden="true" />
+
+            <div className="grid flex-[3] grid-cols-3 items-end rounded-t-md bg-slate-50/90 ring-1 ring-inset ring-slate-200/70">
+              {INFO_TABS.map(({ label, path }) => (
+                <NavLink
+                  key={path}
+                  to={path}
+                  end={path === "/" || path === "/dashboard" || path === "/news"}
+                  className={({ isActive }) =>
+                    cn(
+                      "min-w-0 px-0.5 py-2 text-center text-[11px] font-semibold border-b-2 transition-colors whitespace-nowrap sm:px-2.5 sm:text-sm",
+                      isActive
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                    )
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </div>
           </nav>
         </div>
       </div>
