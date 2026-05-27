@@ -1,4 +1,4 @@
-import { ExternalLink, Languages } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useSEO } from "@/hooks/useSEO";
 
@@ -212,10 +212,6 @@ export default function News() {
               <div>
                 <p className="text-xs font-semibold tracking-normal text-slate-400">호주 생활 뉴스 브리핑</p>
                 <h1 className="mt-1 text-2xl font-black tracking-normal text-white sm:text-3xl">뉴스</h1>
-              </div>
-              <div className="flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-slate-300">
-                <Languages className="h-3.5 w-3.5" />
-                한국어 번역 링크 포함
               </div>
             </div>
           </div>
