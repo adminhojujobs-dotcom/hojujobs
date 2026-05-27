@@ -263,7 +263,7 @@ export default function News() {
                           rel="noopener noreferrer"
                           className="mt-4 inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-slate-950 px-3 text-xs font-bold text-white transition-colors hover:bg-primary lg:mt-0"
                         >
-                          번역 기사 보기
+                          기사 보기
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       </div>
