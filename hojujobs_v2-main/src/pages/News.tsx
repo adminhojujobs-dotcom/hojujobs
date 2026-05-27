@@ -237,8 +237,7 @@ export default function News() {
             >
               <div className="grid gap-0 lg:grid-cols-[17rem_1fr]">
                 <div className="border-b border-inherit bg-white/55 p-3 sm:p-5 lg:border-b-0 lg:border-r">
-                  <p className="text-[11px] font-bold tracking-normal text-slate-500 sm:text-xs">추천 주제</p>
-                  <h2 className="mt-0.5 text-xl font-black tracking-normal text-slate-950 sm:mt-1 sm:text-2xl">{topic.labelKo}</h2>
+                  <h2 className="text-xl font-black tracking-normal text-slate-950 sm:text-2xl">{topic.labelKo}</h2>
                   <p className="mt-1 text-xs leading-relaxed text-slate-600 sm:mt-3 sm:text-sm">{topic.summary}</p>
                 </div>
 
