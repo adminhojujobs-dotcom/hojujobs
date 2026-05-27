@@ -17,7 +17,7 @@ import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 50;
 const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
-const LISTING_CACHE_VERSION = 6;
+const LISTING_CACHE_VERSION = 7;
 const PROMO_CITY_FILTERS = new Set(["NSW", "VIC", "QLD"]);
 const FEATURED_SALE_PROMO_RANKS = [30, 37];
 
@@ -104,6 +104,45 @@ function getCityLocations(state: string) {
   });
 
   return [...suburbSet];
+}
+
+function escapeIlike(value: string) {
+  return value.replace(/[%_]/g, "\\$&");
+}
+
+function escapePostgrestArrayValue(value: string) {
+  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
+function getKeywordLocationMatches(keyword: string, cityFilter?: string) {
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  if (!normalizedKeyword) return [];
+
+  const availableLocations = cityFilter
+    ? getCityLocations(cityFilter)
+    : [...new Set([...Object.keys(SUBURB_EN), ...REGION_GROUPS.flatMap((group) => group.suburbs)])];
+
+  const matches = availableLocations.filter((location) =>
+    location.toLowerCase().includes(normalizedKeyword)
+  );
+
+  return matches.includes(keyword.trim())
+    ? matches
+    : [...matches, keyword.trim()];
+}
+
+function applyKeywordSearch<T extends { or: (filters: string) => T }>(query: T, keyword: string, cityFilter?: string) {
+  const trimmedKeyword = keyword.trim();
+  if (!trimmedKeyword) return query;
+
+  const titleFilter = `title.ilike.%${escapeIlike(trimmedKeyword)}%`;
+  const locationMatches = getKeywordLocationMatches(trimmedKeyword, cityFilter);
+  if (locationMatches.length === 0) {
+    return query.or(titleFilter);
+  }
+
+  const locationFilter = `location.ov.{${locationMatches.map(escapePostgrestArrayValue).join(",")}}`;
+  return query.or(`${titleFilter},${locationFilter}`);
 }
 
 function mergeJobsById(...groups: Job[][]) {
@@ -379,10 +418,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         query = query.eq("industry", industry);
       }
 
-      const trimmedKeyword = keyword.trim();
-      if (trimmedKeyword) {
-        query = query.ilike("title", `%${trimmedKeyword.replace(/[%_]/g, "\\$&")}%`);
-      }
+      query = applyKeywordSearch(query, keyword, cityFilter);
 
       return query.order("uploaded_at", { ascending: false }).range(from, to);
     }
@@ -417,10 +453,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         query = query.eq("industry", industry);
       }
 
-      const trimmedKeyword = keyword.trim();
-      if (trimmedKeyword) {
-        query = query.ilike("title", `%${trimmedKeyword.replace(/[%_]/g, "\\$&")}%`);
-      }
+      query = applyKeywordSearch(query, keyword, cityFilter);
 
       return query.order("uploaded_at", { ascending: false }).range(from, to);
     }
@@ -549,7 +582,7 @@ const Index = ({ cityFilter }: IndexProps) => {
   const filtered = useMemo(() => {
     const result = cityJobs.filter((job) => {
       const kw = keyword.toLowerCase();
-      const matchKeyword = !kw || job.title.toLowerCase().includes(kw);
+      const matchKeyword = !kw || job.title.toLowerCase().includes(kw) || job.location.some((loc) => loc.toLowerCase().includes(kw));
       const matchLocation = selectedLocations.length === 0 || job.location.some((loc) => selectedLocations.includes(loc));
       const matchIndustry = industry === "all" || job.industry === industry;
       return matchKeyword && matchLocation && matchIndustry;
