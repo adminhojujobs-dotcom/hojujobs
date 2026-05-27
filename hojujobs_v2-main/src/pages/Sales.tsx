@@ -33,6 +33,58 @@ interface Deal {
   promoCodes: string[];
 }
 
+const SALES_CACHE_KEY = "hoju_sales_cache";
+const SALES_FILTER_KEY = "hoju_sales_filters";
+const SALES_SCROLL_KEY = "hoju_sales_scroll_y";
+const SALES_CACHE_TTL_MS = 5 * 60 * 1000;
+const SALES_CACHE_VERSION = 1;
+
+interface SalesCache {
+  version: number;
+  deals: Deal[];
+  cachedAt: number;
+}
+
+function readSalesCache(): Deal[] | null {
+  try {
+    const raw = sessionStorage.getItem(SALES_CACHE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as SalesCache;
+    if (parsed.version !== SALES_CACHE_VERSION || !parsed.cachedAt || Date.now() - parsed.cachedAt > SALES_CACHE_TTL_MS) {
+      sessionStorage.removeItem(SALES_CACHE_KEY);
+      return null;
+    }
+
+    return parsed.deals;
+  } catch {
+    return null;
+  }
+}
+
+function writeSalesCache(deals: Deal[]) {
+  try {
+    sessionStorage.setItem(SALES_CACHE_KEY, JSON.stringify({
+      version: SALES_CACHE_VERSION,
+      deals,
+      cachedAt: Date.now(),
+    }));
+  } catch {}
+}
+
+function readSalesFilters() {
+  try {
+    const raw = sessionStorage.getItem(SALES_FILTER_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed?.selectedProductTypes)
+      ? parsed.selectedProductTypes.filter((item): item is string => typeof item === "string")
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 function formatUploadedAt(value: string) {
   return new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Australia/Sydney",
@@ -91,12 +143,19 @@ function highlightPrices(value: string) {
 export default function Sales() {
   useSEO({ title: "온세일 | Hoju Jobs", description: "호주 생활에 유용한 최신 온세일과 할인 코드", noindex: true });
   const { isAdmin } = useAuth();
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [loadingDeals, setLoadingDeals] = useState(true);
+  const [deals, setDeals] = useState<Deal[]>(() => readSalesCache() ?? []);
+  const [loadingDeals, setLoadingDeals] = useState(() => readSalesCache() === null);
   const [dealsError, setDealsError] = useState<string | null>(null);
-  const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>([]);
+  const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>(() => readSalesFilters());
 
   useEffect(() => {
+    const cachedDeals = readSalesCache();
+    if (cachedDeals) {
+      setDeals(cachedDeals);
+      setLoadingDeals(false);
+      return;
+    }
+
     const fetchDeals = async () => {
       setLoadingDeals(true);
       setDealsError(null);
@@ -113,7 +172,7 @@ export default function Sales() {
         return;
       }
 
-      setDeals((data ?? []).map((deal) => ({
+      const nextDeals = (data ?? []).map((deal) => ({
         rank: deal.rank,
         title: deal.title,
         category: deal.category,
@@ -122,12 +181,29 @@ export default function Sales() {
         externalUrl: deal.external_url ?? undefined,
         uploadedAt: deal.uploaded_at,
         promoCodes: parsePromoCodes(deal.promo_codes),
-      })));
+      }));
+
+      setDeals(nextDeals);
+      writeSalesCache(nextDeals);
       setLoadingDeals(false);
     };
 
     fetchDeals();
   }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem(SALES_FILTER_KEY, JSON.stringify({ selectedProductTypes }));
+  }, [selectedProductTypes]);
+
+  useEffect(() => {
+    if (loadingDeals) return;
+
+    const savedY = sessionStorage.getItem(SALES_SCROLL_KEY);
+    if (!savedY) return;
+
+    sessionStorage.removeItem(SALES_SCROLL_KEY);
+    setTimeout(() => window.scrollTo({ top: Number(savedY) }), 50);
+  }, [loadingDeals]);
 
   const productTypes = useMemo(() => [...new Set(deals.map((deal) => deal.category))].sort(), [deals]);
   const productTypeCounts = useMemo(() => {
@@ -161,7 +237,11 @@ export default function Sales() {
       return;
     }
 
-    setDeals((current) => current.filter((item) => item.rank !== deal.rank));
+    setDeals((current) => {
+      const nextDeals = current.filter((item) => item.rank !== deal.rank);
+      writeSalesCache(nextDeals);
+      return nextDeals;
+    });
     toast.success("딜이 삭제되었습니다.");
   };
 
@@ -270,6 +350,7 @@ export default function Sales() {
               <article key={deal.rank} className="relative w-full max-w-full overflow-hidden rounded-md border bg-card transition-shadow hover:shadow-sm">
                 <Link
                   to={`/sales/${deal.rank}`}
+                  onClick={() => sessionStorage.setItem(SALES_SCROLL_KEY, String(window.scrollY))}
                   className={cn(
                     "grid w-full min-w-0 gap-0",
                     deal.imageUrl ? "grid-cols-[5rem_minmax(0,1fr)] sm:grid-cols-[7rem_minmax(0,1fr)]" : "grid-cols-1"
