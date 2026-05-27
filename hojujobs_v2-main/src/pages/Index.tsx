@@ -2,8 +2,6 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Search, ArrowUpDown, ShoppingBag } from "lucide-react";
 import { Header } from "@/components/Header";
-import { MobileLocationFilter } from "@/components/MobileLocationFilter";
-import { MobileIndustryFilter } from "@/components/MobileIndustryFilter";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { JobCard } from "@/components/JobCard";
@@ -665,25 +663,6 @@ const Index = ({ cityFilter }: IndexProps) => {
                   onKeyDown={(e) => { if (e.key === "Enter") { (e.target as HTMLInputElement).blur(); } }}
                   className="pl-10"
                 />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
-                <div className="lg:hidden contents sm:contents">
-                  <MobileLocationFilter
-                    locations={locations}
-                    selectedLocations={selectedLocations}
-                    onLocationsChange={(v) => { setSelectedLocations(v); setPage(1); }}
-                    locationCounts={locationCounts}
-                    cityFilter={cityFilter}
-                  />
-                </div>
-                <div className="lg:hidden contents sm:contents">
-                  <MobileIndustryFilter
-                    industries={industries}
-                    selectedIndustry={industry}
-                    onIndustryChange={(v) => { setIndustry(v); setPage(1); }}
-                    industryCounts={industryCounts}
-                  />
-                </div>
               </div>
             </div>
 
