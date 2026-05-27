@@ -305,7 +305,7 @@ const NAVER_FLIGHT_ROUTES = [
 ];
 
 export default function Dashboard() {
-  useSEO({ title: "워홀정보", description: "호주 워킹홀리데이 환율, 항공, 최신 뉴스 정보" });
+  useSEO({ title: "워홀정보", description: "호주 워킹홀리데이 환율, 항공, 구직 정보" });
   const [rates, setRates] = useState<RateData | null>(null);
   const [loadingRate, setLoadingRate] = useState(true);
   const [selectedFlightMonth, setSelectedFlightMonth] = useState(() => getUpcomingFlightMonths()[0].value);
@@ -583,44 +583,6 @@ export default function Dashboard() {
                 );
               })}
             </div>
-          </div>
-        </div>
-
-        {/* News */}
-        <div className="rounded-lg border bg-card overflow-hidden">
-          <div className="px-4 py-3 border-b">
-            <h2 className="text-sm font-bold text-foreground">최근 호주 뉴스</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">2026년 5월 25일 기사만 · 일자리, 주거, 여행, 유학</p>
-          </div>
-          <div className="divide-y divide-border/40">
-            {CURRENT_NEWS_ARTICLES.map((article, i) => (
-              <a
-                key={i}
-                href={translatedNewsUrl(article.link)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-start gap-3 px-4 py-3.5 hover:bg-muted/40 transition-colors group"
-              >
-                <img
-                  src={faviconUrl(article.domain)}
-                  alt=""
-                  className="h-5 w-5 rounded-sm object-contain mt-0.5"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${TAG_COLORS[article.tag] ?? "bg-muted text-muted-foreground"}`}>
-                      {article.tag}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{article.date}</span>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{article.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{article.summary}</p>
-                  <p className="text-xs text-muted-foreground mt-1 opacity-60">{article.source}</p>
-                </div>
-                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-              </a>
-            ))}
           </div>
         </div>
 

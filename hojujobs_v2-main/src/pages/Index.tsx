@@ -725,10 +725,10 @@ const Index = ({ cityFilter }: IndexProps) => {
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-extrabold text-slate-900 mb-0.5">호주 생활 정보도 확인해보세요</p>
-                      <p className="text-xs text-blue-900/75 leading-relaxed">환율, 최신 호주 뉴스, 구직 팁을 한곳에서 볼 수 있습니다.</p>
+                      <p className="text-xs text-blue-900/75 leading-relaxed">환율, 항공권, 구직 팁을 한곳에서 볼 수 있습니다.</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
-                      <Link to="/news" className="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white/80 px-3 text-xs font-semibold text-blue-800 hover:bg-blue-100">
+                      <Link to="/dashboard" className="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white/80 px-3 text-xs font-semibold text-blue-800 hover:bg-blue-100">
                         워홀정보
                       </Link>
                     </div>

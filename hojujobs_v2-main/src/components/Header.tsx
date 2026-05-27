@@ -1,7 +1,6 @@
-import { useNavigate, NavLink, useLocation } from "react-router-dom";
-import { Plus, LogIn, FileText, Shield, ChevronDown } from "lucide-react";
+import { useNavigate, NavLink } from "react-router-dom";
+import { Plus, LogIn, FileText, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
@@ -14,20 +13,13 @@ const CITY_TABS = [
 
 const INFO_TABS = [
   { label: "온세일", path: "/sales" },
-  { label: "워홀정보", path: "/news" },
+  { label: "워홀정보", path: "/dashboard" },
+  { label: "뉴스", path: "/news" },
 ];
 
 export function Header() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const isSalesActive = location.pathname === "/sales";
-  const isInfoActive = location.pathname === "/news" || location.pathname === "/dashboard" || isSalesActive;
-  const infoLabel = isSalesActive
-    ? "온세일"
-    : (location.pathname === "/news" || location.pathname === "/dashboard")
-      ? "워홀정보"
-      : "온세일";
 
   return (
     <header className="bg-white border-b border-border">
@@ -109,8 +101,8 @@ export function Header() {
         </div>
 
         {/* City tabs */}
-        <div className="-mx-1 flex items-center justify-between gap-0 sm:justify-normal">
-          <nav className="contents sm:flex sm:min-w-0 sm:flex-1 sm:gap-0" aria-label="지역별 공고">
+        <div className="-mx-1 flex flex-wrap items-center gap-x-0 gap-y-1 sm:flex-nowrap sm:justify-normal">
+          <nav className="flex min-w-0 flex-1 flex-wrap items-center gap-0" aria-label="지역별 공고">
             {CITY_TABS.map(({ label, path }) => (
               <NavLink
                 key={path}
@@ -118,7 +110,7 @@ export function Header() {
                 end={path === "/"}
                 className={({ isActive }) =>
                   cn(
-                    "flex-none px-1.5 py-2 text-center text-xs font-medium border-b-2 transition-colors whitespace-nowrap sm:px-2.5",
+                    "flex-none px-1.5 py-2 text-center text-[11px] font-medium border-b-2 transition-colors whitespace-nowrap sm:px-2.5 sm:text-xs",
                     isActive
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
@@ -129,14 +121,15 @@ export function Header() {
               </NavLink>
             ))}
           </nav>
-          <nav className="hidden flex-none items-center gap-0 sm:flex" aria-label="정보">
+          <nav className="flex flex-none flex-wrap items-center gap-0" aria-label="정보">
             {INFO_TABS.map(({ label, path }) => (
               <NavLink
                 key={path}
                 to={path}
+                end={path === "/dashboard"}
                 className={({ isActive }) =>
                   cn(
-                    "px-2.5 py-2 text-center text-xs font-medium border-b-2 transition-colors whitespace-nowrap",
+                    "px-1.5 py-2 text-center text-[11px] font-medium border-b-2 transition-colors whitespace-nowrap sm:px-2.5 sm:text-xs",
                     isActive
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
@@ -147,23 +140,6 @@ export function Header() {
               </NavLink>
             ))}
           </nav>
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger
-              className={cn(
-                "flex w-[4.5rem] flex-none items-center justify-center gap-0.5 px-1 py-1.5 text-center text-xs font-semibold transition-colors whitespace-nowrap outline-none rounded-md sm:hidden",
-                isInfoActive
-                  ? "text-primary bg-primary/8"
-                  : "text-primary bg-primary/10 hover:bg-primary/15 hover:text-primary"
-              )}
-            >
-              {infoLabel}
-              <ChevronDown className="h-3 w-3" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigate("/sales")}>온세일</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/news")}>워홀정보</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
     </header>
