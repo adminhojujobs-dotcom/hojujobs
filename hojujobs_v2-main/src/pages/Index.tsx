@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Search, ArrowUpDown, ShoppingBag } from "lucide-react";
 import { Header } from "@/components/Header";
+import { MobileLocationFilter } from "@/components/MobileLocationFilter";
+import { MobileIndustryFilter } from "@/components/MobileIndustryFilter";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { JobCard } from "@/components/JobCard";
@@ -17,7 +19,7 @@ import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 50;
 const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
-const LISTING_CACHE_VERSION = 7;
+const LISTING_CACHE_VERSION = 6;
 const PROMO_CITY_FILTERS = new Set(["NSW", "VIC", "QLD"]);
 const FEATURED_SALE_PROMO_RANKS = [30, 37];
 
@@ -104,45 +106,6 @@ function getCityLocations(state: string) {
   });
 
   return [...suburbSet];
-}
-
-function escapeIlike(value: string) {
-  return value.replace(/[%_]/g, "\\$&");
-}
-
-function escapePostgrestArrayValue(value: string) {
-  return `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
-}
-
-function getKeywordLocationMatches(keyword: string, cityFilter?: string) {
-  const normalizedKeyword = keyword.trim().toLowerCase();
-  if (!normalizedKeyword) return [];
-
-  const availableLocations = cityFilter
-    ? getCityLocations(cityFilter)
-    : [...new Set([...Object.keys(SUBURB_EN), ...REGION_GROUPS.flatMap((group) => group.suburbs)])];
-
-  const matches = availableLocations.filter((location) =>
-    location.toLowerCase().includes(normalizedKeyword)
-  );
-
-  return matches.includes(keyword.trim())
-    ? matches
-    : [...matches, keyword.trim()];
-}
-
-function applyKeywordSearch<T extends { or: (filters: string) => T }>(query: T, keyword: string, cityFilter?: string) {
-  const trimmedKeyword = keyword.trim();
-  if (!trimmedKeyword) return query;
-
-  const titleFilter = `title.ilike.%${escapeIlike(trimmedKeyword)}%`;
-  const locationMatches = getKeywordLocationMatches(trimmedKeyword, cityFilter);
-  if (locationMatches.length === 0) {
-    return query.or(titleFilter);
-  }
-
-  const locationFilter = `location.ov.{${locationMatches.map(escapePostgrestArrayValue).join(",")}}`;
-  return query.or(`${titleFilter},${locationFilter}`);
 }
 
 function mergeJobsById(...groups: Job[][]) {
@@ -418,7 +381,10 @@ const Index = ({ cityFilter }: IndexProps) => {
         query = query.eq("industry", industry);
       }
 
-      query = applyKeywordSearch(query, keyword, cityFilter);
+      const trimmedKeyword = keyword.trim();
+      if (trimmedKeyword) {
+        query = query.ilike("title", `%${trimmedKeyword.replace(/[%_]/g, "\\$&")}%`);
+      }
 
       return query.order("uploaded_at", { ascending: false }).range(from, to);
     }
@@ -453,7 +419,10 @@ const Index = ({ cityFilter }: IndexProps) => {
         query = query.eq("industry", industry);
       }
 
-      query = applyKeywordSearch(query, keyword, cityFilter);
+      const trimmedKeyword = keyword.trim();
+      if (trimmedKeyword) {
+        query = query.ilike("title", `%${trimmedKeyword.replace(/[%_]/g, "\\$&")}%`);
+      }
 
       return query.order("uploaded_at", { ascending: false }).range(from, to);
     }
@@ -582,7 +551,7 @@ const Index = ({ cityFilter }: IndexProps) => {
   const filtered = useMemo(() => {
     const result = cityJobs.filter((job) => {
       const kw = keyword.toLowerCase();
-      const matchKeyword = !kw || job.title.toLowerCase().includes(kw) || job.location.some((loc) => loc.toLowerCase().includes(kw));
+      const matchKeyword = !kw || job.title.toLowerCase().includes(kw);
       const matchLocation = selectedLocations.length === 0 || job.location.some((loc) => selectedLocations.includes(loc));
       const matchIndustry = industry === "all" || job.industry === industry;
       return matchKeyword && matchLocation && matchIndustry;
@@ -631,7 +600,6 @@ const Index = ({ cityFilter }: IndexProps) => {
   const showReadyPromoSection = showPromoSection && !loadingSalePromoDeals;
   const showPromotedJobsInPromoSection = showReadyPromoSection && !loadingJobs;
   const loadingCards = loadingJobs;
-  const pageVisualReady = !loadingJobs && (!showPromoSection || !loadingSalePromoDeals);
   const regularPaginatedJobs = showPromoSection
     ? paginatedJobs.filter((job) => job.Promoted !== true)
     : paginatedJobs;
@@ -663,14 +631,6 @@ const Index = ({ cityFilter }: IndexProps) => {
       <Header />
 
       <div className="w-full max-w-6xl mx-auto px-4 py-8">
-        {!pageVisualReady ? (
-          <div className="flex min-h-[60vh] items-center justify-center rounded-lg border border-border bg-white">
-            <div className="text-center">
-              <p className="text-sm font-semibold text-foreground">공고를 불러오는 중...</p>
-              <p className="mt-1 text-xs text-muted-foreground">공고, 조회수, 필터와 추천 정보를 함께 준비하고 있습니다.</p>
-            </div>
-          </div>
-        ) : (
         <div className="lg:grid lg:grid-cols-[14rem_1fr] lg:gap-8">
           <div className="hidden lg:block">
             <div className="sticky top-4">
@@ -692,6 +652,7 @@ const Index = ({ cityFilter }: IndexProps) => {
           <div className="min-w-0">
             <div className="mb-5">
               <h1 className="text-lg font-bold text-foreground">{meta.h1}</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">{meta.tagline}</p>
             </div>
 
             <div className="space-y-3 mb-6">
@@ -704,6 +665,25 @@ const Index = ({ cityFilter }: IndexProps) => {
                   onKeyDown={(e) => { if (e.key === "Enter") { (e.target as HTMLInputElement).blur(); } }}
                   className="pl-10"
                 />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                <div className="lg:hidden contents sm:contents">
+                  <MobileLocationFilter
+                    locations={locations}
+                    selectedLocations={selectedLocations}
+                    onLocationsChange={(v) => { setSelectedLocations(v); setPage(1); }}
+                    locationCounts={locationCounts}
+                    cityFilter={cityFilter}
+                  />
+                </div>
+                <div className="lg:hidden contents sm:contents">
+                  <MobileIndustryFilter
+                    industries={industries}
+                    selectedIndustry={industry}
+                    onIndustryChange={(v) => { setIndustry(v); setPage(1); }}
+                    industryCounts={industryCounts}
+                  />
+                </div>
               </div>
             </div>
 
@@ -733,10 +713,10 @@ const Index = ({ cityFilter }: IndexProps) => {
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-extrabold text-slate-900 mb-0.5">호주 생활 정보도 확인해보세요</p>
-                      <p className="text-xs text-blue-900/75 leading-relaxed">환율, 항공권, 구직 팁을 한곳에서 볼 수 있습니다.</p>
+                      <p className="text-xs text-blue-900/75 leading-relaxed">환율, 최신 호주 뉴스, 구직 팁을 한곳에서 볼 수 있습니다.</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
-                      <Link to="/dashboard" className="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white/80 px-3 text-xs font-semibold text-blue-800 hover:bg-blue-100">
+                      <Link to="/news" className="inline-flex h-9 items-center justify-center rounded-md border border-blue-200 bg-white/80 px-3 text-xs font-semibold text-blue-800 hover:bg-blue-100">
                         워홀정보
                       </Link>
                     </div>
@@ -805,7 +785,7 @@ const Index = ({ cityFilter }: IndexProps) => {
 
             <div className="space-y-3">
               {loadingCards ? (
-                <div className="text-center py-16 text-muted-foreground">불러오는중</div>
+                <div className="text-center py-16 text-muted-foreground">불러오는 중...</div>
               ) : regularPaginatedJobs.length > 0 ? (
                 regularPaginatedJobs.map((job) => (
                   <JobCard key={job.id} job={job} viewCount={getCount(job.id)} showEditButton={isAdmin} onDelete={isAdmin ? handleDeleteJob : undefined} />
@@ -820,7 +800,6 @@ const Index = ({ cityFilter }: IndexProps) => {
             <Pagination currentPage={currentPage} totalPages={displayTotalPages} onPageChange={(p) => { setPage(p); sessionStorage.removeItem("hoju_scroll_y"); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
           </div>
         </div>
-        )}
       </div>
     </div>
   );
