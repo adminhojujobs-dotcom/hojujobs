@@ -9,6 +9,7 @@ export function SiteFooter() {
           <Link to="/privacy" className="hover:text-muted-foreground transition-colors">개인정보처리방침</Link>
           <Link to="/terms" className="hover:text-muted-foreground transition-colors">이용약관</Link>
           <Link to="/faq" className="hover:text-muted-foreground transition-colors">FAQ</Link>
+          <Link to="/blog" className="hover:text-muted-foreground transition-colors">블로그</Link>
           <a href="mailto:admin.hojujobs@gmail.com" className="hover:text-muted-foreground transition-colors">admin.hojujobs@gmail.com</a>
         </div>
         <p>© {new Date().getFullYear()} Hoju Jobs. All rights reserved.</p>
