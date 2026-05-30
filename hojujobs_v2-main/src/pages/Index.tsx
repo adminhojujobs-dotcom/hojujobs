@@ -20,6 +20,7 @@ import { toast } from "sonner";
 const ITEMS_PER_PAGE = 50;
 const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
 const LISTING_CACHE_VERSION = 7;
+const LISTING_REQUEST_TIMEOUT_MS = 15_000;
 const PROMO_CITY_FILTERS = new Set(["NSW", "VIC", "QLD"]);
 const FEATURED_SALE_PROMO_RANKS = [1, 74];
 
@@ -209,6 +210,18 @@ function removeJobFromListingCaches(jobId: number) {
   } catch {}
 }
 
+function withTimeout<T>(promise: PromiseLike<T>, timeoutMs = LISTING_REQUEST_TIMEOUT_MS): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error("Listing request timed out"));
+    }, timeoutMs);
+
+    Promise.resolve(promise)
+      .then(resolve, reject)
+      .finally(() => window.clearTimeout(timeoutId));
+  });
+}
+
 function highlightPrices(value: string) {
   const pricePattern = /(?:A\$|\$)\d[\d,]*(?:\.\d{1,2})?/g;
   const parts: Array<string | JSX.Element> = [];
@@ -257,9 +270,11 @@ const Index = ({ cityFilter }: IndexProps) => {
   const [jobsData, setJobsData] = useState<Job[]>([]);
   const [filterJobs, setFilterJobs] = useState<JobFilterMeta[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
+  const [jobsError, setJobsError] = useState<string | null>(null);
   const [totalJobsCount, setTotalJobsCount] = useState<number | null>(null);
   const [salePromoDeals, setSalePromoDeals] = useState<SalePromoDeal[]>([]);
   const [loadingSalePromoDeals, setLoadingSalePromoDeals] = useState(true);
+  const [retryNonce, setRetryNonce] = useState(0);
 
   const { counts, getCount, hydrateCounts } = useViewCounts();
   const { isAdmin } = useAuth();
@@ -432,7 +447,7 @@ const Index = ({ cityFilter }: IndexProps) => {
       let from = 0;
       let all: JobFilterMeta[] = [];
       while (true) {
-        const { data, error } = await buildFilterJobsQuery(from, from + PAGE - 1);
+        const { data, error } = await withTimeout(buildFilterJobsQuery(from, from + PAGE - 1));
         if (error) { console.error("filter jobs fetch error:", error); return all; }
         if (!data || data.length === 0) break;
         all = all.concat(data as unknown as JobFilterMeta[]);
@@ -450,76 +465,89 @@ const Index = ({ cityFilter }: IndexProps) => {
         setJobsData(cached.jobsData);
         setFilterJobs(cached.filterJobs);
         setTotalJobsCount(cached.totalJobsCount);
+        setJobsError(null);
         setLoadingJobs(false);
         return;
       }
 
       setLoadingJobs(true);
+      setJobsError(null);
       setJobsData([]);
       setTotalJobsCount(null);
 
       const from = (page - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
 
-      const [currentPageJobs, promoted, nextFilterJobs] = await Promise.all([
-        buildJobsQuery(from, to, true),
-        buildPromotedJobsQuery(),
-        fetchFilterJobs(),
-      ]);
+      try {
+        const [currentPageJobs, promoted, nextFilterJobs] = await Promise.all([
+          withTimeout(buildJobsQuery(from, to, true)),
+          withTimeout(buildPromotedJobsQuery()),
+          fetchFilterJobs(),
+        ]);
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      if (currentPageJobs.error) {
-        console.error("jobs fetch error:", currentPageJobs.error);
+        if (currentPageJobs.error) {
+          console.error("jobs fetch error:", currentPageJobs.error);
+          setJobsData([]);
+          setTotalJobsCount(0);
+          setJobsError("공고를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+          setLoadingJobs(false);
+          return;
+        }
+
+        const pageJobs = (currentPageJobs.data as unknown as Job[]) || [];
+        const promotedJobs = promoted.error ? [] : ((promoted.data as unknown as Job[]) || []);
+        const totalCount = currentPageJobs.count ?? pageJobs.length;
+        const maxPage = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
+
+        if (page > maxPage) {
+          setLoadingJobs(false);
+          setPage(maxPage);
+          return;
+        }
+
+        if (promoted.error) {
+          console.error("promoted jobs fetch error:", promoted.error);
+        }
+
+        const fetchHasActiveFilters = !!keyword || selectedLocations.length > 0 || industry !== "all";
+        const resolvedPageJobs = page === 1 && !fetchHasActiveFilters
+          ? mergeJobsById(promotedJobs, pageJobs)
+          : pageJobs;
+        const resolvedFilterJobs = nextFilterJobs.length > 0
+          ? nextFilterJobs
+          : resolvedPageJobs.map(({ location, industry }) => ({ location, industry }));
+        const countSnapshot = await withTimeout(fetchViewCountsByJobIds(resolvedPageJobs.map((job) => job.id)));
+        if (cancelled) return;
+
+        hydrateCounts(countSnapshot);
+        setJobsData(resolvedPageJobs);
+        setFilterJobs(resolvedFilterJobs);
+        setTotalJobsCount(totalCount);
+        setLoadingJobs(false);
+        writeListingCache(cacheKey, {
+          jobsData: resolvedPageJobs,
+          filterJobs: resolvedFilterJobs,
+          totalJobsCount: totalCount,
+          counts: countSnapshot,
+        });
+      } catch (error) {
+        if (cancelled) return;
+        console.error("listing fetch failed:", error);
         setJobsData([]);
+        setFilterJobs([]);
         setTotalJobsCount(0);
+        setJobsError("공고를 불러오는 데 시간이 오래 걸리고 있습니다. 다시 시도해주세요.");
         setLoadingJobs(false);
-        return;
       }
-
-      const pageJobs = (currentPageJobs.data as unknown as Job[]) || [];
-      const promotedJobs = promoted.error ? [] : ((promoted.data as unknown as Job[]) || []);
-      const totalCount = currentPageJobs.count ?? pageJobs.length;
-      const maxPage = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
-
-      if (page > maxPage) {
-        setLoadingJobs(false);
-        setPage(maxPage);
-        return;
-      }
-
-      if (promoted.error) {
-        console.error("promoted jobs fetch error:", promoted.error);
-      }
-
-      const fetchHasActiveFilters = !!keyword || selectedLocations.length > 0 || industry !== "all";
-      const resolvedPageJobs = page === 1 && !fetchHasActiveFilters
-        ? mergeJobsById(promotedJobs, pageJobs)
-        : pageJobs;
-      const resolvedFilterJobs = nextFilterJobs.length > 0
-        ? nextFilterJobs
-        : resolvedPageJobs.map(({ location, industry }) => ({ location, industry }));
-      const countSnapshot = await fetchViewCountsByJobIds(resolvedPageJobs.map((job) => job.id));
-      if (cancelled) return;
-
-      hydrateCounts(countSnapshot);
-      setJobsData(resolvedPageJobs);
-      setFilterJobs(resolvedFilterJobs);
-      setTotalJobsCount(totalCount);
-      setLoadingJobs(false);
-      writeListingCache(cacheKey, {
-        jobsData: resolvedPageJobs,
-        filterJobs: resolvedFilterJobs,
-        totalJobsCount: totalCount,
-        counts: countSnapshot,
-      });
     }
 
     fetchJobs();
     return () => {
       cancelled = true;
     };
-  }, [cityFilter, page, keyword, selectedLocations, industry, sortBy, hydrateCounts]);
+  }, [cityFilter, page, keyword, selectedLocations, industry, sortBy, retryNonce, hydrateCounts]);
 
   const scrollRestored = useRef(false);
   useEffect(() => {
@@ -782,6 +810,17 @@ const Index = ({ cityFilter }: IndexProps) => {
             <div className="space-y-3">
               {loadingCards ? (
                 <div className="text-center py-16 text-muted-foreground">불러오는 중...</div>
+              ) : jobsError ? (
+                <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-10 text-center">
+                  <p className="text-sm font-semibold text-foreground">{jobsError}</p>
+                  <button
+                    type="button"
+                    onClick={() => setRetryNonce((value) => value + 1)}
+                    className="mt-4 inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    다시 불러오기
+                  </button>
+                </div>
               ) : regularPaginatedJobs.length > 0 ? (
                 regularPaginatedJobs.map((job) => (
                   <JobCard key={job.id} job={job} viewCount={getCount(job.id)} showEditButton={isAdmin} onDelete={isAdmin ? handleDeleteJob : undefined} />
