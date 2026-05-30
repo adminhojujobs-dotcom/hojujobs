@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, RotateCcw, Tags, Ticket, Trash2 } from "lucide-react";
+import { ChevronDown, ExternalLink, RotateCcw, Tags, Ticket, Trash2 } from "lucide-react";
 import { Header } from "@/components/Header";
 import {
   AlertDialog,
@@ -417,6 +417,16 @@ export default function Sales() {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+                )}
+                {deal.externalUrl && (
+                  <div className="flex justify-end border-t bg-muted/20 px-2.5 py-2 sm:px-3">
+                    <Button asChild size="sm" className="h-8 gap-1.5 px-3 text-xs">
+                      <a href={deal.externalUrl} target="_blank" rel="noopener noreferrer">
+                        딜 보러가기
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </Button>
+                  </div>
                 )}
               </article>
             ))}
