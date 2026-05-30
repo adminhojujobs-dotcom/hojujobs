@@ -5,8 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ArrowLeft, Trash2, Shield, ExternalLink, Pencil } from "lucide-react";
+import { ArrowLeft, Trash2, Shield, ExternalLink, Pencil, MapPin, Check, X } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
+import { LocationPicker } from "@/components/LocationPicker";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +35,10 @@ export default function Admin() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
+  const [availableLocations, setAvailableLocations] = useState<string[]>([]);
+  const [editingLocationId, setEditingLocationId] = useState<number | null>(null);
+  const [editingLocations, setEditingLocations] = useState<string[]>([]);
+  const [savingLocation, setSavingLocation] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -48,8 +53,34 @@ export default function Admin() {
       .from("jobs")
       .select("id, title, location, industry, uploaded_at, user_id")
       .order("uploaded_at", { ascending: false });
-    if (!error && data) setJobs(data);
+    if (!error && data) {
+      setJobs(data);
+      setAvailableLocations([...new Set(data.flatMap((j) => j.location ?? []))].sort());
+    }
     setLoadingJobs(false);
+  };
+
+  const startEditingLocation = (job: Job) => {
+    setEditingLocationId(job.id);
+    setEditingLocations(job.location ?? []);
+  };
+
+  const cancelEditingLocation = () => {
+    setEditingLocationId(null);
+    setEditingLocations([]);
+  };
+
+  const saveLocation = async (id: number) => {
+    setSavingLocation(true);
+    const { error } = await supabase.from("jobs").update({ location: editingLocations }).eq("id", id);
+    if (error) {
+      toast.error("저장 실패: " + error.message);
+    } else {
+      toast.success("지역이 수정되었습니다.");
+      setJobs((prev) => prev.map((j) => j.id === id ? { ...j, location: editingLocations } : j));
+      setEditingLocationId(null);
+    }
+    setSavingLocation(false);
   };
 
   const deleteJob = async (id: number) => {
@@ -92,44 +123,66 @@ export default function Admin() {
         ) : (
           <div className="space-y-2">
             {jobs.map((job) => (
-              <div key={job.id} className="flex items-center justify-between gap-4 p-4 rounded-lg border bg-card">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <Link to={`/job/${job.id}`} className="font-semibold text-foreground hover:text-primary truncate">
-                      {job.title}
-                    </Link>
-                    <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <div key={job.id} className="p-4 rounded-lg border bg-card space-y-2">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <Link to={`/job/${job.id}`} className="font-semibold text-foreground hover:text-primary truncate">
+                        {job.title}
+                      </Link>
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {(job.location || []).join(", ")}
+                      {job.industry ? `  ${job.industry}` : ""}
+                      {job.uploaded_at ? `  ${new Date(job.uploaded_at).toLocaleDateString("ko-KR")}` : ""}
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {(job.location || []).join(", ")}
-                    {job.industry ? `  ${job.industry}` : ""}
-                    {job.uploaded_at ? `  ${new Date(job.uploaded_at).toLocaleDateString("ko-KR")}` : ""}
-                  </p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => startEditingLocation(job)}>
+                      <MapPin className="h-3.5 w-3.5" /> 지역
+                    </Button>
+                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/edit-job/${job.id}?from=admin`)}>
+                      <Pencil className="h-3.5 w-3.5" /> 수정
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" className="gap-1.5">
+                          <Trash2 className="h-3.5 w-3.5" /> 삭제
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>공고를 삭제하시겠습니까?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            "{job.title}" 공고가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>취소</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteJob(job.id)}>삭제</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/edit-job/${job.id}?from=admin`)}>
-                    <Pencil className="h-3.5 w-3.5" /> 수정
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="sm" className="gap-1.5">
-                        <Trash2 className="h-3.5 w-3.5" /> 삭제
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>공고를 삭제하시겠습니까?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          "{job.title}" 공고가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>취소</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => deleteJob(job.id)}>삭제</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
+                {editingLocationId === job.id && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <div className="flex-1">
+                      <LocationPicker
+                        availableLocations={availableLocations}
+                        selectedLocations={editingLocations}
+                        onLocationsChange={setEditingLocations}
+                      />
+                    </div>
+                    <Button size="sm" className="gap-1.5 shrink-0" onClick={() => saveLocation(job.id)} disabled={savingLocation}>
+                      <Check className="h-3.5 w-3.5" /> 저장
+                    </Button>
+                    <Button size="sm" variant="ghost" className="shrink-0" onClick={cancelEditingLocation}>
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
