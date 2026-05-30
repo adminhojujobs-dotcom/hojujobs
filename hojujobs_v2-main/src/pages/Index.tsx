@@ -666,24 +666,20 @@ const Index = ({ cityFilter }: IndexProps) => {
                   className="pl-10"
                 />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
-                <div className="lg:hidden contents sm:contents">
-                  <MobileLocationFilter
-                    locations={locations}
-                    selectedLocations={selectedLocations}
-                    onLocationsChange={(v) => { setSelectedLocations(v); setPage(1); }}
-                    locationCounts={locationCounts}
-                    cityFilter={cityFilter}
-                  />
-                </div>
-                <div className="lg:hidden contents sm:contents">
-                  <MobileIndustryFilter
-                    industries={industries}
-                    selectedIndustry={industry}
-                    onIndustryChange={(v) => { setIndustry(v); setPage(1); }}
-                    industryCounts={industryCounts}
-                  />
-                </div>
+              <div className="hidden sm:grid sm:grid-cols-2 lg:hidden gap-3">
+                <MobileLocationFilter
+                  locations={locations}
+                  selectedLocations={selectedLocations}
+                  onLocationsChange={(v) => { setSelectedLocations(v); setPage(1); }}
+                  locationCounts={locationCounts}
+                  cityFilter={cityFilter}
+                />
+                <MobileIndustryFilter
+                  industries={industries}
+                  selectedIndustry={industry}
+                  onIndustryChange={(v) => { setIndustry(v); setPage(1); }}
+                  industryCounts={industryCounts}
+                />
               </div>
             </div>
 
