@@ -551,7 +551,7 @@ const Index = ({ cityFilter }: IndexProps) => {
 
   const scrollRestored = useRef(false);
   useEffect(() => {
-    if (!loadingJobs && !scrollRestored.current) {
+    if (!loadingJobs && !loadingSalePromoDeals && !scrollRestored.current) {
       scrollRestored.current = true;
       const savedY = sessionStorage.getItem("hoju_scroll_y");
       if (savedY) {
@@ -559,7 +559,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         setTimeout(() => window.scrollTo({ top: Number(savedY) }), 50);
       }
     }
-  }, [loadingJobs]);
+  }, [loadingJobs, loadingSalePromoDeals]);
 
   // DB already filters by city via overlaps(cityLocations); no client-side re-filter needed
   const cityJobs = useMemo(() => jobsData, [jobsData]);
