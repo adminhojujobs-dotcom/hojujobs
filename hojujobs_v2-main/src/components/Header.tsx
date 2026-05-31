@@ -12,9 +12,24 @@ const CITY_DROPDOWN_TABS = [
 ];
 
 const INFO_TABS = [
-  { label: "온세일", path: "/sales" },
-  { label: "뉴스", path: "/news" },
-  { label: "워홀정보", path: "/dashboard" },
+  {
+    label: "온세일",
+    path: "/sales",
+    idleClassName: "text-emerald-800 hover:bg-emerald-50 hover:text-emerald-900",
+    activeClassName: "bg-emerald-100 text-emerald-800",
+  },
+  {
+    label: "뉴스",
+    path: "/news",
+    idleClassName: "text-blue-800 hover:bg-blue-50 hover:text-blue-900",
+    activeClassName: "bg-blue-100 text-blue-800",
+  },
+  {
+    label: "워홀정보",
+    path: "/dashboard",
+    idleClassName: "text-slate-800 hover:bg-white hover:text-slate-950",
+    activeClassName: "bg-primary/10 text-primary",
+  },
 ];
 
 export function Header() {
@@ -147,17 +162,15 @@ export function Header() {
             </div>
 
             <div className="grid min-w-0 grid-cols-3 items-center gap-1 rounded-md sm:gap-1.5">
-              {INFO_TABS.map(({ label, path }) => (
+              {INFO_TABS.map(({ label, path, idleClassName, activeClassName }) => (
                 <NavLink
                   key={path}
                   to={path}
                   end={path === "/" || path === "/dashboard" || path === "/news"}
                   className={({ isActive }) =>
                     cn(
-                      "inline-flex h-10 min-w-0 items-center justify-center rounded px-1 text-center text-[13px] font-black text-slate-800 transition-colors whitespace-nowrap sm:px-4 sm:text-base",
-                      isActive
-                        ? "bg-primary/10 text-primary"
-                        : "hover:bg-white hover:text-slate-950"
+                      "inline-flex h-10 min-w-0 items-center justify-center rounded px-1 text-center text-[13px] font-black transition-colors whitespace-nowrap sm:px-4 sm:text-base",
+                      isActive ? activeClassName : idleClassName
                     )
                   }
                 >
