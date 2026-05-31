@@ -110,7 +110,7 @@ export function Header() {
                   end={path === "/"}
                   className={({ isActive }) =>
                     cn(
-                      "min-w-0 px-0.5 py-2 text-center text-[11px] font-semibold border-b-2 transition-colors whitespace-nowrap sm:px-2.5 sm:text-sm",
+                      "min-w-0 px-0.5 py-2 text-center text-[11px] font-extrabold border-b-2 transition-colors whitespace-nowrap sm:px-2.5 sm:text-sm",
                       isActive
                         ? "border-primary text-primary"
                         : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
@@ -132,7 +132,7 @@ export function Header() {
                   end={path === "/" || path === "/dashboard" || path === "/news"}
                   className={({ isActive }) =>
                     cn(
-                      "min-w-0 px-0.5 py-2 text-center text-[11px] font-semibold border-b-2 transition-colors whitespace-nowrap sm:px-2.5 sm:text-sm",
+                      "min-w-0 px-0.5 py-2 text-center text-[11px] font-extrabold border-b-2 transition-colors whitespace-nowrap sm:px-2.5 sm:text-sm",
                       isActive
                         ? "border-primary text-primary"
                         : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
