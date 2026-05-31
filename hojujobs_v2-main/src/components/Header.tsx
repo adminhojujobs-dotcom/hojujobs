@@ -120,7 +120,7 @@ export function Header() {
       </div>
 
       <div className="w-full border-t border-slate-200 bg-white">
-        <nav className="grid w-full grid-cols-[minmax(0,1.15fr)_minmax(0,1.85fr)] items-center gap-0.5 px-2 py-1 sm:gap-1 sm:px-4" aria-label="주요 페이지">
+        <nav className="mx-auto grid w-full max-w-6xl grid-cols-[minmax(0,1.15fr)_minmax(0,1.85fr)] items-center gap-0.5 px-2 py-1 sm:gap-1 sm:px-4" aria-label="주요 페이지">
           <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-0.5 rounded-md sm:gap-1">
             <NavLink
               to="/"
