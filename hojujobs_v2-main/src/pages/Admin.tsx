@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import hojuJobsLogo from "@/assets/hoju-jobs-logo.png";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { ArrowLeft, Trash2, Shield, ExternalLink, Pencil, MapPin, Check, X, Sparkles, ShoppingBag } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import { LocationPicker } from "@/components/LocationPicker";
+import { Pagination } from "@/components/Pagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,13 +42,17 @@ interface Deal {
   promoted: boolean;
 }
 
+const ADMIN_PAGE_SIZE = 25;
+
 function clearPromotionCaches() {
   try {
     Object.keys(sessionStorage).forEach((key) => {
       if (key.startsWith("hoju_listing_cache_")) sessionStorage.removeItem(key);
     });
     sessionStorage.removeItem("hoju_sales_cache");
-  } catch {}
+  } catch {
+    // Session storage may be unavailable in private or restricted browser contexts.
+  }
 }
 
 export default function Admin() {
@@ -57,49 +63,85 @@ export default function Admin() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [loadingDeals, setLoadingDeals] = useState(true);
+  const [jobPage, setJobPage] = useState(1);
+  const [dealPage, setDealPage] = useState(1);
+  const [totalJobsCount, setTotalJobsCount] = useState(0);
+  const [totalDealsCount, setTotalDealsCount] = useState(0);
+  const [promotedJobsCount, setPromotedJobsCount] = useState(0);
+  const [promotedDealsCount, setPromotedDealsCount] = useState(0);
   const [availableLocations, setAvailableLocations] = useState<string[]>([]);
   const [editingLocationId, setEditingLocationId] = useState<number | null>(null);
   const [editingLocations, setEditingLocations] = useState<string[]>([]);
   const [savingLocation, setSavingLocation] = useState(false);
   const [savingPromotionKey, setSavingPromotionKey] = useState<string | null>(null);
 
+  const fetchJobs = useCallback(async (page = jobPage) => {
+    setLoadingJobs(true);
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 7);
+    const from = (page - 1) * ADMIN_PAGE_SIZE;
+    const to = from + ADMIN_PAGE_SIZE - 1;
+
+    const { data, error, count } = await supabase
+      .from("jobs")
+      .select("id, title, location, industry, uploaded_at, user_id, Promoted", { count: "exact" })
+      .gte("uploaded_at", cutoff.toISOString())
+      .lte("uploaded_at", new Date().toISOString())
+      .order("uploaded_at", { ascending: false })
+      .range(from, to);
+
+    const { count: promotedCount } = await supabase
+      .from("jobs")
+      .select("id", { count: "exact", head: true })
+      .eq("Promoted", true)
+      .gte("uploaded_at", cutoff.toISOString())
+      .lte("uploaded_at", new Date().toISOString());
+
+    if (!error && data) {
+      setJobs(data);
+      setTotalJobsCount(count ?? data.length);
+      setPromotedJobsCount(promotedCount ?? 0);
+      setAvailableLocations([...new Set(data.flatMap((j) => j.location ?? []))].sort());
+    }
+    setLoadingJobs(false);
+  }, [jobPage]);
+
+  const fetchDeals = useCallback(async (page = dealPage) => {
+    setLoadingDeals(true);
+    const from = (page - 1) * ADMIN_PAGE_SIZE;
+    const to = from + ADMIN_PAGE_SIZE - 1;
+
+    const { data, error, count } = await supabase
+      .from("ozbargain_deals")
+      .select("rank, title, category, image_url, uploaded_at, promoted", { count: "exact" })
+      .order("promoted", { ascending: false })
+      .order("rank", { ascending: true })
+      .range(from, to);
+
+    const { count: promotedCount } = await supabase
+      .from("ozbargain_deals")
+      .select("rank", { count: "exact", head: true })
+      .eq("promoted", true);
+
+    if (!error && data) {
+      setDeals(data);
+      setTotalDealsCount(count ?? data.length);
+      setPromotedDealsCount(promotedCount ?? 0);
+    }
+    setLoadingDeals(false);
+  }, [dealPage]);
+
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
       navigate("/");
       return;
     }
-    if (user && isAdmin) {
-      fetchJobs();
-      fetchDeals();
-    }
-  }, [user, isAdmin, loading]);
+    if (user && isAdmin) fetchJobs(jobPage);
+  }, [user, isAdmin, loading, jobPage, navigate, fetchJobs]);
 
-  const fetchJobs = async () => {
-    setLoadingJobs(true);
-    const { data, error } = await supabase
-      .from("jobs")
-      .select("id, title, location, industry, uploaded_at, user_id, Promoted")
-      .order("uploaded_at", { ascending: false });
-    if (!error && data) {
-      setJobs(data);
-      setAvailableLocations([...new Set(data.flatMap((j) => j.location ?? []))].sort());
-    }
-    setLoadingJobs(false);
-  };
-
-  const fetchDeals = async () => {
-    setLoadingDeals(true);
-    const { data, error } = await supabase
-      .from("ozbargain_deals")
-      .select("rank, title, category, image_url, uploaded_at, promoted")
-      .order("promoted", { ascending: false })
-      .order("rank", { ascending: true });
-
-    if (!error && data) {
-      setDeals(data);
-    }
-    setLoadingDeals(false);
-  };
+  useEffect(() => {
+    if (user && isAdmin) fetchDeals(dealPage);
+  }, [user, isAdmin, dealPage, fetchDeals]);
 
   const startEditingLocation = (job: Job) => {
     setEditingLocationId(job.id);
@@ -131,6 +173,7 @@ export default function Admin() {
     } else {
       toast.success("공고가 삭제되었습니다.");
       setJobs((prev) => prev.filter((j) => j.id !== id));
+      setTotalJobsCount((prev) => Math.max(0, prev - 1));
       clearPromotionCaches();
     }
   };
@@ -144,6 +187,7 @@ export default function Admin() {
       toast.error("추천 공고 저장 실패: " + error.message);
     } else {
       setJobs((prev) => prev.map((item) => item.id === job.id ? { ...item, Promoted: promoted } : item));
+      setPromotedJobsCount((prev) => promoted ? prev + 1 : Math.max(0, prev - 1));
       clearPromotionCaches();
       toast.success(promoted ? "추천 공고로 설정되었습니다." : "추천 공고에서 해제되었습니다.");
     }
@@ -160,6 +204,7 @@ export default function Admin() {
       toast.error("메인 카드 딜 저장 실패: " + error.message);
     } else {
       setDeals((prev) => prev.map((item) => item.rank === deal.rank ? { ...item, promoted } : item));
+      setPromotedDealsCount((prev) => promoted ? prev + 1 : Math.max(0, prev - 1));
       clearPromotionCaches();
       toast.success(promoted ? "메인 카드 딜로 설정되었습니다." : "메인 카드 딜에서 해제되었습니다.");
     }
@@ -171,8 +216,8 @@ export default function Admin() {
   if (!isAdmin) return null;
 
   return (
-    <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="flex w-full min-w-0 min-h-0 flex-1 flex-col overflow-x-hidden bg-background">
+      <div className="mx-auto w-full max-w-5xl px-4 py-8">
         <div className="mb-6 space-y-4">
           <Link to="/">
             <img src={hojuJobsLogo} alt="Hoju Jobs" className="h-8 hover:opacity-80 transition-opacity" />
@@ -188,163 +233,192 @@ export default function Admin() {
           <h2 className="text-xl font-bold text-foreground">관리자 대시보드</h2>
         </div>
 
-        <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
-              <Sparkles className="h-4 w-4 text-amber-500" />
-              추천 공고 선택
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              총 <span className="font-semibold text-foreground">{jobs.length}</span>개의 공고 중 메인 상단에 노출할 공고를 선택하세요.
-            </p>
-          </div>
-          <p className="text-xs font-semibold text-amber-700">
-            선택됨 {jobs.filter((job) => job.Promoted === true).length}
-          </p>
-        </div>
+        <Tabs defaultValue="jobs" className="w-full min-w-0">
+          <TabsList className="mb-5 grid w-full grid-cols-2 sm:w-[22rem]">
+            <TabsTrigger value="jobs" className="gap-1.5">
+              <Sparkles className="h-3.5 w-3.5" />
+              공고
+            </TabsTrigger>
+            <TabsTrigger value="deals" className="gap-1.5">
+              <ShoppingBag className="h-3.5 w-3.5" />
+              딜
+            </TabsTrigger>
+          </TabsList>
 
-        {loadingJobs ? (
-          <div className="text-center py-16 text-muted-foreground">불러오는 중...</div>
-        ) : (
-          <div className="space-y-2">
-            {jobs.map((job) => (
-              <div key={job.id} className="p-4 rounded-lg border bg-card space-y-2">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <Link to={`/job/${job.id}`} className="font-semibold text-foreground hover:text-primary truncate">
-                        {job.title}
-                      </Link>
-                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                    </div>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {(job.location || []).join(", ")}
-                      {job.industry ? `  ${job.industry}` : ""}
-                      {job.uploaded_at ? `  ${new Date(job.uploaded_at).toLocaleDateString("ko-KR")}` : ""}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5">
-                      <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-                      <span className="text-xs font-semibold text-amber-800">추천</span>
-                      <Switch
-                        checked={job.Promoted === true}
-                        disabled={savingPromotionKey === `job-${job.id}`}
-                        onCheckedChange={(checked) => void toggleJobPromotion(job, checked)}
-                        aria-label={`${job.title ?? "공고"} 추천 공고 설정`}
-                      />
-                    </div>
-                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => startEditingLocation(job)}>
-                      <MapPin className="h-3.5 w-3.5" /> 지역
-                    </Button>
-                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate(`/edit-job/${job.id}?from=admin`)}>
-                      <Pencil className="h-3.5 w-3.5" /> 수정
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm" className="gap-1.5">
-                          <Trash2 className="h-3.5 w-3.5" /> 삭제
+          <TabsContent value="jobs" className="mt-0">
+            <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
+                  <Sparkles className="h-4 w-4 text-amber-500" />
+                  추천 공고 선택
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  현재 사이트에 보이는 공고 <span className="font-semibold text-foreground">{totalJobsCount}</span>개를 페이지별로 관리합니다.
+                </p>
+              </div>
+              <p className="text-xs font-semibold text-amber-700">선택됨 {promotedJobsCount}</p>
+            </div>
+
+            {loadingJobs ? (
+              <div className="text-center py-16 text-muted-foreground">불러오는 중...</div>
+            ) : jobs.length === 0 ? (
+              <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
+                현재 보이는 공고가 없습니다.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {jobs.map((job) => (
+                  <div key={job.id} className="w-full min-w-0 space-y-2 rounded-lg border bg-card p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <Link to={`/job/${job.id}`} className="truncate font-semibold text-foreground hover:text-primary">
+                            {job.title}
+                          </Link>
+                          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        </div>
+                        <p className="truncate text-sm text-muted-foreground">
+                          {(job.location || []).join(", ")}
+                          {job.industry ? `  ${job.industry}` : ""}
+                          {job.uploaded_at ? `  ${new Date(job.uploaded_at).toLocaleDateString("ko-KR")}` : ""}
+                        </p>
+                      </div>
+                      <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end">
+                        <div className="flex h-9 items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5">
+                          <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                          <span className="text-xs font-semibold text-amber-800">추천</span>
+                          <Switch
+                            checked={job.Promoted === true}
+                            disabled={savingPromotionKey === `job-${job.id}`}
+                            onCheckedChange={(checked) => void toggleJobPromotion(job, checked)}
+                            aria-label={`${job.title ?? "공고"} 추천 공고 설정`}
+                          />
+                        </div>
+                        <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={() => startEditingLocation(job)}>
+                          <MapPin className="h-3.5 w-3.5" /> 지역
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>공고를 삭제하시겠습니까?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            "{job.title}" 공고가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>취소</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => deleteJob(job.id)}>삭제</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                        <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={() => navigate(`/edit-job/${job.id}?from=admin`)}>
+                          <Pencil className="h-3.5 w-3.5" /> 수정
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm" className="h-9 gap-1.5">
+                              <Trash2 className="h-3.5 w-3.5" /> 삭제
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>공고를 삭제하시겠습니까?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                "{job.title}" 공고가 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>취소</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => deleteJob(job.id)}>삭제</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                    {editingLocationId === job.id && (
+                      <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center">
+                        <div className="min-w-0 flex-1">
+                          <LocationPicker
+                            availableLocations={availableLocations}
+                            selectedLocations={editingLocations}
+                            onLocationsChange={setEditingLocations}
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button size="sm" className="gap-1.5 shrink-0" onClick={() => saveLocation(job.id)} disabled={savingLocation}>
+                            <Check className="h-3.5 w-3.5" /> 저장
+                          </Button>
+                          <Button size="sm" variant="ghost" className="shrink-0" onClick={cancelEditingLocation}>
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-                {editingLocationId === job.id && (
-                  <div className="flex items-center gap-2 pt-1">
-                    <div className="flex-1">
-                      <LocationPicker
-                        availableLocations={availableLocations}
-                        selectedLocations={editingLocations}
-                        onLocationsChange={setEditingLocations}
+                ))}
+                <Pagination
+                  currentPage={jobPage}
+                  totalPages={Math.ceil(totalJobsCount / ADMIN_PAGE_SIZE)}
+                  onPageChange={(nextPage) => { setJobPage(nextPage); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                />
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="deals" className="mt-0">
+            <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
+                  <ShoppingBag className="h-4 w-4 text-emerald-600" />
+                  메인 카드 딜 선택
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  온세일 딜 <span className="font-semibold text-foreground">{totalDealsCount}</span>개 중 메인 페이지에 보여줄 예시 딜을 선택하세요.
+                </p>
+              </div>
+              <p className="text-xs font-semibold text-emerald-700">선택됨 {promotedDealsCount}</p>
+            </div>
+
+            {loadingDeals ? (
+              <div className="text-center py-16 text-muted-foreground">딜 불러오는 중...</div>
+            ) : deals.length === 0 ? (
+              <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
+                등록된 딜이 없습니다.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {deals.map((deal) => (
+                  <div key={deal.rank} className="flex w-full min-w-0 flex-col gap-3 rounded-lg border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      {deal.image_url && (
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-white p-1.5">
+                          <img
+                            src={deal.image_url}
+                            alt={deal.title}
+                            className="max-h-full w-full object-contain"
+                            onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
+                          />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <Link to={`/sales/${deal.rank}`} className="truncate font-semibold text-foreground hover:text-primary">
+                            {deal.title}
+                          </Link>
+                          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        </div>
+                        <p className="truncate text-sm text-muted-foreground">
+                          #{deal.rank}  {deal.category}  {new Date(deal.uploaded_at).toLocaleDateString("ko-KR")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex h-9 shrink-0 items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-2.5">
+                      <ShoppingBag className="h-3.5 w-3.5 text-emerald-700" />
+                      <span className="text-xs font-semibold text-emerald-800">메인 카드</span>
+                      <Switch
+                        checked={deal.promoted}
+                        disabled={savingPromotionKey === `deal-${deal.rank}`}
+                        onCheckedChange={(checked) => void toggleDealPromotion(deal, checked)}
+                        aria-label={`${deal.title} 메인 카드 딜 설정`}
                       />
                     </div>
-                    <Button size="sm" className="gap-1.5 shrink-0" onClick={() => saveLocation(job.id)} disabled={savingLocation}>
-                      <Check className="h-3.5 w-3.5" /> 저장
-                    </Button>
-                    <Button size="sm" variant="ghost" className="shrink-0" onClick={cancelEditingLocation}>
-                      <X className="h-3.5 w-3.5" />
-                    </Button>
                   </div>
-                )}
+                ))}
+                <Pagination
+                  currentPage={dealPage}
+                  totalPages={Math.ceil(totalDealsCount / ADMIN_PAGE_SIZE)}
+                  onPageChange={(nextPage) => { setDealPage(nextPage); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                />
               </div>
-            ))}
-          </div>
-        )}
-
-        <div className="mt-10 mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
-              <ShoppingBag className="h-4 w-4 text-emerald-600" />
-              메인 카드 딜 선택
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              온세일 딜 중 메인 페이지 프로모션 카드에 보여줄 예시 딜을 선택하세요.
-            </p>
-          </div>
-          <p className="text-xs font-semibold text-emerald-700">
-            선택됨 {deals.filter((deal) => deal.promoted).length}
-          </p>
-        </div>
-
-        {loadingDeals ? (
-          <div className="text-center py-16 text-muted-foreground">딜 불러오는 중...</div>
-        ) : deals.length === 0 ? (
-          <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
-            등록된 딜이 없습니다.
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {deals.map((deal) => (
-              <div key={deal.rank} className="flex flex-col gap-3 rounded-lg border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                  {deal.image_url && (
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-white p-1.5">
-                      <img
-                        src={deal.image_url}
-                        alt={deal.title}
-                        className="max-h-full w-full object-contain"
-                        onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
-                      />
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <Link to={`/sales/${deal.rank}`} className="truncate font-semibold text-foreground hover:text-primary">
-                        {deal.title}
-                      </Link>
-                      <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    </div>
-                    <p className="truncate text-sm text-muted-foreground">
-                      #{deal.rank}  {deal.category}  {new Date(deal.uploaded_at).toLocaleDateString("ko-KR")}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex shrink-0 items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5">
-                  <ShoppingBag className="h-3.5 w-3.5 text-emerald-700" />
-                  <span className="text-xs font-semibold text-emerald-800">메인 카드</span>
-                  <Switch
-                    checked={deal.promoted}
-                    disabled={savingPromotionKey === `deal-${deal.rank}`}
-                    onCheckedChange={(checked) => void toggleDealPromotion(deal, checked)}
-                    aria-label={`${deal.title} 메인 카드 딜 설정`}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
