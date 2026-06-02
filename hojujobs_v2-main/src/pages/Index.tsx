@@ -22,7 +22,7 @@ const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
 const LISTING_CACHE_VERSION = 7;
 const LISTING_REQUEST_TIMEOUT_MS = 15_000;
 const PROMO_CITY_FILTERS = new Set(["NSW", "VIC", "QLD"]);
-const FEATURED_SALE_PROMO_RANKS = [11, 25];
+const FEATURED_SALE_PROMO_LIMIT = 2;
 
 type SortOption = "recent" | "views";
 
@@ -342,8 +342,9 @@ const Index = ({ cityFilter }: IndexProps) => {
       const { data, error } = await supabase
         .from("ozbargain_deals")
         .select("rank, title, category, image_url")
-        .in("rank", FEATURED_SALE_PROMO_RANKS)
-        .order("rank", { ascending: true });
+        .eq("promoted", true)
+        .order("rank", { ascending: true })
+        .limit(FEATURED_SALE_PROMO_LIMIT);
 
       if (cancelled) return;
 

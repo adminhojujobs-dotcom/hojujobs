@@ -144,6 +144,7 @@ export type Database = {
           external_url: string | null
           id: number
           image_url: string | null
+          promoted: boolean
           promo_codes: Json
           rank: number
           teaser_description: string | null
@@ -156,6 +157,7 @@ export type Database = {
           external_url?: string | null
           id?: number
           image_url?: string | null
+          promoted?: boolean
           promo_codes?: Json
           rank: number
           teaser_description?: string | null
@@ -168,6 +170,7 @@ export type Database = {
           external_url?: string | null
           id?: number
           image_url?: string | null
+          promoted?: boolean
           promo_codes?: Json
           rank?: number
           teaser_description?: string | null
