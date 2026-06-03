@@ -89,6 +89,9 @@ export const REGION_GROUPS: RegionGroup[] = [
   // SA - Adelaide
   { state: "SA", region: "애들레이드", suburbs: ["글렌리그", "마리온"] },
 
+  // WA - Perth
+  { state: "WA", region: "퍼스 (WA)", suburbs: ["벤틀리", "퍼스"] },
+
   // QLD - Brisbane
   { state: "QLD", region: "골드코스트", suburbs: ["골드코스트"] },
   { state: "QLD", region: "기타 퀸즐랜드", suburbs: ["타운스빌", "케언즈", "선샤인 코스트", "캐블처 사우스", "캐불처 사우스", "해밀턴"] },
@@ -471,6 +474,8 @@ export const SUBURB_EN: Record<string, string> = {
   "실버데일": "Silverdale NSW",
   "더보": "Dubbo NSW",
   "벤틀리": "Bentley WA",
+  "퍼스": "Perth WA",
+  "태즈메이니아": "Tasmania TAS",
   "더 록스": "The Rocks NSW",
   "모스만": "Mosman NSW",
   "노던 비치즈": "Northern Beaches NSW",
