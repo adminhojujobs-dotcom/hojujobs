@@ -499,10 +499,13 @@ const Index = ({ cityFilter }: IndexProps) => {
       const to = from + ITEMS_PER_PAGE - 1;
 
       try {
-        const [currentPageJobs, promoted, nextFilterJobs] = await Promise.all([
+        const filterJobsPromise = fetchFilterJobs().catch((error) => {
+          console.error("filter metadata fetch error:", error);
+          return [] as JobFilterMeta[];
+        });
+        const [currentPageJobs, promoted] = await Promise.all([
           withTimeout(buildJobsQuery(from, to, true)),
           withTimeout(buildPromotedJobsQuery()),
-          fetchFilterJobs(),
         ]);
 
         if (cancelled) return;
@@ -535,17 +538,25 @@ const Index = ({ cityFilter }: IndexProps) => {
         const resolvedPageJobs = page === 1 && !fetchHasActiveFilters
           ? mergeJobsById(promotedJobs, pageJobs)
           : pageJobs;
-        const resolvedFilterJobs = nextFilterJobs.length > 0
-          ? nextFilterJobs
-          : resolvedPageJobs.map(({ location, industry }) => ({ location, industry }));
-        const countSnapshot = await withTimeout(fetchViewCountsByJobIds(resolvedPageJobs.map((job) => job.id)));
-        if (cancelled) return;
+        const fallbackFilterJobs = resolvedPageJobs.map(({ location, industry }) => ({ location, industry }));
 
-        hydrateCounts(countSnapshot);
         setJobsData(resolvedPageJobs);
-        setFilterJobs(resolvedFilterJobs);
+        setFilterJobs(fallbackFilterJobs);
         setTotalJobsCount(totalCount);
         setLoadingJobs(false);
+
+        const [countSnapshot, nextFilterJobs] = await Promise.all([
+          withTimeout(fetchViewCountsByJobIds(resolvedPageJobs.map((job) => job.id)), 5_000).catch((error) => {
+            console.error("visible view counts fetch error:", error);
+            return {};
+          }),
+          filterJobsPromise,
+        ]);
+        if (cancelled) return;
+
+        const resolvedFilterJobs = nextFilterJobs.length > 0 ? nextFilterJobs : fallbackFilterJobs;
+        hydrateCounts(countSnapshot);
+        setFilterJobs(resolvedFilterJobs);
         writeListingCache(cacheKey, {
           jobsData: resolvedPageJobs,
           filterJobs: resolvedFilterJobs,
