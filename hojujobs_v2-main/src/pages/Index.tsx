@@ -625,10 +625,10 @@ const Index = ({ cityFilter }: IndexProps) => {
         });
 
         const [currentPageJobs, promoted] = sortBy === "views"
-          ? [
-              await fetchJobsByViews(from, to),
-              { data: [], error: null },
-            ]
+          ? await Promise.all([
+              fetchJobsByViews(from, to),
+              withTimeout(buildPromotedJobsQuery()),
+            ])
           : await Promise.all([
               withTimeout(buildJobsQuery(from, to, true)),
               withTimeout(buildPromotedJobsQuery()),
@@ -665,7 +665,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         }
 
         const fetchHasActiveFilters = !!keyword || selectedLocations.length > 0 || industry !== "all";
-        const resolvedPageJobs = page === 1 && !fetchHasActiveFilters && sortBy !== "views"
+        const resolvedPageJobs = page === 1 && !fetchHasActiveFilters
           ? mergeJobsById(promotedJobs, pageJobs)
           : pageJobs;
         const fallbackFilterJobs = resolvedPageJobs.map(({ location, industry }) => ({ location, industry }));
@@ -786,7 +786,7 @@ const Index = ({ cityFilter }: IndexProps) => {
   const showPromoSection = currentPage === 1 && !hasActiveFilters && (!cityFilter || PROMO_CITY_FILTERS.has(cityFilter));
   const allLoaded = !loadingJobs && !loadingSalePromoDeals;
   const showReadyPromoSection = showPromoSection && allLoaded;
-  const showPromotedJobsInPromoSection = showReadyPromoSection && sortBy === "recent";
+  const showPromotedJobsInPromoSection = showReadyPromoSection;
   const loadingCards = !allLoaded;
   const regularPaginatedJobs = showPromotedJobsInPromoSection
     ? paginatedJobs.filter((job) => job.Promoted !== true)
