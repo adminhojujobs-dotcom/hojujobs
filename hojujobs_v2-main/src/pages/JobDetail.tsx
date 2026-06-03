@@ -27,6 +27,8 @@ interface Job {
   archived?: boolean;
 }
 
+const VISIBLE_JOB_DAYS = 6;
+
 function cacheViewCount(jobId: number, count: number) {
   sessionStorage.setItem(`hoju_job_view_count_${jobId}`, String(count));
 }
@@ -133,7 +135,7 @@ export default function JobDetail() {
     if (job?.archived) return true;
     if (!job?.uploaded_at) return false;
     const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 7);
+    cutoff.setDate(cutoff.getDate() - VISIBLE_JOB_DAYS);
     return new Date(job.uploaded_at) < cutoff;
   }, [job]);
 

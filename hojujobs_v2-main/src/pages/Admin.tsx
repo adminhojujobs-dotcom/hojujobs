@@ -43,6 +43,7 @@ interface Deal {
 }
 
 const ADMIN_PAGE_SIZE = 25;
+const VISIBLE_JOB_DAYS = 6;
 
 function clearPromotionCaches() {
   try {
@@ -78,7 +79,7 @@ export default function Admin() {
   const fetchJobs = useCallback(async (page = jobPage) => {
     setLoadingJobs(true);
     const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 7);
+    cutoff.setDate(cutoff.getDate() - VISIBLE_JOB_DAYS);
     const from = (page - 1) * ADMIN_PAGE_SIZE;
     const to = from + ADMIN_PAGE_SIZE - 1;
 

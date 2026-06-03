@@ -19,6 +19,7 @@ import { clearListingCaches } from "@/lib/listingCache";
 import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 50;
+const VISIBLE_JOB_DAYS = 6;
 const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
 const LISTING_CACHE_VERSION = 7;
 const LISTING_REQUEST_TIMEOUT_MS = 15_000;
@@ -465,7 +466,7 @@ const Index = ({ cityFilter }: IndexProps) => {
     let cancelled = false;
 
     const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 7);
+    cutoff.setDate(cutoff.getDate() - VISIBLE_JOB_DAYS);
 
     const cityLocations = cityFilter ? getCityLocations(cityFilter) : [];
 
