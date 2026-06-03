@@ -24,7 +24,7 @@ const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
 const LISTING_CACHE_VERSION = 7;
 const LISTING_REQUEST_TIMEOUT_MS = 15_000;
 const FILTER_METADATA_TIMEOUT_MS = 5_000;
-const FILTER_METADATA_LIMIT = 1000;
+const FILTER_METADATA_PAGE_SIZE = 1000;
 const VIEWS_SORT_PAGE_SIZE = 1000;
 const VIEWS_SORT_MAX_JOBS = 5000;
 const PROMO_CITY_FILTERS = new Set(["NSW", "VIC", "QLD"]);
@@ -534,17 +534,29 @@ const Index = ({ cityFilter }: IndexProps) => {
     }
 
     async function fetchFilterJobs() {
-      const { data, error } = await withTimeout(
-        buildFilterJobsQuery(0, FILTER_METADATA_LIMIT - 1),
-        FILTER_METADATA_TIMEOUT_MS
-      );
+      let from = 0;
+      let all: JobFilterMeta[] = [];
 
-      if (error) {
-        console.error("filter jobs fetch error:", error);
-        return [];
+      while (true) {
+        const { data, error } = await withTimeout(
+          buildFilterJobsQuery(from, from + FILTER_METADATA_PAGE_SIZE - 1),
+          FILTER_METADATA_TIMEOUT_MS
+        );
+
+        if (error) {
+          console.error("filter jobs fetch error:", error);
+          return all;
+        }
+
+        const batch = (data as unknown as JobFilterMeta[]) || [];
+        if (batch.length === 0) break;
+
+        all = all.concat(batch);
+        if (batch.length < FILTER_METADATA_PAGE_SIZE) break;
+        from += FILTER_METADATA_PAGE_SIZE;
       }
 
-      return (data as unknown as JobFilterMeta[]) || [];
+      return all;
     }
 
     async function fetchJobsByViews(from: number, to: number) {
