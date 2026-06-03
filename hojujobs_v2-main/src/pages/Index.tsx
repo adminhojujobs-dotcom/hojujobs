@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Newspaper, Search, ArrowUpDown, ShoppingBag } from "lucide-react";
 import { Header } from "@/components/Header";
@@ -24,6 +24,8 @@ const LISTING_CACHE_VERSION = 7;
 const LISTING_REQUEST_TIMEOUT_MS = 15_000;
 const PROMO_CITY_FILTERS = new Set(["NSW", "VIC", "QLD"]);
 const FEATURED_SALE_PROMO_LIMIT = 2;
+const SALE_PROMO_CACHE_KEY = "hoju_sale_promo_cache";
+const DEFAULT_SELECTED_LOCATIONS: string[] = [];
 
 type SortOption = "recent" | "views";
 
@@ -46,6 +48,12 @@ interface SalePromoDeal {
   title: string;
   category: string;
   imageUrl?: string;
+}
+
+interface SalePromoCache {
+  version: number;
+  deals: SalePromoDeal[];
+  cachedAt: number;
 }
 
 const CITY_META: Record<string, { title: string; description: string; canonical: string; h1: string; tagline: string; keywords: string }> = {
@@ -155,6 +163,35 @@ function writeListingCache(key: string, cache: Omit<ListingCache, "cachedAt" | "
     sessionStorage.setItem(key, JSON.stringify({
       ...cache,
       version: LISTING_CACHE_VERSION,
+      cachedAt: Date.now(),
+    }));
+  } catch {
+    // Session storage may be unavailable in private or restricted browser contexts.
+  }
+}
+
+function readSalePromoCache(): SalePromoDeal[] | null {
+  try {
+    const raw = sessionStorage.getItem(SALE_PROMO_CACHE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as SalePromoCache;
+    if (parsed.version !== LISTING_CACHE_VERSION || !parsed.cachedAt || Date.now() - parsed.cachedAt > LISTING_CACHE_TTL_MS) {
+      sessionStorage.removeItem(SALE_PROMO_CACHE_KEY);
+      return null;
+    }
+
+    return parsed.deals;
+  } catch {
+    return null;
+  }
+}
+
+function writeSalePromoCache(deals: SalePromoDeal[]) {
+  try {
+    sessionStorage.setItem(SALE_PROMO_CACHE_KEY, JSON.stringify({
+      version: LISTING_CACHE_VERSION,
+      deals,
       cachedAt: Date.now(),
     }));
   } catch {
@@ -276,21 +313,40 @@ const Index = ({ cityFilter }: IndexProps) => {
     return null;
   }, [filterKey]);
 
-  const [keyword, setKeyword] = useState(saved?.keyword ?? "");
-  const [selectedLocations, setSelectedLocations] = useState<string[]>(saved?.locations ?? []);
-  const [industry, setIndustry] = useState(saved?.industry ?? "all");
-  const [page, setPage] = useState(saved?.page ?? 1);
-  const [sortBy, setSortBy] = useState<SortOption>(saved?.sortBy ?? "recent");
-  const [jobsData, setJobsData] = useState<Job[]>([]);
-  const [filterJobs, setFilterJobs] = useState<JobFilterMeta[]>([]);
-  const [loadingJobs, setLoadingJobs] = useState(true);
+  const initialKeyword = saved?.keyword ?? "";
+  const initialSelectedLocations = Array.isArray(saved?.locations) ? saved.locations : DEFAULT_SELECTED_LOCATIONS;
+  const initialIndustry = saved?.industry ?? "all";
+  const initialPage = saved?.page ?? 1;
+  const initialSortBy = saved?.sortBy ?? "recent";
+  const initialListingCache = useMemo(() => {
+    if (isBrowserReload() && !didClearListingCacheForDocumentReload) return null;
+
+    return readListingCache(listingCacheKey({
+      cityFilter,
+      page: initialPage,
+      keyword: initialKeyword,
+      selectedLocations: initialSelectedLocations,
+      industry: initialIndustry,
+      sortBy: initialSortBy,
+    }));
+  }, [cityFilter, initialIndustry, initialKeyword, initialPage, initialSelectedLocations, initialSortBy]);
+  const initialSalePromoDeals = useMemo(() => readSalePromoCache() ?? [], []);
+
+  const [keyword, setKeyword] = useState(initialKeyword);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>(initialSelectedLocations);
+  const [industry, setIndustry] = useState(initialIndustry);
+  const [page, setPage] = useState(initialPage);
+  const [sortBy, setSortBy] = useState<SortOption>(initialSortBy);
+  const [jobsData, setJobsData] = useState<Job[]>(initialListingCache?.jobsData ?? []);
+  const [filterJobs, setFilterJobs] = useState<JobFilterMeta[]>(initialListingCache?.filterJobs ?? []);
+  const [loadingJobs, setLoadingJobs] = useState(!initialListingCache);
   const [jobsError, setJobsError] = useState<string | null>(null);
-  const [totalJobsCount, setTotalJobsCount] = useState<number | null>(null);
-  const [salePromoDeals, setSalePromoDeals] = useState<SalePromoDeal[]>([]);
-  const [loadingSalePromoDeals, setLoadingSalePromoDeals] = useState(true);
+  const [totalJobsCount, setTotalJobsCount] = useState<number | null>(initialListingCache?.totalJobsCount ?? null);
+  const [salePromoDeals, setSalePromoDeals] = useState<SalePromoDeal[]>(initialSalePromoDeals);
+  const [loadingSalePromoDeals, setLoadingSalePromoDeals] = useState(initialSalePromoDeals.length === 0);
   const [retryNonce, setRetryNonce] = useState(0);
 
-  const { counts, getCount, hydrateCounts } = useViewCounts();
+  const { counts, getCount, hydrateCounts } = useViewCounts(initialListingCache?.counts ?? {});
   const { isAdmin } = useAuth();
 
   const meta = cityFilter ? (CITY_META[cityFilter] ?? DEFAULT_META) : DEFAULT_META;
@@ -357,9 +413,12 @@ const Index = ({ cityFilter }: IndexProps) => {
 
   useEffect(() => {
     let cancelled = false;
+    const cachedDeals = readSalePromoCache();
 
     async function fetchSalePromoDeals() {
-      setLoadingSalePromoDeals(true);
+      if (!cachedDeals) {
+        setLoadingSalePromoDeals(true);
+      }
 
       const { data, error } = await supabase
         .from("ozbargain_deals")
@@ -372,20 +431,28 @@ const Index = ({ cityFilter }: IndexProps) => {
 
       if (error) {
         console.error("sale promo deals fetch error:", error);
-        setSalePromoDeals([]);
+        if (!cachedDeals) {
+          setSalePromoDeals([]);
+        }
         setLoadingSalePromoDeals(false);
         return;
       }
 
-      setSalePromoDeals((data ?? []).map((deal) => ({
+      const nextDeals = (data ?? []).map((deal) => ({
         rank: deal.rank,
         title: deal.title,
         category: deal.category,
         imageUrl: deal.image_url ?? undefined,
-      })));
+      }));
+      setSalePromoDeals(nextDeals);
+      writeSalePromoCache(nextDeals);
       setLoadingSalePromoDeals(false);
     }
 
+    if (cachedDeals) {
+      setSalePromoDeals(cachedDeals);
+      setLoadingSalePromoDeals(false);
+    }
     fetchSalePromoDeals();
     return () => {
       cancelled = true;
@@ -573,13 +640,13 @@ const Index = ({ cityFilter }: IndexProps) => {
   }, [cityFilter, page, keyword, selectedLocations, industry, sortBy, retryNonce, hydrateCounts]);
 
   const scrollRestored = useRef(false);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!loadingJobs && !loadingSalePromoDeals && !scrollRestored.current) {
       scrollRestored.current = true;
       const savedY = sessionStorage.getItem("hoju_scroll_y");
       if (savedY) {
         sessionStorage.removeItem("hoju_scroll_y");
-        setTimeout(() => window.scrollTo({ top: Number(savedY) }), 50);
+        window.scrollTo({ top: Number(savedY) });
       }
     }
   }, [loadingJobs, loadingSalePromoDeals]);
