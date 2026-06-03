@@ -21,7 +21,7 @@ import { toast } from "sonner";
 const ITEMS_PER_PAGE = 50;
 const VISIBLE_JOB_DAYS = 6;
 const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
-const LISTING_CACHE_VERSION = 7;
+const LISTING_CACHE_VERSION = 8;
 const LISTING_REQUEST_TIMEOUT_MS = 15_000;
 const SALE_PROMO_TIMEOUT_MS = 5_000;
 const FILTER_METADATA_TIMEOUT_MS = 5_000;
@@ -136,6 +136,10 @@ function mergeJobsById(...groups: Job[][]) {
   });
 
   return merged;
+}
+
+function matchesAnyLocation(locations: string[], locationSet: Set<string>) {
+  return locations.some((location) => locationSet.has(location));
 }
 
 interface ListingCache {
@@ -482,15 +486,21 @@ const Index = ({ cityFilter }: IndexProps) => {
     cutoff.setDate(cutoff.getDate() - VISIBLE_JOB_DAYS);
 
     const cityLocations = cityFilter ? getCityLocations(cityFilter) : [];
+    const cityLocationSet = new Set(cityLocations);
+    const shouldFilterCityOnClient = !!cityFilter;
 
-    function buildJobsQuery(from: number, to: number, withCount = false) {
+    function matchesCity(job: Pick<Job, "location"> | JobFilterMeta) {
+      return cityLocationSet.size === 0 || matchesAnyLocation(job.location, cityLocationSet);
+    }
+
+    function buildJobsQuery(from: number, to: number, withCount = false, applyCityFilter = true) {
       let query = supabase
         .from("jobs")
         .select("id, title, location, industry, uploaded_at, Promoted", withCount ? { count: "exact" } : undefined)
         .gte("uploaded_at", cutoff.toISOString())
         .lte("uploaded_at", new Date().toISOString());
 
-      if (cityLocations.length > 0) {
+      if (applyCityFilter && cityLocations.length > 0) {
         query = query.overlaps("location", cityLocations);
       }
 
@@ -525,14 +535,14 @@ const Index = ({ cityFilter }: IndexProps) => {
       return query.order("uploaded_at", { ascending: false });
     }
 
-    function buildFilterJobsQuery(from: number, to: number) {
+    function buildFilterJobsQuery(from: number, to: number, applyCityFilter = true) {
       let query = supabase
         .from("jobs")
         .select("location, industry")
         .gte("uploaded_at", cutoff.toISOString())
         .lte("uploaded_at", new Date().toISOString());
 
-      if (cityLocations.length > 0) {
+      if (applyCityFilter && cityLocations.length > 0) {
         query = query.overlaps("location", cityLocations);
       }
 
@@ -550,7 +560,7 @@ const Index = ({ cityFilter }: IndexProps) => {
 
       while (true) {
         const { data, error } = await withTimeout(
-          buildFilterJobsQuery(from, from + FILTER_METADATA_PAGE_SIZE - 1),
+          buildFilterJobsQuery(from, from + FILTER_METADATA_PAGE_SIZE - 1, !shouldFilterCityOnClient),
           FILTER_METADATA_TIMEOUT_MS
         );
 
@@ -562,7 +572,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         const batch = (data as unknown as JobFilterMeta[]) || [];
         if (batch.length === 0) break;
 
-        all = all.concat(batch);
+        all = all.concat(shouldFilterCityOnClient ? batch.filter(matchesCity) : batch);
         if (batch.length < FILTER_METADATA_PAGE_SIZE) break;
         from += FILTER_METADATA_PAGE_SIZE;
       }
@@ -570,27 +580,73 @@ const Index = ({ cityFilter }: IndexProps) => {
       return all;
     }
 
+    async function fetchAllMatchingJobs() {
+      let nextFrom = 0;
+      let allJobs: Job[] = [];
+
+      while (nextFrom < VIEWS_SORT_MAX_JOBS) {
+        const nextTo = Math.min(nextFrom + VIEWS_SORT_PAGE_SIZE - 1, VIEWS_SORT_MAX_JOBS - 1);
+        const result = await withTimeout(buildJobsQuery(nextFrom, nextTo, false, !shouldFilterCityOnClient));
+
+        if (result.error) {
+          return { error: result.error, jobs: [] as Job[] };
+        }
+
+        const batch = ((result.data as unknown as Job[]) || []);
+        const cityBatch = shouldFilterCityOnClient ? batch.filter(matchesCity) : batch;
+        allJobs = allJobs.concat(cityBatch);
+
+        if (batch.length < VIEWS_SORT_PAGE_SIZE) break;
+        nextFrom += VIEWS_SORT_PAGE_SIZE;
+      }
+
+      return { error: null, jobs: allJobs };
+    }
+
+    async function fetchJobsWithClientCityFilter(from: number, to: number) {
+      const result = await fetchAllMatchingJobs();
+      if (result.error) {
+        return { error: result.error, data: [] as Job[], count: 0 };
+      }
+
+      return {
+        error: null,
+        data: result.jobs.slice(from, to + 1),
+        count: result.jobs.length,
+      };
+    }
+
     async function fetchJobsByViews(from: number, to: number) {
       let allJobs: Job[] = [];
       let totalCount = 0;
       let nextFrom = 0;
 
-      while (nextFrom < VIEWS_SORT_MAX_JOBS) {
-        const nextTo = Math.min(nextFrom + VIEWS_SORT_PAGE_SIZE - 1, VIEWS_SORT_MAX_JOBS - 1);
-        const result = await withTimeout(buildJobsQuery(nextFrom, nextTo, nextFrom === 0));
-
+      if (shouldFilterCityOnClient) {
+        const result = await fetchAllMatchingJobs();
         if (result.error) {
           return { error: result.error, jobs: [] as Job[], totalCount: 0, counts: {} as Record<number, number> };
         }
 
-        const batch = (result.data as unknown as Job[]) || [];
-        if (nextFrom === 0) {
-          totalCount = result.count ?? batch.length;
-        }
+        allJobs = result.jobs;
+        totalCount = result.jobs.length;
+      } else {
+        while (nextFrom < VIEWS_SORT_MAX_JOBS) {
+          const nextTo = Math.min(nextFrom + VIEWS_SORT_PAGE_SIZE - 1, VIEWS_SORT_MAX_JOBS - 1);
+          const result = await withTimeout(buildJobsQuery(nextFrom, nextTo, nextFrom === 0));
 
-        allJobs = allJobs.concat(batch);
-        if (batch.length < VIEWS_SORT_PAGE_SIZE || allJobs.length >= totalCount) break;
-        nextFrom += VIEWS_SORT_PAGE_SIZE;
+          if (result.error) {
+            return { error: result.error, jobs: [] as Job[], totalCount: 0, counts: {} as Record<number, number> };
+          }
+
+          const batch = (result.data as unknown as Job[]) || [];
+          if (nextFrom === 0) {
+            totalCount = result.count ?? batch.length;
+          }
+
+          allJobs = allJobs.concat(batch);
+          if (batch.length < VIEWS_SORT_PAGE_SIZE || allJobs.length >= totalCount) break;
+          nextFrom += VIEWS_SORT_PAGE_SIZE;
+        }
       }
 
       const countSnapshot = await withTimeout(fetchViewCountsByJobIds(allJobs.map((job) => job.id)));
@@ -641,7 +697,9 @@ const Index = ({ cityFilter }: IndexProps) => {
               withTimeout(buildPromotedJobsQuery()),
             ])
           : await Promise.all([
-              withTimeout(buildJobsQuery(from, to, true)),
+              shouldFilterCityOnClient
+                ? fetchJobsWithClientCityFilter(from, to)
+                : withTimeout(buildJobsQuery(from, to, true)),
               withTimeout(buildPromotedJobsQuery()),
             ]);
 
@@ -731,7 +789,7 @@ const Index = ({ cityFilter }: IndexProps) => {
     }
   }, [loadingJobs, loadingSalePromoDeals]);
 
-  // DB already filters by city via overlaps(cityLocations); no client-side re-filter needed
+  // City pages derive their jobs from the shared recent-jobs query shape.
   const cityJobs = useMemo(() => jobsData, [jobsData]);
 
   const promotedJobs = useMemo(() => jobsData.filter((j) => j.Promoted === true), [jobsData]);
