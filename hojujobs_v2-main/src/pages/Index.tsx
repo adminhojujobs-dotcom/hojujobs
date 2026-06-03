@@ -261,6 +261,8 @@ interface IndexProps {
   cityFilter?: string;
 }
 
+let didClearListingCacheForDocumentReload = false;
+
 const Index = ({ cityFilter }: IndexProps) => {
   const filterKey = cityFilter ? `hoju_filters_${cityFilter}` : "hoju_filters";
 
@@ -340,7 +342,8 @@ const Index = ({ cityFilter }: IndexProps) => {
   });
 
   useEffect(() => {
-    if (isBrowserReload()) {
+    if (isBrowserReload() && !didClearListingCacheForDocumentReload) {
+      didClearListingCacheForDocumentReload = true;
       clearListingCaches();
       sessionStorage.removeItem("hoju_scroll_y");
     }
