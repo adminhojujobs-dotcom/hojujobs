@@ -12,7 +12,7 @@ const STATE_LABELS: Record<string, string> = {
   VIC: "멜버른 (VIC)",
   QLD: "브리즈번 (QLD)",
   SA: "애들레이드 (SA)",
-  WA: "WA",
+  WA: "퍼스 (WA)",
   ACT: "캔버라 (ACT)",
 };
 
@@ -191,7 +191,11 @@ export function MobileLocationFilter({
             </div>
           );
         }
-        items.push(renderGroup(group));
+        if (group.state === "WA") {
+          group.suburbs.forEach((l) => items.push(renderSuburbButton(l)));
+        } else {
+          items.push(renderGroup(group));
+        }
       });
       if (lastState && unmappedByState[lastState]) {
         unmappedByState[lastState].forEach((l) => items.push(renderSuburbButton(l)));

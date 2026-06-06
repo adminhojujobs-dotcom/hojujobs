@@ -10,7 +10,7 @@ const STATE_LABELS: Record<string, string> = {
   VIC: "멜버른 (VIC)",
   QLD: "브리즈번 (QLD)",
   SA: "애들레이드 (SA)",
-  WA: "WA",
+  WA: "퍼스 (WA)",
   ACT: "캔버라 (ACT)",
 };
 
@@ -215,7 +215,13 @@ export function CategorySidebar({
                     </li>
                   );
                 }
-                items.push(renderGroup(group));
+                if (group.state === "WA") {
+                  group.suburbs.forEach((l) =>
+                    items.push(<LocationCheckItem key={l} label={l} count={locationCounts[l] || 0} checked={selectedLocations.includes(l)} onClick={() => toggleLocation(l)} />)
+                  );
+                } else {
+                  items.push(renderGroup(group));
+                }
               });
               // Inline fallbacks for the last state
               if (lastState && unmappedByState[lastState]) {
