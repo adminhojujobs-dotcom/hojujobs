@@ -194,7 +194,7 @@ export default function Flatmates() {
           <h1 className="text-xl font-extrabold tracking-normal text-foreground sm:text-2xl">플렛메이트</h1>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[16rem_minmax(0,1fr)]">
+        <div className="grid gap-5 lg:grid-cols-[200px_minmax(0,1fr)]">
           <aside className="space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-1.5 text-xs font-bold text-slate-700">

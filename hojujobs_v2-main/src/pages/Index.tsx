@@ -887,7 +887,7 @@ const Index = ({ cityFilter }: IndexProps) => {
       <Header />
 
       <div className="w-full max-w-6xl mx-auto px-4 py-8">
-        <div className="lg:grid lg:grid-cols-[14rem_1fr] lg:gap-8">
+        <div className="lg:grid lg:grid-cols-[200px_1fr] lg:gap-5">
           <div className="hidden lg:block">
             <div className="sticky top-4">
             <CategorySidebar
@@ -907,8 +907,8 @@ const Index = ({ cityFilter }: IndexProps) => {
 
           <div className="min-w-0">
             <div className="mb-5">
-              <h1 className="text-lg font-bold text-foreground">{meta.h1}</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">{meta.tagline}</p>
+              <h1 className="text-xl font-extrabold tracking-normal text-foreground sm:text-2xl">{meta.h1}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">{meta.tagline}</p>
             </div>
 
             <div className="space-y-3 mb-6">
