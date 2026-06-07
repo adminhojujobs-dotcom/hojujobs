@@ -14,7 +14,7 @@ type FlatmateListing = {
   price: number | null;
   contact_number: string | null;
   enquiry_email: string | null;
-  kakao_id: string | null;
+  kakaoid: string | null;
   state_location: string | null;
   time_posted: string | null;
   uploaded_at: string | null;
@@ -73,7 +73,7 @@ export default function FlatmateDetail() {
 
       const { data, error } = await supabase
         .from("hojunara_realestate_share")
-        .select("id, url, title, description, price, contact_number, enquiry_email, state_location, time_posted, uploaded_at, image_url, post_photo, private_room, gender_restriction, private_bathroom, suburb")
+        .select("id, url, title, description, price, contact_number, enquiry_email, kakaoid, state_location, time_posted, uploaded_at, image_url, post_photo, private_room, gender_restriction, private_bathroom, suburb")
         .eq("id", Number(id))
         .maybeSingle();
 
@@ -193,7 +193,7 @@ export default function FlatmateDetail() {
           </section>
         )}
 
-        {(listing.contact_number || listing.enquiry_email || listing.kakao_id) && (
+        {(listing.contact_number || listing.enquiry_email || listing.kakaoid) && (
           <section className="mt-5 rounded-xl border bg-white p-5 shadow-sm sm:p-6">
             <h2 className="mb-4 text-lg font-black text-slate-950">연락처</h2>
             <div className="space-y-3">
@@ -211,10 +211,10 @@ export default function FlatmateDetail() {
                   </a>
                 </div>
               )}
-              {listing.kakao_id && (
+              {listing.kakaoid && (
                 <div className="flex items-center gap-2.5 text-sm">
                   <MessageSquare className="h-4 w-4 shrink-0 text-yellow-500" />
-                  <span className="font-semibold text-slate-800">카카오 {listing.kakao_id}</span>
+                  <span className="font-semibold text-slate-800">카카오 {listing.kakaoid}</span>
                 </div>
               )}
             </div>
