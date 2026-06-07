@@ -15,6 +15,12 @@ const CITY_DROPDOWN_TABS = [
 
 const INFO_TABS = [
   {
+    label: "플렛메이트",
+    path: "/flatmates",
+    idleClassName: "text-slate-950 hover:bg-sky-50",
+    activeClassName: "bg-sky-100 text-slate-950",
+  },
+  {
     label: "온세일",
     path: "/sales",
     idleClassName: "text-slate-950 hover:bg-emerald-50",
@@ -25,12 +31,6 @@ const INFO_TABS = [
     path: "/news",
     idleClassName: "text-slate-950 hover:bg-blue-50",
     activeClassName: "bg-blue-100 text-slate-950",
-  },
-  {
-    label: "플렛메이트",
-    path: "/flatmates",
-    idleClassName: "text-slate-950 hover:bg-sky-50",
-    activeClassName: "bg-sky-100 text-slate-950",
   },
   {
     label: "워홀정보",
