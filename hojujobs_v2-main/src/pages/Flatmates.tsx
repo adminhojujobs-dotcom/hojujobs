@@ -329,8 +329,8 @@ export default function Flatmates() {
           </aside>
 
           <section className="min-w-0">
-            <div className="mb-5">
-              <h1 className="text-lg font-bold text-foreground">플렛메이트</h1>
+            <div className="mb-3">
+              <h1 className="text-xl font-extrabold tracking-normal text-foreground sm:text-2xl">플렛메이트</h1>
             </div>
             {loading ? (
               <div className="rounded-lg border bg-white px-4 py-16 text-center text-sm text-muted-foreground">불러오는 중...</div>
