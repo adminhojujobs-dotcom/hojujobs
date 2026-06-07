@@ -140,7 +140,6 @@ export default function News() {
               <div>
                 <p className="text-xs font-semibold tracking-normal text-slate-400">호주 생활 뉴스 브리핑</p>
                 <h1 className="mt-1 text-2xl font-black tracking-normal text-white sm:text-3xl">뉴스</h1>
-                <p className="mt-2 text-xs font-semibold text-slate-300">최근 24시간 안팎에 나온 기사 중 한인 생활과 연결되는 소식만 골랐습니다.</p>
               </div>
             </div>
           </div>
