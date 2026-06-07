@@ -268,8 +268,8 @@ export default function FlatmatesPost() {
             <div>
               <span className="mb-2 block text-xs font-bold text-slate-700">개인 화장실</span>
               <div className="flex gap-2">
-                <ToggleButton active={form.private_bathroom} onClick={() => set("private_bathroom", true)}>있음</ToggleButton>
                 <ToggleButton active={!form.private_bathroom} onClick={() => set("private_bathroom", false)}>없음</ToggleButton>
+                <ToggleButton active={form.private_bathroom} onClick={() => set("private_bathroom", true)}>있음</ToggleButton>
               </div>
             </div>
 
