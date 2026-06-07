@@ -124,7 +124,7 @@ export function Header() {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => navigate(onFlatmates ? "/flatmates/post" : "/auth?next=/post-job")}
+                  onClick={() => navigate(onFlatmates ? "/auth?next=/flatmates/post" : "/auth?next=/post-job")}
                   className="gap-1 px-2 text-xs sm:gap-1.5 sm:px-3 sm:text-sm"
                 >
                   <Plus className="h-3.5 w-3.5" />

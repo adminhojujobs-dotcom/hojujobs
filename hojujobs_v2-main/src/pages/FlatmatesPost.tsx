@@ -1,5 +1,6 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, ImagePlus, X } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,14 @@ function ToggleButton({ active, onClick, children }: { active: boolean; onClick:
 
 export default function FlatmatesPost() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user === null) {
+      navigate("/auth?next=/flatmates/post");
+    }
+  }, [user, navigate]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [suburbSelection, setSuburbSelection] = useState<string[]>([]);
@@ -136,6 +145,7 @@ export default function FlatmatesPost() {
           image_url: uploadedUrls[0] ?? null,
           uploaded_at: new Date().toISOString(),
           time_posted: new Date().toISOString(),
+          user_id: user!.id,
         });
 
       if (insertError) throw insertError;
@@ -147,6 +157,8 @@ export default function FlatmatesPost() {
       setSubmitting(false);
     }
   };
+
+  if (!user) return null;
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-[#f7f8fb]">

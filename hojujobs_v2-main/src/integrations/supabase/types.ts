@@ -158,6 +158,7 @@ export type Database = {
           title: string | null
           uploaded_at: string | null
           url: string | null
+          user_id: string | null
         }
         Insert: {
           category?: string | null
@@ -200,6 +201,7 @@ export type Database = {
           title?: string | null
           uploaded_at?: string | null
           url?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
