@@ -175,8 +175,10 @@ export default function FlatmateDetail() {
                 </p>
               </div>
               <div className="rounded-lg border bg-slate-50 p-4 text-right">
-                <p className="text-3xl font-black text-slate-950">{formatPrice(listing.price)}</p>
-                <p className="text-sm font-semibold text-slate-500">/ 주</p>
+                <p className="flex items-baseline justify-end gap-1.5">
+                  <span className="text-3xl font-black text-slate-950">{formatPrice(listing.price)}</span>
+                  <span className="text-sm font-semibold text-slate-500">/ 주</span>
+                </p>
               </div>
             </div>
           </div>

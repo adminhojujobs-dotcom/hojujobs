@@ -41,8 +41,6 @@ const booleanOptions: Array<{ value: BooleanFilter; label: string }> = [
 
 const genderOptions: Array<{ value: GenderFilter; label: string }> = [
   { value: "all", label: "전체" },
-  { value: "unrestricted", label: "성별무관" },
-  { value: "restricted", label: "성별제한" },
   { value: "female_only", label: "여성전용" },
   { value: "male_only", label: "남성전용" },
 ];
@@ -248,7 +246,7 @@ export default function Flatmates() {
 
                 <div>
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <span className="block text-xs font-bold text-slate-700">주 렌트 범위</span>
+                    <span className="block text-xs font-bold text-slate-700">렌트</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <label className="block">
@@ -262,7 +260,7 @@ export default function Flatmates() {
                         }}
                         className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
                       >
-                        <option value="">최소 없음</option>
+                        <option value="">전체</option>
                         {RENT_OPTIONS.map((rent) => (
                           <option key={rent} value={rent}>
                             ${rent}
@@ -281,7 +279,7 @@ export default function Flatmates() {
                         }}
                         className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
                       >
-                        <option value="">최대 없음</option>
+                        <option value="">전체</option>
                         {RENT_OPTIONS.map((rent) => (
                           <option key={rent} value={rent}>
                             ${rent}
@@ -303,7 +301,7 @@ export default function Flatmates() {
 
                 <div>
                   <span className="mb-1.5 block text-xs font-bold text-slate-700">성별 조건</span>
-                  <div className="grid grid-cols-2 gap-1">
+                  <div className="grid grid-cols-3 gap-1">
                     {genderOptions.map((option) => (
                       <button
                         key={option.value}
@@ -322,14 +320,26 @@ export default function Flatmates() {
                   </div>
                 </div>
 
-                <FilterGroup
-                  label="개인 욕실"
-                  options={booleanOptions}
-                  value={privateBathroom}
-                  onChange={setPrivateBathroom}
-                  yesLabel="개인욕실"
-                  noLabel="공용/미기재"
-                />
+                <div>
+                  <span className="mb-1.5 block text-xs font-bold text-slate-700">개인 화장실</span>
+                  <div className="grid grid-cols-2 gap-1">
+                    {(["all", "yes"] as BooleanFilter[]).map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setPrivateBathroom(val)}
+                        className={cn(
+                          "h-9 rounded-md border px-2 text-xs font-bold transition-colors",
+                          privateBathroom === val
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                        )}
+                      >
+                        {val === "all" ? "전체" : "개인 화장실"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </aside>
