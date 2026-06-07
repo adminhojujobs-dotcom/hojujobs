@@ -563,25 +563,21 @@ function FlatmateCard({ listing }: { listing: FlatmateListing }) {
             )}
           </div>
 
-          <div className="flex gap-3">
-            <div className="min-w-0 flex-1">
-              <h2 className="line-clamp-2 text-sm font-black leading-snug text-slate-950 sm:text-base">{listing.title ?? "제목 없음"}</h2>
-              {description && (
-                <p className="mt-2 line-clamp-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">{description}</p>
-              )}
-            </div>
-            <div className="shrink-0 text-right">
-              <p className="flex items-baseline justify-end gap-1">
-                <span className="text-lg font-black text-slate-950">{formatPrice(listing.price)}</span>
-                <span className="text-xs font-semibold text-slate-500">/ 주</span>
-              </p>
-            </div>
+          <div className="min-w-0">
+            <h2 className="line-clamp-2 text-sm font-black leading-snug text-slate-950 sm:text-base">{listing.title ?? "제목 없음"}</h2>
+            {description && (
+              <p className="mt-2 line-clamp-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">{description}</p>
+            )}
           </div>
 
-          <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3">
+          <div className="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
             <div className="text-xs text-slate-500">
               {formatDate(listing.time_posted ?? listing.uploaded_at)}
             </div>
+            <p className="flex items-baseline gap-1 shrink-0">
+              <span className="text-base font-black text-slate-950">{formatPrice(listing.price)}</span>
+              <span className="text-xs font-semibold text-slate-500">/ 주</span>
+            </p>
           </div>
         </div>
       </div>
