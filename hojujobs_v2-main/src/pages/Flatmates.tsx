@@ -190,13 +190,9 @@ export default function Flatmates() {
       <Header />
 
       <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
-        <section className="mb-5 border-b border-slate-200 pb-5">
-          <div>
-            <p className="text-xs font-bold text-primary">호주 한인 쉐어하우스</p>
-            <h1 className="mt-1 text-2xl font-black tracking-normal text-slate-950 sm:text-3xl">플렛메이트</h1>
-            <p className="mt-1 text-sm text-slate-600">독방, 개인욕실, 성별 조건, 지역별로 빠르게 확인하세요.</p>
-          </div>
-        </section>
+        <div className="mb-5">
+          <h1 className="text-lg font-bold text-foreground">플렛메이트</h1>
+        </div>
 
         <div className="grid gap-5 lg:grid-cols-[16rem_minmax(0,1fr)]">
           <aside className="space-y-4">
