@@ -166,18 +166,18 @@ export default function FlatmateDetail() {
               )}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_10rem]">
-              <div className="min-w-0">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
                 <h1 className="text-2xl font-black leading-tight text-slate-950 sm:text-3xl">{listing.title ?? "제목 없음"}</h1>
                 <p className="mt-3 flex items-center gap-1.5 text-sm text-slate-500">
                   <Calendar className="h-4 w-4" />
                   {formatDate(listing.time_posted ?? listing.uploaded_at)}
                 </p>
               </div>
-              <div className="rounded-lg border bg-slate-50 p-4 text-right">
-                <p className="flex items-baseline justify-end gap-1.5">
-                  <span className="text-3xl font-black text-slate-950">{formatPrice(listing.price)}</span>
-                  <span className="text-sm font-semibold text-slate-500">/ 주</span>
+              <div className="shrink-0 rounded-lg border bg-slate-50 p-3 text-right">
+                <p className="flex items-baseline justify-end gap-1">
+                  <span className="text-xl font-black text-slate-950 sm:text-3xl">{formatPrice(listing.price)}</span>
+                  <span className="text-xs font-semibold text-slate-500 sm:text-sm">/ 주</span>
                 </p>
               </div>
             </div>
