@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Newspaper, Search, ChevronDown, ShoppingBag } from "lucide-react";
+import { Home, Newspaper, Search, ChevronDown, ShoppingBag } from "lucide-react";
 import { Header } from "@/components/Header";
 import { MobileLocationFilter } from "@/components/MobileLocationFilter";
 import { MobileIndustryFilter } from "@/components/MobileIndustryFilter";
@@ -54,6 +54,15 @@ interface SalePromoDeal {
   title: string;
   category: string;
   imageUrl?: string;
+}
+
+interface FlatmatePromoListing {
+  id: number;
+  title: string | null;
+  suburb: string | null;
+  price: number | null;
+  imageUrl?: string;
+  privateRoom: boolean | null;
 }
 
 interface SalePromoCache {
@@ -304,6 +313,11 @@ function highlightPrices(value: string) {
   return parts.length > 0 ? parts : value;
 }
 
+function formatRent(price: number | null) {
+  if (typeof price !== "number") return "문의";
+  return `$${new Intl.NumberFormat("en-AU").format(price)}`;
+}
+
 interface IndexProps {
   cityFilter?: string;
 }
@@ -353,6 +367,7 @@ const Index = ({ cityFilter }: IndexProps) => {
   const [jobsError, setJobsError] = useState<string | null>(null);
   const [totalJobsCount, setTotalJobsCount] = useState<number | null>(initialListingCache?.totalJobsCount ?? null);
   const [salePromoDeals, setSalePromoDeals] = useState<SalePromoDeal[]>(initialSalePromoDeals);
+  const [flatmatePromoListings, setFlatmatePromoListings] = useState<FlatmatePromoListing[]>([]);
   const [loadingSalePromoDeals, setLoadingSalePromoDeals] = useState(initialSalePromoDeals.length === 0);
   const [retryNonce, setRetryNonce] = useState(0);
 
@@ -474,6 +489,48 @@ const Index = ({ cityFilter }: IndexProps) => {
       }
       setLoadingSalePromoDeals(false);
     });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchFlatmatePromoListings() {
+      const { data, error } = await withTimeout(
+        supabase
+          .from("hojunara_realestate_share")
+          .select("id, title, suburb, price, image_url, private_room, time_posted")
+          .order("time_posted", { ascending: false })
+          .limit(2),
+        SALE_PROMO_TIMEOUT_MS
+      );
+
+      if (cancelled) return;
+
+      if (error) {
+        console.error("flatmate promo listings fetch error:", error);
+        setFlatmatePromoListings([]);
+        return;
+      }
+
+      setFlatmatePromoListings((data ?? []).map((listing) => ({
+        id: listing.id,
+        title: listing.title,
+        suburb: listing.suburb,
+        price: listing.price,
+        imageUrl: listing.image_url ?? undefined,
+        privateRoom: listing.private_room,
+      })));
+    }
+
+    fetchFlatmatePromoListings().catch((error) => {
+      if (cancelled) return;
+      console.error("flatmate promo listings fetch failed:", error);
+      setFlatmatePromoListings([]);
+    });
+
     return () => {
       cancelled = true;
     };
@@ -1013,6 +1070,58 @@ const Index = ({ cityFilter }: IndexProps) => {
                           </div>
                         </Link>
                       ))}
+                    </div>
+                  </div>
+                )}
+                {flatmatePromoListings.length > 0 && (
+                  <div className="rounded-md border-2 border-rose-200 bg-rose-50/70 px-4 py-3 shadow-sm ring-1 ring-rose-100">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="flex items-center gap-1.5 text-sm font-extrabold text-slate-950 mb-0.5">
+                          <Home className="h-4 w-4 text-rose-700" />
+                          최신 플렛메이트 렌트도 확인해보세요
+                        </p>
+                        <p className="text-xs text-rose-900/75 leading-relaxed">쉐어하우스, 독방, 개인 화장실 조건을 한곳에서 비교하세요.</p>
+                      </div>
+                      <Link to="/flatmates" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-rose-400 px-3 text-xs font-bold text-white shadow-sm hover:bg-rose-500">
+                        렌트 더 보기
+                      </Link>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {flatmatePromoListings.map((listing) => {
+                        const suburb = listing.suburb?.trim();
+                        return (
+                          <Link
+                            key={listing.id}
+                            to={`/flatmates/${listing.id}`}
+                            className="flex min-w-0 gap-2 overflow-hidden rounded-md border border-slate-200 bg-white p-2 transition-colors hover:bg-slate-50"
+                          >
+                            {listing.imageUrl && (
+                              <div className="h-14 w-14 shrink-0 overflow-hidden rounded bg-slate-100">
+                                <img
+                                  src={listing.imageUrl}
+                                  alt={listing.title ?? "플렛메이트 렌트"}
+                                  className="h-full w-full object-cover"
+                                  onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
+                                />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <div className="mb-1 flex items-center gap-1.5">
+                                {suburb && <p className="truncate text-[11px] font-semibold text-rose-700">{suburb}</p>}
+                                {listing.privateRoom === true && (
+                                  <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">독방</span>
+                                )}
+                                {listing.privateRoom === false && (
+                                  <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">쉐어룸</span>
+                                )}
+                              </div>
+                              <p className="line-clamp-2 text-xs font-bold leading-snug text-slate-900">{listing.title ?? "제목 없음"}</p>
+                              <p className="mt-1 text-xs font-black text-slate-950">{formatRent(listing.price)} <span className="font-semibold text-slate-500">/ 주</span></p>
+                            </div>
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

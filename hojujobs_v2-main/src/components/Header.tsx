@@ -17,8 +17,8 @@ const INFO_TABS = [
   {
     label: "플렛메이트",
     path: "/flatmates",
-    idleClassName: "text-slate-950 hover:bg-sky-50",
-    activeClassName: "bg-sky-100 text-slate-950",
+    idleClassName: "text-slate-950 hover:bg-rose-50",
+    activeClassName: "bg-rose-100 text-slate-950",
   },
   {
     label: "온세일",

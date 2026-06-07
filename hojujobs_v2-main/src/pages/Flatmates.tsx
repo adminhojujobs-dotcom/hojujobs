@@ -91,7 +91,7 @@ function matchesGenderFilter(value: string | null, filter: GenderFilter) {
 export default function Flatmates() {
   useSEO({
     title: "플렛메이트 | Hoju Jobs",
-    description: "호주 한인 쉐어하우스와 플렛메이트 매물을 독방, 성별 제한, 개인 욕실, 지역별로 찾아보세요.",
+    description: "호주 한인 쉐어하우스와 플렛메이트 렌트를 독방, 성별 제한, 개인 화장실, 지역별로 찾아보세요.",
     canonical: "https://hojujobs.com/flatmates",
     htmlLang: "ko",
     ogLocale: "ko_KR",
@@ -126,7 +126,7 @@ export default function Flatmates() {
       if (fetchError) {
         console.error("flatmate listings fetch error:", fetchError);
         setListings([]);
-        setError("플렛메이트 매물을 불러오지 못했습니다.");
+        setError("플렛메이트 렌트를 불러오지 못했습니다.");
         setLoading(false);
         return;
       }
@@ -217,12 +217,12 @@ export default function Flatmates() {
                 <span className="mb-1 block text-xs font-bold text-slate-700">검색</span>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-                  <Input
-                    value={keyword}
-                    onChange={(event) => setKeyword(event.target.value)}
-                    placeholder="지역, 건물, 조건"
-                    className="h-8 pl-8 text-xs"
-                  />
+	                  <Input
+	                    value={keyword}
+	                    onChange={(event) => setKeyword(event.target.value)}
+	                    placeholder="지역, 건물, 조건"
+	                    className="h-8 pl-8 text-[12px] font-medium placeholder:text-slate-500 placeholder:font-medium sm:h-10 sm:text-sm sm:placeholder:text-sm"
+	                  />
                 </div>
               </label>
 
@@ -248,7 +248,7 @@ export default function Flatmates() {
                         if (nextValue && maxRent && Number(nextValue) > Number(maxRent)) setMaxRent(nextValue);
                         setMinRent(nextValue);
                       }}
-                      className={cn("h-8 w-full rounded-md border border-input bg-background px-2 text-xs outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2", !minRent && "italic text-slate-400")}
+	                      className={cn("h-8 w-full rounded-md border border-input bg-background px-2 text-[12px] font-medium not-italic leading-none outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-10 sm:px-3 sm:text-sm", !minRent && "text-slate-500")}
                     >
                       <option value="">$0</option>
                       {RENT_OPTIONS.map((rent) => (
@@ -265,7 +265,7 @@ export default function Flatmates() {
                         if (nextValue && minRent && Number(nextValue) < Number(minRent)) setMinRent(nextValue);
                         setMaxRent(nextValue);
                       }}
-                      className={cn("h-8 w-full rounded-md border border-input bg-background px-2 text-xs outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2", !maxRent && "italic text-slate-400")}
+	                      className={cn("h-8 w-full rounded-md border border-input bg-background px-2 text-[12px] font-medium not-italic leading-none outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-10 sm:px-3 sm:text-sm", !maxRent && "text-slate-500")}
                     >
                       <option value="">전체</option>
                       {RENT_OPTIONS.map((rent) => (
@@ -342,7 +342,7 @@ export default function Flatmates() {
               </div>
             ) : filteredListings.length === 0 ? (
               <div className="rounded-lg border bg-white px-4 py-12 text-center">
-                <p className="text-sm font-bold text-slate-950">조건에 맞는 매물이 없습니다.</p>
+                <p className="text-sm font-bold text-slate-950">조건에 맞는 렌트가 없습니다.</p>
                 <Button type="button" variant="outline" size="sm" className="mt-4" onClick={resetFilters}>
                   필터 초기화
                 </Button>
@@ -444,9 +444,9 @@ function SuburbDropdown({
       <button
         type="button"
         onClick={() => setIsOpen((o) => !o)}
-        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 text-[12px] not-italic leading-none ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-10 sm:px-3 sm:text-sm"
       >
-        <span className={cn("truncate", selectedSuburbs.length === 0 ? "text-muted-foreground" : "font-semibold text-slate-950")}>
+        <span className={cn("truncate not-italic leading-none", selectedSuburbs.length === 0 ? "font-medium text-slate-500" : "font-semibold text-slate-950")}>
           {label}
         </span>
         <ChevronDown className={cn("h-4 w-4 shrink-0 text-slate-400 transition-transform", isOpen && "rotate-180")} />
@@ -515,6 +515,7 @@ function FlatmateCard({ listing }: { listing: FlatmateListing }) {
   const description = compactDescription(listing.description);
   const navigate = useNavigate();
   const detailPath = `/flatmates/${listing.id}`;
+  const suburb = listing.suburb?.trim();
 
   return (
     <article
@@ -534,14 +535,22 @@ function FlatmateCard({ listing }: { listing: FlatmateListing }) {
 
         <div className="flex min-h-[14rem] min-w-0 flex-col p-4">
           <div className="mb-2 flex flex-wrap items-center gap-1.5">
-            <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-bold text-primary">
-              <MapPin className="h-3.5 w-3.5" />
-              {listing.suburb ?? "지역 미기재"}
-            </span>
+            {suburb && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-bold text-primary">
+                <MapPin className="h-3.5 w-3.5" />
+                {suburb}
+              </span>
+            )}
             {listing.private_room === true && (
               <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700">
                 <BedSingle className="h-3.5 w-3.5" />
                 독방
+              </span>
+            )}
+            {listing.private_room === false && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700">
+                <BedSingle className="h-3.5 w-3.5" />
+                쉐어룸
               </span>
             )}
             {listing.private_bathroom === true && (
@@ -627,7 +636,7 @@ function PhotoCarousel({ listing }: { listing: FlatmateListing }) {
       {currentPhoto ? (
         <img
           src={currentPhoto}
-          alt={listing.title ?? "플렛메이트 매물"}
+          alt={listing.title ?? "플렛메이트 렌트"}
           className="h-full w-full object-cover"
           loading="lazy"
           onError={(event) => { event.currentTarget.style.display = "none"; }}

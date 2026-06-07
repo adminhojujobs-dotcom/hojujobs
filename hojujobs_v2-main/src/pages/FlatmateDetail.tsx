@@ -100,7 +100,7 @@ export default function FlatmateDetail() {
 
   useSEO({
     title: listing ? `${listing.title ?? "플렛메이트"} | Hoju Jobs` : "플렛메이트 | Hoju Jobs",
-    description: listing?.description?.slice(0, 155) ?? "호주 한인 쉐어하우스와 플렛메이트 매물 상세 정보",
+    description: listing?.description?.slice(0, 155) ?? "호주 한인 쉐어하우스와 플렛메이트 렌트 상세 정보",
     canonical: listing ? `https://hojujobs.com/flatmates/${listing.id}` : undefined,
     htmlLang: "ko",
     ogLocale: "ko_KR",
@@ -118,7 +118,7 @@ export default function FlatmateDetail() {
     return (
       <div className="flex w-full min-h-0 flex-1 items-center justify-center bg-background">
         <div className="text-center">
-          <p className="mb-4 text-muted-foreground">해당 플렛메이트 매물을 찾을 수 없습니다.</p>
+          <p className="mb-4 text-muted-foreground">해당 플렛메이트 렌트를 찾을 수 없습니다.</p>
           <Link to="/flatmates" className="text-primary hover:underline">목록으로 돌아가기</Link>
         </div>
       </div>
@@ -245,7 +245,7 @@ function PhotoGallery({ listing }: { listing: FlatmateListing }) {
         {currentPhoto ? (
           <img
             src={currentPhoto}
-            alt={listing.title ?? "플렛메이트 매물"}
+            alt={listing.title ?? "플렛메이트 렌트"}
             className="h-full w-full object-cover"
           />
         ) : (
