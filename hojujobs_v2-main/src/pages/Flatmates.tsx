@@ -252,9 +252,9 @@ export default function Flatmates() {
                           if (nextValue && maxRent && Number(nextValue) > Number(maxRent)) setMaxRent(nextValue);
                           setMinRent(nextValue);
                         }}
-                        className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        className={cn("h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2", !minRent && "italic text-slate-400")}
                       >
-                        <option value="">전체</option>
+                        <option value="">$0</option>
                         {RENT_OPTIONS.map((rent) => (
                           <option key={rent} value={rent}>
                             ${rent}
@@ -271,7 +271,7 @@ export default function Flatmates() {
                           if (nextValue && minRent && Number(nextValue) < Number(minRent)) setMinRent(nextValue);
                           setMaxRent(nextValue);
                         }}
-                        className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        className={cn("h-9 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2", !maxRent && "italic text-slate-400")}
                       >
                         <option value="">전체</option>
                         {RENT_OPTIONS.map((rent) => (
