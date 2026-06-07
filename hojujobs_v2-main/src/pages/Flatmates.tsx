@@ -190,6 +190,10 @@ export default function Flatmates() {
       <Header />
 
       <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
+        <div className="mb-3 lg:hidden">
+          <h1 className="text-xl font-extrabold tracking-normal text-foreground sm:text-2xl">플렛메이트</h1>
+        </div>
+
         <div className="grid gap-5 lg:grid-cols-[16rem_minmax(0,1fr)]">
           <aside className="space-y-4">
             <div className="rounded-lg border bg-white p-4 shadow-sm">
@@ -329,7 +333,7 @@ export default function Flatmates() {
           </aside>
 
           <section className="min-w-0">
-            <div className="mb-3">
+            <div className="mb-3 hidden lg:block">
               <h1 className="text-xl font-extrabold tracking-normal text-foreground sm:text-2xl">플렛메이트</h1>
             </div>
             {loading ? (
