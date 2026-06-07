@@ -25,6 +25,7 @@ import SaleDetail from "./pages/SaleDetail";
 import News from "./pages/News";
 import Flatmates from "./pages/Flatmates";
 import FlatmateDetail from "./pages/FlatmateDetail";
+import FlatmatesPost from "./pages/FlatmatesPost";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/admin" element={<Admin />} />
               <Route path="/news" element={<News />} />
               <Route path="/flatmates" element={<Flatmates />} />
+              <Route path="/flatmates/post" element={<FlatmatesPost />} />
               <Route path="/flatmates/:id" element={<FlatmateDetail />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/sales" element={<Sales />} />
