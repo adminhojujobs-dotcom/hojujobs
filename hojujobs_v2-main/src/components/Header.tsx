@@ -48,6 +48,10 @@ export function Header() {
     tab.path === "/" ? location.pathname === "/" : location.pathname === tab.path
   ) ?? CITY_DROPDOWN_TABS[0];
   const cityDropdownActive = location.pathname === "/" || CITY_DROPDOWN_TABS.some((t) => t.path !== "/" && location.pathname === t.path);
+  const onFlatmates = location.pathname.startsWith("/flatmates");
+  const postPath = onFlatmates ? "/flatmates/post" : "/post-job";
+  const postLabel = onFlatmates ? "매물 등록" : "공고 등록";
+  const postLabelShort = onFlatmates ? "매물등록" : "공고등록";
   const refreshHomeListings = () => {
     clearListingCaches();
     sessionStorage.removeItem("hoju_filters");
@@ -79,12 +83,12 @@ export function Header() {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => navigate("/post-job")}
+                  onClick={() => navigate(postPath)}
                   className="gap-1 px-2 text-xs sm:gap-1.5 sm:px-3 sm:text-sm"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">공고 등록</span>
-                  <span className="sm:hidden">공고등록</span>
+                  <span className="hidden sm:inline">{postLabel}</span>
+                  <span className="sm:hidden">{postLabelShort}</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -120,12 +124,12 @@ export function Header() {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => navigate("/auth?next=/post-job")}
+                  onClick={() => navigate(onFlatmates ? "/flatmates/post" : "/auth?next=/post-job")}
                   className="gap-1 px-2 text-xs sm:gap-1.5 sm:px-3 sm:text-sm"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">공고 등록</span>
-                  <span className="sm:hidden">등록</span>
+                  <span className="hidden sm:inline">{postLabel}</span>
+                  <span className="sm:hidden">{postLabelShort}</span>
                 </Button>
               </>
             )}
@@ -134,54 +138,50 @@ export function Header() {
       </div>
 
       <div className="w-full border-t border-slate-200 bg-white">
-        <nav className="mx-auto grid w-full max-w-6xl grid-cols-[minmax(0,1.15fr)_minmax(0,1.85fr)] items-center gap-0.5 px-2 py-1 sm:gap-1 sm:px-4" aria-label="주요 페이지">
-          <div className="min-w-0 flex items-center">
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger
-                className={cn(
-                  "inline-flex h-10 min-w-0 items-center justify-center gap-0.5 rounded px-0.5 text-[14px] font-black text-slate-950 [text-shadow:0.12px_0_0_currentColor] outline-none transition-colors whitespace-nowrap hover:bg-slate-100 focus:ring-2 focus:ring-ring focus:ring-offset-1 sm:gap-1 sm:px-2 sm:text-base",
-                  cityDropdownActive && "bg-primary/10 text-slate-950 hover:bg-primary/10"
-                )}
-              >
-                <MapPin className="hidden h-3.5 w-3.5 sm:block" />
-                <span className="truncate">{activeCity.label}</span>
-                <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="min-w-[10rem]">
-                {CITY_DROPDOWN_TABS.map(({ label, path }) => {
-                  const isActive = path === "/" ? location.pathname === "/" : location.pathname === path;
-                  return (
-                    <DropdownMenuItem
-                      key={path}
-                      onSelect={() => { if (path === "/") refreshHomeListings(); navigate(path); }}
-                      className={cn("justify-between text-sm font-black text-slate-950 [text-shadow:0.1px_0_0_currentColor]", isActive && "bg-primary/10")}
-                    >
-                      {label}
-                      {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+        <nav className="mx-auto grid w-full max-w-6xl grid-cols-5 items-center gap-0.5 px-2 py-1 sm:gap-1 sm:px-4" aria-label="주요 페이지">
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger
+              className={cn(
+                "inline-flex h-10 w-full min-w-0 items-center justify-center gap-0.5 rounded px-0.5 text-[14px] font-black text-slate-950 [text-shadow:0.12px_0_0_currentColor] outline-none transition-colors whitespace-nowrap hover:bg-slate-100 focus:ring-2 focus:ring-ring focus:ring-offset-1 sm:gap-1 sm:px-2 sm:text-base",
+                cityDropdownActive && "bg-primary/10 text-slate-950 hover:bg-primary/10"
+              )}
+            >
+              <MapPin className="hidden h-3.5 w-3.5 sm:block" />
+              <span className="truncate">{activeCity.label}</span>
+              <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="min-w-[10rem]">
+              {CITY_DROPDOWN_TABS.map(({ label, path }) => {
+                const isActive = path === "/" ? location.pathname === "/" : location.pathname === path;
+                return (
+                  <DropdownMenuItem
+                    key={path}
+                    onSelect={() => { if (path === "/") refreshHomeListings(); navigate(path); }}
+                    className={cn("justify-between text-sm font-black text-slate-950 [text-shadow:0.1px_0_0_currentColor]", isActive && "bg-primary/10")}
+                  >
+                    {label}
+                    {isActive && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <div className="grid min-w-0 grid-cols-4 items-center gap-0.5 rounded-md sm:gap-1">
-            {INFO_TABS.map(({ label, path, idleClassName, activeClassName }) => (
-              <NavLink
-                key={path}
-                to={path}
-                end
-                className={({ isActive }) =>
-                  cn(
-                    "inline-flex h-10 min-w-0 items-center justify-center rounded px-0.5 text-center text-[12px] font-black [text-shadow:0.12px_0_0_currentColor] transition-colors whitespace-nowrap sm:px-1 sm:text-[15px] lg:px-2 lg:text-base",
-                    isActive ? activeClassName : idleClassName
-                  )
-                }
-              >
-                {label}
-              </NavLink>
-            ))}
-          </div>
+          {INFO_TABS.map(({ label, path, idleClassName, activeClassName }) => (
+            <NavLink
+              key={path}
+              to={path}
+              end
+              className={({ isActive }) =>
+                cn(
+                  "inline-flex h-10 min-w-0 items-center justify-center rounded px-0.5 text-center text-[12px] font-black [text-shadow:0.12px_0_0_currentColor] transition-colors whitespace-nowrap sm:px-1 sm:text-[15px] lg:px-2 lg:text-base",
+                  isActive ? activeClassName : idleClassName
+                )
+              }
+            >
+              {label}
+            </NavLink>
+          ))}
         </nav>
       </div>
     </header>

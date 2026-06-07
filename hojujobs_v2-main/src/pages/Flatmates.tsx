@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bath, BedSingle, Check, ChevronDown, ChevronLeft, ChevronRight, Filter, MapPin, Plus, RotateCcw, Search, ShieldCheck } from "lucide-react";
+import { Bath, BedSingle, Check, ChevronDown, ChevronLeft, ChevronRight, Filter, MapPin, RotateCcw, Search, ShieldCheck } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,7 +89,6 @@ function matchesGenderFilter(value: string | null, filter: GenderFilter) {
 }
 
 export default function Flatmates() {
-  const navigate = useNavigate();
   useSEO({
     title: "플렛메이트 | Hoju Jobs",
     description: "호주 한인 쉐어하우스와 플렛메이트 매물을 독방, 성별 제한, 개인 욕실, 지역별로 찾아보세요.",
@@ -192,16 +191,10 @@ export default function Flatmates() {
 
       <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
         <section className="mb-5 border-b border-slate-200 pb-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-bold text-primary">호주 한인 쉐어하우스</p>
-              <h1 className="mt-1 text-2xl font-black tracking-normal text-slate-950 sm:text-3xl">플렛메이트</h1>
-              <p className="mt-1 text-sm text-slate-600">독방, 개인욕실, 성별 조건, 지역별로 빠르게 확인하세요.</p>
-            </div>
-            <Button onClick={() => navigate("/flatmates/post")} className="flex items-center gap-1.5 shrink-0">
-              <Plus className="h-4 w-4" />
-              매물 등록
-            </Button>
+          <div>
+            <p className="text-xs font-bold text-primary">호주 한인 쉐어하우스</p>
+            <h1 className="mt-1 text-2xl font-black tracking-normal text-slate-950 sm:text-3xl">플렛메이트</h1>
+            <p className="mt-1 text-sm text-slate-600">독방, 개인욕실, 성별 조건, 지역별로 빠르게 확인하세요.</p>
           </div>
         </section>
 
