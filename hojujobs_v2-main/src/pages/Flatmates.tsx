@@ -565,7 +565,7 @@ function FlatmateCard({ listing }: { listing: FlatmateListing }) {
 
           <div className="flex gap-3">
             <div className="min-w-0 flex-1">
-              <h2 className="line-clamp-2 text-base font-black leading-snug text-slate-950 sm:text-lg">{listing.title ?? "제목 없음"}</h2>
+              <h2 className="line-clamp-2 text-sm font-black leading-snug text-slate-950 sm:text-base">{listing.title ?? "제목 없음"}</h2>
               {description && (
                 <p className="mt-2 line-clamp-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">{description}</p>
               )}

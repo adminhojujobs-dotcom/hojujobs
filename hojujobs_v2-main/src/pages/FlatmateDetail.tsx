@@ -168,7 +168,7 @@ export default function FlatmateDetail() {
 
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <h1 className="text-2xl font-black leading-tight text-slate-950 sm:text-3xl">{listing.title ?? "제목 없음"}</h1>
+                <h1 className="text-xl font-black leading-tight text-slate-950 sm:text-2xl">{listing.title ?? "제목 없음"}</h1>
                 <p className="mt-3 flex items-center gap-1.5 text-sm text-slate-500">
                   <Calendar className="h-4 w-4" />
                   {formatDate(listing.time_posted ?? listing.uploaded_at)}
