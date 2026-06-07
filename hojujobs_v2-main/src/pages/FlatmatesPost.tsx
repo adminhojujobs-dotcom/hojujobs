@@ -64,6 +64,7 @@ export default function FlatmatesPost() {
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [attempted, setAttempted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const allSuburbs = useMemo(() => REGION_GROUPS.flatMap((g) => g.suburbs), []);
@@ -96,8 +97,9 @@ export default function FlatmatesPost() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAttempted(true);
     if (!form.title.trim()) { setError("제목을 입력해주세요."); return; }
-    if (!suburbSelection[0]) { setError("Suburb을 선택해주세요."); return; }
+    if (!suburbSelection[0]) { setError("지역 (Suburb)을 선택해주세요."); return; }
     if (!hasContact) { setError("전화번호, 이메일, 카카오톡 ID 중 하나 이상 입력해주세요."); return; }
 
     setSubmitting(true);
@@ -219,7 +221,7 @@ export default function FlatmatesPost() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <span className="mb-1.5 block text-xs font-bold text-slate-700">Suburb <span className="text-red-500">*</span></span>
+                <span className="mb-1.5 block text-xs font-bold text-slate-700">지역 (Suburb) <span className="text-red-500">*</span></span>
                 <LocationPicker
                   availableLocations={allSuburbs}
                   selectedLocations={suburbSelection}
@@ -329,7 +331,7 @@ export default function FlatmatesPost() {
               />
             </label>
 
-            {!hasContact && (
+            {attempted && !hasContact && (
               <p className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-xs font-medium text-amber-700">
                 연락처를 하나 이상 입력해야 매물을 등록할 수 있습니다.
               </p>
