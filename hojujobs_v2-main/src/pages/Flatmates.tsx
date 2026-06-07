@@ -69,8 +69,9 @@ function genderLabel(value: string | null) {
 function compactDescription(value: string | null) {
   if (!value) return "";
   return value
-    .replace(/\s+/g, " ")
-    .replace(/[━=]{2,}/g, " ")
+    .replace(/[━=]{2,}/g, "")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
@@ -463,7 +464,7 @@ function FlatmateCard({ listing }: { listing: FlatmateListing }) {
             <div className="min-w-0 flex-1">
               <h2 className="line-clamp-2 text-base font-black leading-snug text-slate-950 sm:text-lg">{listing.title ?? "제목 없음"}</h2>
               {description && (
-                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-600">{description}</p>
+                <p className="mt-2 line-clamp-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">{description}</p>
               )}
             </div>
             <div className="shrink-0 text-right">
