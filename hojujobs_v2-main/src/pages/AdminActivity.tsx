@@ -36,7 +36,7 @@ interface UserActivityRow {
   last_activity: string | null;
 }
 
-function UserRow({ row, dimmed = false }: { row: UserActivityRow; dimmed?: boolean }) {
+function UserRow({ row }: { row: UserActivityRow }) {
   const rowTotal =
     (row.job_views ?? 0) + (row.rental_views ?? 0) + (row.sale_views ?? 0) +
     (row.flatmates_page_views ?? 0) + (row.sales_page_views ?? 0) +
@@ -49,7 +49,7 @@ function UserRow({ row, dimmed = false }: { row: UserActivityRow; dimmed?: boole
   const postStarts = (row.job_posts_started ?? 0) + (row.rental_posts_started ?? 0);
 
   return (
-    <tr className={cn("hover:bg-muted/30 transition-colors", dimmed && "opacity-50")}>
+    <tr className="hover:bg-muted/30 transition-colors">
       <td className="px-3 py-2">
         <p className="font-semibold text-foreground text-sm flex items-center gap-1.5">
           {countryFlag(row.country) && <span className="text-base leading-none">{countryFlag(row.country)}</span>}
@@ -288,7 +288,7 @@ export default function AdminActivity() {
                 )}
 
                 {/* Admin users */}
-                {adminUsers.map((row) => <UserRow key={row.user_id} row={row} dimmed />)}
+                {adminUsers.map((row) => <UserRow key={row.user_id} row={row} />)}
               </tbody>
             </table>
           </div>
