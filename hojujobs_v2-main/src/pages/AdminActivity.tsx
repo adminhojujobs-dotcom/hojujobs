@@ -123,6 +123,22 @@ function sumRows(rows: UserActivityRow[]) {
   };
 }
 
+type TimeFilter = "24h" | "3d" | "7d" | "30d" | "all";
+
+const TIME_FILTERS: { label: string; value: TimeFilter }[] = [
+  { label: "24h", value: "24h" },
+  { label: "3 days", value: "3d" },
+  { label: "7 days", value: "7d" },
+  { label: "1 month", value: "30d" },
+  { label: "All time", value: "all" },
+];
+
+function sinceFromFilter(f: TimeFilter): string | null {
+  if (f === "all") return null;
+  const ms = { "24h": 1, "3d": 3, "7d": 7, "30d": 30 }[f] * 24 * 60 * 60 * 1000;
+  return new Date(Date.now() - ms).toISOString();
+}
+
 export default function AdminActivity() {
   useSEO({ title: "User Activity | Admin", description: "User activity summary", noindex: true });
   const { user, isAdmin, loading } = useAuth();
@@ -131,6 +147,7 @@ export default function AdminActivity() {
   const [adminUserIds, setAdminUserIds] = useState<Set<string>>(new Set());
   const [fetching, setFetching] = useState(true);
   const [search, setSearch] = useState("");
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("7d");
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) navigate("/");
@@ -138,13 +155,14 @@ export default function AdminActivity() {
 
   useEffect(() => {
     if (!user || !isAdmin) return;
-    fetchData();
-  }, [user, isAdmin]);
+    fetchData(timeFilter);
+  }, [user, isAdmin, timeFilter]);
 
-  const fetchData = async () => {
+  const fetchData = async (tf: TimeFilter = timeFilter) => {
     setFetching(true);
+    const since = sinceFromFilter(tf);
     const [activityRes, rolesRes] = await Promise.all([
-      supabase.rpc("get_user_activity_summary") as unknown as { data: UserActivityRow[] | null },
+      supabase.rpc("get_user_activity_summary", since ? { since } : {}) as unknown as { data: UserActivityRow[] | null },
       supabase.from("user_roles").select("user_id").eq("role", "admin"),
     ]);
     if (activityRes.data) setRows(activityRes.data);
@@ -196,6 +214,25 @@ export default function AdminActivity() {
               <span className="font-semibold text-foreground">{totalEvents.toLocaleString()}</span> events (excl. admins)
             </p>
           </div>
+          <div className="flex flex-col gap-2 sm:items-end">
+            {/* Time filter */}
+            <div className="flex items-center gap-1 rounded-lg border bg-muted/40 p-1">
+              {TIME_FILTERS.map((f) => (
+                <button
+                  key={f.value}
+                  type="button"
+                  onClick={() => setTimeFilter(f.value)}
+                  className={cn(
+                    "rounded-md px-3 py-1 text-xs font-medium transition-colors",
+                    timeFilter === f.value
+                      ? "bg-white shadow-sm text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -204,9 +241,10 @@ export default function AdminActivity() {
               placeholder="Search email or name"
               className="h-8 w-52 rounded-md border border-input bg-background px-3 text-xs outline-none focus:ring-2 focus:ring-ring"
             />
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={fetchData} disabled={fetching}>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => fetchData(timeFilter)} disabled={fetching}>
               Refresh
             </Button>
+          </div>
           </div>
         </div>
 
