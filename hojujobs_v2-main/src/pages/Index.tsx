@@ -369,6 +369,7 @@ const Index = ({ cityFilter }: IndexProps) => {
   const [salePromoDeals, setSalePromoDeals] = useState<SalePromoDeal[]>(initialSalePromoDeals);
   const [flatmatePromoListings, setFlatmatePromoListings] = useState<FlatmatePromoListing[]>([]);
   const [loadingSalePromoDeals, setLoadingSalePromoDeals] = useState(initialSalePromoDeals.length === 0);
+  const [loadingFlatmatePromoListings, setLoadingFlatmatePromoListings] = useState(true);
   const [retryNonce, setRetryNonce] = useState(0);
 
   const { counts, getCount, hydrateCounts } = useViewCounts(initialListingCache?.counts ?? {});
@@ -498,6 +499,8 @@ const Index = ({ cityFilter }: IndexProps) => {
     let cancelled = false;
 
     async function fetchFlatmatePromoListings() {
+      setLoadingFlatmatePromoListings(true);
+
       const { data, error } = await withTimeout(
         supabase
           .from("hojunara_realestate_share")
@@ -512,6 +515,7 @@ const Index = ({ cityFilter }: IndexProps) => {
       if (error) {
         console.error("flatmate promo listings fetch error:", error);
         setFlatmatePromoListings([]);
+        setLoadingFlatmatePromoListings(false);
         return;
       }
 
@@ -523,12 +527,14 @@ const Index = ({ cityFilter }: IndexProps) => {
         imageUrl: listing.image_url ?? undefined,
         privateRoom: listing.private_room,
       })));
+      setLoadingFlatmatePromoListings(false);
     }
 
     fetchFlatmatePromoListings().catch((error) => {
       if (cancelled) return;
       console.error("flatmate promo listings fetch failed:", error);
       setFlatmatePromoListings([]);
+      setLoadingFlatmatePromoListings(false);
     });
 
     return () => {
@@ -836,7 +842,7 @@ const Index = ({ cityFilter }: IndexProps) => {
 
   const scrollRestored = useRef(false);
   useLayoutEffect(() => {
-    if (!loadingJobs && !loadingSalePromoDeals && !scrollRestored.current) {
+    if (!loadingJobs && !loadingSalePromoDeals && !loadingFlatmatePromoListings && !scrollRestored.current) {
       scrollRestored.current = true;
       const savedY = sessionStorage.getItem("hoju_scroll_y");
       if (savedY) {
@@ -844,7 +850,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         window.scrollTo({ top: Number(savedY) });
       }
     }
-  }, [loadingJobs, loadingSalePromoDeals]);
+  }, [loadingJobs, loadingSalePromoDeals, loadingFlatmatePromoListings]);
 
   // City pages derive their jobs from the shared recent-jobs query shape.
   const cityJobs = useMemo(() => jobsData, [jobsData]);
@@ -910,7 +916,7 @@ const Index = ({ cityFilter }: IndexProps) => {
   const currentPage = Math.min(page, displayTotalPages || 1);
   const paginatedJobs = filtered;
   const showPromoSection = currentPage === 1 && !hasActiveFilters && (!cityFilter || PROMO_CITY_FILTERS.has(cityFilter));
-  const showReadyPromoSection = showPromoSection && !loadingJobs && !loadingSalePromoDeals;
+  const showReadyPromoSection = showPromoSection && !loadingJobs && !loadingSalePromoDeals && !loadingFlatmatePromoListings;
   const showPromotedJobsInPromoSection = showReadyPromoSection;
   const loadingCards = loadingJobs;
   const regularPaginatedJobs = showPromotedJobsInPromoSection
@@ -1017,22 +1023,6 @@ const Index = ({ cityFilter }: IndexProps) => {
             {/* Promoted jobs - only on page 1 with no active filters */}
             {showReadyPromoSection && (
               <div className="space-y-2 mb-2">
-                <div className="rounded-md border-2 border-blue-300 bg-blue-50/70 px-4 py-3 shadow-sm ring-1 ring-blue-100">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="flex items-center gap-1.5 text-sm font-extrabold text-slate-950 mb-0.5">
-                        <Newspaper className="h-4 w-4 text-blue-700" />
-                        호주 생활 정보도 확인해보세요
-                      </p>
-                      <p className="text-xs text-blue-900/75 leading-relaxed">환율, 최신 호주 뉴스, 구직 팁을 한곳에서 볼 수 있습니다.</p>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-1.5">
-                      <Link to="/news" className="inline-flex h-9 items-center justify-center rounded-md bg-blue-700 px-3 text-xs font-bold text-white shadow-sm hover:bg-blue-800">
-                        뉴스
-                      </Link>
-                    </div>
-                  </div>
-                </div>
                 {salePromoDeals.length > 0 && (
                   <div className="rounded-md border-2 border-emerald-300 bg-emerald-50/70 px-4 py-3 shadow-sm ring-1 ring-emerald-100">
                     <div className="mb-3 flex items-center justify-between gap-3">
@@ -1125,6 +1115,22 @@ const Index = ({ cityFilter }: IndexProps) => {
                     </div>
                   </div>
                 )}
+                <div className="rounded-md border-2 border-blue-300 bg-blue-50/70 px-4 py-3 shadow-sm ring-1 ring-blue-100">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="flex items-center gap-1.5 text-sm font-extrabold text-slate-950 mb-0.5">
+                        <Newspaper className="h-4 w-4 text-blue-700" />
+                        호주 생활 정보도 확인해보세요
+                      </p>
+                      <p className="text-xs text-blue-900/75 leading-relaxed">환율, 최신 호주 뉴스, 구직 팁을 한곳에서 볼 수 있습니다.</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <Link to="/news" className="inline-flex h-9 items-center justify-center rounded-md bg-blue-700 px-3 text-xs font-bold text-white shadow-sm hover:bg-blue-800">
+                        뉴스
+                      </Link>
+                    </div>
+                  </div>
+                </div>
                 {showPromotedJobsInPromoSection && promotedJobs.length > 0 && (
                   <>
                     <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide">추천 일자리</p>
