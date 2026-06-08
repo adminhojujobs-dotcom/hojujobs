@@ -38,7 +38,7 @@ const SALES_CACHE_KEY = "hoju_sales_cache";
 const SALES_FILTER_KEY = "hoju_sales_filters";
 const SALES_SCROLL_KEY = "hoju_sales_scroll_y";
 const SALES_CACHE_TTL_MS = 5 * 60 * 1000;
-const SALES_CACHE_VERSION = 1;
+const SALES_CACHE_VERSION = 2;
 
 interface SalesCache {
   version: number;
