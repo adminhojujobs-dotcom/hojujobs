@@ -1,7 +1,8 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { Header } from "@/components/Header";
-import { ArrowLeft, MapPin, Briefcase, Phone, Mail, MessageCircle, Eye, Calendar, ExternalLink } from "lucide-react";
+import { ArrowLeft, MapPin, Briefcase, Eye, Calendar, ExternalLink } from "lucide-react";
+import { ContactRevealSection } from "@/components/ContactRevealSection";
 import { incrementViewCount } from "@/hooks/useViewCounts";
 import { supabase } from "@/integrations/supabase/client";
 import { SUBURB_EN } from "@/data/regionMap";
@@ -219,33 +220,13 @@ export default function JobDetail() {
           </div>
         )}
 
-        {(job.contact || job.email || job.kakaoid) && (
-          <div className="bg-card border border-border rounded-xl p-6 mb-6">
-            <h2 className="text-lg font-bold text-foreground mb-4">연락처</h2>
-            <div className="space-y-3">
-              {job.contact && (
-                <div className="flex items-center gap-2.5 text-sm">
-                  <Phone className="h-4 w-4 text-primary shrink-0" />
-                  <span className="text-foreground break-words [overflow-wrap:anywhere]">{job.contact}</span>
-                </div>
-              )}
-              {job.email && job.email !== "정보없음" && (
-                <div className="flex items-center gap-2.5 text-sm">
-                  <Mail className="h-4 w-4 text-primary shrink-0" />
-                  <a href={`mailto:${job.email}`} className="text-primary hover:underline break-words [overflow-wrap:anywhere]">
-                    {job.email}
-                  </a>
-                </div>
-              )}
-              {job.kakaoid && (
-                <div className="flex items-center gap-2.5 text-sm">
-                  <MessageCircle className="h-4 w-4 text-yellow-500 shrink-0" />
-                  <span className="text-foreground break-words [overflow-wrap:anywhere]">카카오톡: {job.kakaoid}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        <ContactRevealSection
+          listingType="job"
+          listingId={job.id}
+          phone={job.contact}
+          email={job.email && job.email !== "정보없음" ? job.email : null}
+          kakaoid={job.kakaoid}
+        />
 
         {locations.length > 0 && (
           <div className="bg-card border border-border rounded-xl overflow-hidden mb-6">

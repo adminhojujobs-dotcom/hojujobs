@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Bath, BedSingle, Calendar, ChevronLeft, ChevronRight, Mail, MapPin, MessageCircle, Phone, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Bath, BedSingle, Calendar, ChevronLeft, ChevronRight, MapPin, ShieldCheck } from "lucide-react";
+import { ContactRevealSection } from "@/components/ContactRevealSection";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { useSEO } from "@/hooks/useSEO";
@@ -193,33 +194,13 @@ export default function FlatmateDetail() {
           </section>
         )}
 
-        {(listing.contact_number || listing.enquiry_email || listing.kakaoid) && (
-          <div className="bg-card border border-border rounded-xl p-6 mb-6">
-            <h2 className="text-lg font-bold text-foreground mb-4">연락처</h2>
-            <div className="space-y-3">
-              {listing.contact_number && (
-                <div className="flex items-center gap-2.5 text-sm">
-                  <Phone className="h-4 w-4 text-primary shrink-0" />
-                  <span className="text-foreground break-words [overflow-wrap:anywhere]">{listing.contact_number}</span>
-                </div>
-              )}
-              {listing.enquiry_email && (
-                <div className="flex items-center gap-2.5 text-sm">
-                  <Mail className="h-4 w-4 text-primary shrink-0" />
-                  <a href={`mailto:${listing.enquiry_email}`} className="text-primary hover:underline break-words [overflow-wrap:anywhere]">
-                    {listing.enquiry_email}
-                  </a>
-                </div>
-              )}
-              {listing.kakaoid && (
-                <div className="flex items-center gap-2.5 text-sm">
-                  <MessageCircle className="h-4 w-4 text-yellow-500 shrink-0" />
-                  <span className="text-foreground break-words [overflow-wrap:anywhere]">카카오톡: {listing.kakaoid}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        <ContactRevealSection
+          listingType="flatmate"
+          listingId={listing.id}
+          phone={listing.contact_number}
+          email={listing.enquiry_email}
+          kakaoid={listing.kakaoid}
+        />
       </main>
     </div>
   );
