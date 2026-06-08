@@ -91,6 +91,7 @@ function matchesGenderFilter(value: string | null, filter: GenderFilter) {
 }
 
 export default function Flatmates() {
+  useEffect(() => { trackEvent("flatmates_page_viewed"); }, []);
   useSEO({
     title: "플렛메이트 | Hoju Jobs",
     description: "호주 한인 쉐어하우스와 플렛메이트 렌트를 독방, 성별 제한, 개인 화장실, 지역별로 찾아보세요.",

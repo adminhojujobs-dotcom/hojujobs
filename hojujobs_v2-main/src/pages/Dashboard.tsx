@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/lib/trackEvent";
 import { ExternalLink, ArrowRight } from "lucide-react";
 
 interface RateData {
@@ -306,6 +307,7 @@ const NAVER_FLIGHT_ROUTES = [
 
 export default function Dashboard() {
   useSEO({ title: "워홀정보", description: "호주 워킹홀리데이 환율, 항공, 구직 정보" });
+  useEffect(() => { trackEvent("dashboard_page_viewed"); }, []);
   const [rates, setRates] = useState<RateData | null>(null);
   const [loadingRate, setLoadingRate] = useState(true);
   const [selectedFlightMonth, setSelectedFlightMonth] = useState(() => getUpcomingFlightMonths()[0].value);

@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { ExternalLink } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useSEO } from "@/hooks/useSEO";
+import { trackEvent } from "@/lib/trackEvent";
 
 type NewsTopic = {
   key: string;
@@ -121,6 +123,7 @@ const NEWS_TOPICS: NewsTopic[] = [
 ];
 
 export default function News() {
+  useEffect(() => { trackEvent("news_page_viewed"); }, []);
   useSEO({
     title: "뉴스 | Hoju Jobs",
     description: "호주에 사는 한국인이 알아두면 좋은 체류, 일자리, 주거, 생활비, 여행 뉴스를 한국어로 확인하세요.",

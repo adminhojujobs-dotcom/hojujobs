@@ -5,6 +5,7 @@ export const config = { runtime: "edge" };
 const ALLOWED_EVENT_NAMES = new Set([
   "job_listing_viewed",
   "rental_listing_viewed",
+  "sale_listing_viewed",
   "contact_number_clicked",
   "email_clicked",
   "kakao_clicked",
@@ -15,9 +16,13 @@ const ALLOWED_EVENT_NAMES = new Set([
   "rental_post_submitted",
   "search_performed",
   "filter_changed",
+  "flatmates_page_viewed",
+  "sales_page_viewed",
+  "news_page_viewed",
+  "dashboard_page_viewed",
 ]);
 
-const ALLOWED_LISTING_TYPES = new Set(["job", "rental"]);
+const ALLOWED_LISTING_TYPES = new Set(["job", "rental", "sale"]);
 
 const ALLOWED_CONTACT_TYPES = new Set(["phone", "email", "kakao_id", "unknown_contact"]);
 

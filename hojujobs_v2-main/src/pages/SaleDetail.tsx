@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/lib/trackEvent";
 import type { Json } from "@/integrations/supabase/types";
 
 interface DealDetail {
@@ -117,6 +118,11 @@ export default function SaleDetail() {
         promoCodes: parsePromoCodes(data.promo_codes),
       });
       setLoading(false);
+      trackEvent("sale_listing_viewed", {
+        listing_type: "sale",
+        listing_id: data.rank,
+        metadata: { category: data.category },
+      });
     };
 
     fetchDeal();

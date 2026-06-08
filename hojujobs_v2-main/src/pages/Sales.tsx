@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/trackEvent";
 
 interface Deal {
   rank: number;
@@ -143,6 +144,7 @@ function highlightPrices(value: string) {
 export default function Sales() {
   useSEO({ title: "온세일 | Hoju Jobs", description: "호주 생활에 유용한 최신 온세일과 할인 코드", noindex: true });
   const { isAdmin } = useAuth();
+  useEffect(() => { trackEvent("sales_page_viewed"); }, []);
   const [deals, setDeals] = useState<Deal[]>(() => readSalesCache() ?? []);
   const [loadingDeals, setLoadingDeals] = useState(() => readSalesCache() === null);
   const [dealsError, setDealsError] = useState<string | null>(null);

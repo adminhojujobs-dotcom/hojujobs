@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type TrackedEventName =
   | "job_listing_viewed"
   | "rental_listing_viewed"
+  | "sale_listing_viewed"
   | "contact_number_clicked"
   | "email_clicked"
   | "kakao_clicked"
@@ -12,10 +13,14 @@ export type TrackedEventName =
   | "rental_post_started"
   | "rental_post_submitted"
   | "search_performed"
-  | "filter_changed";
+  | "filter_changed"
+  | "flatmates_page_viewed"
+  | "sales_page_viewed"
+  | "news_page_viewed"
+  | "dashboard_page_viewed";
 
 export type TrackEventPayload = {
-  listing_type?: "job" | "rental";
+  listing_type?: "job" | "rental" | "sale";
   listing_id?: string | number;
   metadata?: Record<string, unknown>;
 };
