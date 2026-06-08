@@ -192,13 +192,9 @@ export default function Flatmates() {
       <Header />
 
       <main className="mx-auto w-full max-w-6xl px-4 pt-4 pb-8">
-        <div className="mb-3 lg:hidden">
-          <h1 className="text-xl font-extrabold tracking-normal text-foreground sm:text-2xl">플렛메이트</h1>
-        </div>
-
         <div className="grid gap-5 lg:grid-cols-[200px_minmax(0,1fr)]">
           <aside className="space-y-3">
-            <div className="flex h-5 justify-end">
+            <div className={cn("flex justify-end", hasFilters ? "h-5" : "h-0 lg:h-5")}>
               <button
                 type="button"
                 onClick={resetFilters}
@@ -221,7 +217,7 @@ export default function Flatmates() {
 	                    value={keyword}
 	                    onChange={(event) => setKeyword(event.target.value)}
 	                    placeholder="지역, 건물, 조건"
-	                    className="h-8 pl-8 text-[12px] font-medium placeholder:text-slate-500 placeholder:font-medium sm:h-10 sm:text-sm sm:placeholder:text-sm"
+	                    className="h-8 pl-8 text-[12px] font-medium placeholder:!text-[12px] placeholder:font-medium placeholder:text-slate-500 sm:h-10 sm:text-sm"
 	                  />
                 </div>
               </label>
@@ -239,40 +235,28 @@ export default function Flatmates() {
               <div>
                 <span className="mb-1 block text-xs font-bold text-slate-700">렌트</span>
                 <div className="grid grid-cols-2 gap-1.5">
-                  <label className="block">
+                  <div>
                     <span className="mb-0.5 block text-[10px] font-bold text-slate-500">최소</span>
-                    <select
+                    <RentDropdown
                       value={minRent}
-                      onChange={(event) => {
-                        const nextValue = event.target.value;
+                      placeholder="$0"
+                      onChange={(nextValue) => {
                         if (nextValue && maxRent && Number(nextValue) > Number(maxRent)) setMaxRent(nextValue);
                         setMinRent(nextValue);
                       }}
-	                      className={cn("h-8 w-full rounded-md border border-input bg-background px-2 text-[12px] font-medium not-italic leading-none outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-10 sm:px-3 sm:text-sm", !minRent && "!text-[10px] text-slate-500 sm:!text-xs")}
-                    >
-                      <option value="">$0</option>
-                      {RENT_OPTIONS.map((rent) => (
-                        <option key={rent} value={rent}>${rent}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="block">
+                    />
+                  </div>
+                  <div>
                     <span className="mb-0.5 block text-[10px] font-bold text-slate-500">최대</span>
-                    <select
+                    <RentDropdown
                       value={maxRent}
-                      onChange={(event) => {
-                        const nextValue = event.target.value;
+                      placeholder="전체"
+                      onChange={(nextValue) => {
                         if (nextValue && minRent && Number(nextValue) < Number(minRent)) setMinRent(nextValue);
                         setMaxRent(nextValue);
                       }}
-	                      className={cn("h-8 w-full rounded-md border border-input bg-background px-2 text-[12px] font-medium not-italic leading-none outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-10 sm:px-3 sm:text-sm", !maxRent && "!text-[10px] text-slate-500 sm:!text-xs")}
-                    >
-                      <option value="">전체</option>
-                      {RENT_OPTIONS.map((rent) => (
-                        <option key={rent} value={rent}>${rent}</option>
-                      ))}
-                    </select>
-                  </label>
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -357,6 +341,88 @@ export default function Flatmates() {
           </section>
         </div>
       </main>
+    </div>
+  );
+}
+
+function RentDropdown({
+  value,
+  placeholder,
+  onChange,
+}: {
+  value: string;
+  placeholder: string;
+  onChange: (value: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const label = value ? `$${value}` : placeholder;
+  const rentOptions = placeholder === "$0" ? RENT_OPTIONS.filter((rent) => rent !== 0) : RENT_OPTIONS;
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false);
+    }
+    if (isOpen) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [isOpen]);
+
+  const selectValue = (nextValue: string) => {
+    onChange(nextValue);
+    setIsOpen(false);
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen((o) => !o)}
+        className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 text-[12px] not-italic leading-none ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-10 sm:px-3 sm:text-sm"
+      >
+        <span className={cn("truncate not-italic leading-none", value ? "font-semibold text-slate-950" : "font-medium text-slate-500")}>
+          {label}
+        </span>
+        <ChevronDown className={cn("h-4 w-4 shrink-0 text-slate-500 transition-transform", isOpen && "rotate-180")} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border bg-white shadow-lg">
+          <ul className="max-h-52 overflow-y-auto py-1">
+            <li>
+              <button
+                type="button"
+                onClick={() => selectValue("")}
+                className={cn(
+                  "flex w-full items-center justify-between px-3 py-1.5 text-left text-xs font-medium hover:bg-slate-50",
+                  !value ? "text-primary" : "text-slate-800"
+                )}
+              >
+                {placeholder}
+                {!value && <Check className="h-3 w-3" />}
+              </button>
+            </li>
+            {rentOptions.map((rent) => {
+              const nextValue = String(rent);
+              const selected = value === nextValue;
+              return (
+                <li key={rent}>
+                  <button
+                    type="button"
+                    onClick={() => selectValue(nextValue)}
+                    className={cn(
+                      "flex w-full items-center justify-between px-3 py-1.5 text-left text-xs font-medium hover:bg-slate-50",
+                      selected ? "text-primary" : "text-slate-800"
+                    )}
+                  >
+                    ${rent}
+                    {selected && <Check className="h-3 w-3" />}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -446,7 +512,7 @@ function SuburbDropdown({
         onClick={() => setIsOpen((o) => !o)}
         className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 text-[12px] not-italic leading-none ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-10 sm:px-3 sm:text-sm"
       >
-        <span className={cn("truncate not-italic leading-none", selectedSuburbs.length === 0 ? "text-[11px] font-medium text-slate-500 sm:text-xs" : "font-semibold text-slate-950")}>
+        <span className={cn("truncate not-italic leading-none", selectedSuburbs.length === 0 ? "font-medium text-slate-500" : "font-semibold text-slate-950")}>
           {label}
         </span>
         <ChevronDown className={cn("h-4 w-4 shrink-0 text-slate-400 transition-transform", isOpen && "rotate-180")} />
