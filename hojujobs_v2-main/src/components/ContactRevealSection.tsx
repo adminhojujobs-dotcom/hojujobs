@@ -153,7 +153,6 @@ export function ContactRevealSection({
                 <Eye className="h-4 w-4" />
               </span>
               <span className="text-sm font-medium text-foreground">클릭하여 연락처 확인하기</span>
-              <span className="text-xs text-muted-foreground">로그인 후 연락처를 확인할 수 있습니다</span>
             </div>
           </div>
         )}
