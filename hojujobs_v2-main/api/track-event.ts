@@ -20,6 +20,22 @@ const ALLOWED_EVENT_NAMES = new Set([
   "sales_page_viewed",
   "news_page_viewed",
   "dashboard_page_viewed",
+  "job_card_clicked",
+  "rental_card_clicked",
+  "sale_card_clicked",
+  "deal_outbound_clicked",
+  "map_clicked",
+  "news_article_clicked",
+  "navigation_clicked",
+  "post_cta_clicked",
+  "my_posts_clicked",
+  "admin_clicked",
+  "promote_cta_clicked",
+  "auth_login_clicked",
+  "auth_signup_clicked",
+  "auth_google_clicked",
+  "auth_mode_toggled",
+  "sales_filter_changed",
 ]);
 
 const ALLOWED_LISTING_TYPES = new Set(["job", "rental", "sale"]);
@@ -33,9 +49,6 @@ export default async function handler(request: Request): Promise<Response> {
 
   const authHeader = request.headers.get("authorization");
   const token = authHeader?.replace("Bearer ", "").trim();
-  if (!token) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -49,15 +62,6 @@ export default async function handler(request: Request): Promise<Response> {
     auth: { persistSession: false },
   });
 
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser(token);
-
-  if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   let body: Record<string, unknown>;
   try {
     body = (await request.json()) as Record<string, unknown>;
@@ -65,7 +69,7 @@ export default async function handler(request: Request): Promise<Response> {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { event_name, listing_type, listing_id, page_url, metadata } = body;
+  const { event_name, listing_type, listing_id, page_url, metadata, anonymous_id } = body;
 
   if (typeof event_name !== "string" || !ALLOWED_EVENT_NAMES.has(event_name)) {
     return Response.json(
@@ -98,14 +102,47 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   const country = request.headers.get("x-vercel-ip-country") ?? null;
+  const userAgent = request.headers.get("user-agent")?.slice(0, 500) ?? null;
+  const normalizedMetadata = metadata && typeof metadata === "object" && !Array.isArray(metadata) ? metadata : {};
+  const normalizedPageUrl = typeof page_url === "string" ? page_url.slice(0, 500) : null;
+  const normalizedListingId = listing_id != null ? String(listing_id) : null;
+
+  if (!token) {
+    const { error: insertError } = await supabase.from("anonymous_click_events").insert({
+      anonymous_id: typeof anonymous_id === "string" ? anonymous_id.slice(0, 100) : null,
+      event_name,
+      listing_type: listing_type ?? null,
+      listing_id: normalizedListingId,
+      page_url: normalizedPageUrl,
+      metadata: normalizedMetadata,
+      country,
+      user_agent: userAgent,
+    });
+
+    if (insertError) {
+      console.error("[track-event] Anonymous insert error:", insertError.message);
+      return Response.json({ error: "Failed to record event" }, { status: 500 });
+    }
+
+    return Response.json({ success: true, anonymous: true });
+  }
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser(token);
+
+  if (authError || !user) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const { error: insertError } = await supabase.from("user_click_events").insert({
     user_id: user.id,
     event_name,
     listing_type: listing_type ?? null,
-    listing_id: listing_id != null ? String(listing_id) : null,
-    page_url: typeof page_url === "string" ? page_url.slice(0, 500) : null,
-    metadata: metadata && typeof metadata === "object" && !Array.isArray(metadata) ? metadata : {},
+    listing_id: normalizedListingId,
+    page_url: normalizedPageUrl,
+    metadata: normalizedMetadata,
     country,
   });
 

@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { MainLayout } from "@/components/MainLayout";
 import Index from "./pages/Index";
@@ -30,6 +30,13 @@ import FlatmatesPost from "./pages/FlatmatesPost";
 
 const queryClient = new QueryClient();
 
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const { user, isAdmin, loading } = useAuth();
+  if (loading) return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Loading...</div>;
+  if (!user || !isAdmin) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -49,8 +56,8 @@ const App = () => (
               <Route path="/post-job" element={<PostJob />} />
               <Route path="/my-posts" element={<MyPosts />} />
               <Route path="/edit-job/:id" element={<EditJob />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/admin/activity" element={<AdminActivity />} />
+              <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
+              <Route path="/admin/activity" element={<RequireAdmin><AdminActivity /></RequireAdmin>} />
               <Route path="/news" element={<News />} />
               <Route path="/flatmates" element={<Flatmates />} />
               <Route path="/flatmates/post" element={<FlatmatesPost />} />

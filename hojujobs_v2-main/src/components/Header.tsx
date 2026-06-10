@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { clearListingCaches } from "@/lib/listingCache";
+import { trackEvent } from "@/lib/trackEvent";
 import { cn } from "@/lib/utils";
 
 const CITY_DROPDOWN_TABS = [
@@ -56,6 +57,12 @@ export function Header() {
     clearListingCaches();
     sessionStorage.removeItem("hoju_filters");
   };
+  const trackNavigation = (label: string, path: string) => {
+    trackEvent("navigation_clicked", { metadata: { label, path, from: location.pathname } });
+  };
+  const trackPostCta = (target: string) => {
+    trackEvent("post_cta_clicked", { metadata: { target, from: location.pathname, is_logged_in: Boolean(user) } });
+  };
 
   return (
     <header className="bg-white border-b border-border">
@@ -65,7 +72,11 @@ export function Header() {
             type="button"
             className="flex items-center gap-2"
             aria-label="Hoju Jobs home"
-            onClick={() => { refreshHomeListings(); window.location.href = "/"; }}
+            onClick={() => {
+              trackNavigation("logo", "/");
+              refreshHomeListings();
+              window.location.href = "/";
+            }}
           >
             <img
               src="/favicon-48x48.png"
@@ -83,7 +94,10 @@ export function Header() {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => navigate(postPath)}
+                  onClick={() => {
+                    trackPostCta(postPath);
+                    navigate(postPath);
+                  }}
                   className="gap-1 px-2 text-xs sm:gap-1.5 sm:px-3 sm:text-sm"
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -93,7 +107,10 @@ export function Header() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate("/my-posts")}
+                  onClick={() => {
+                    trackEvent("my_posts_clicked", { metadata: { from: location.pathname } });
+                    navigate("/my-posts");
+                  }}
                   className="gap-1 border-border bg-white px-2 text-xs hover:border-primary/40 hover:bg-slate-50 hover:text-primary sm:gap-1.5 sm:px-3 sm:text-sm"
                 >
                   <FileText className="h-3.5 w-3.5" />
@@ -103,7 +120,10 @@ export function Header() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate("/admin")}
+                    onClick={() => {
+                      trackEvent("admin_clicked", { metadata: { from: location.pathname } });
+                      navigate("/admin");
+                    }}
                     className="gap-1 border-border bg-white px-2 text-xs hover:border-primary/40 hover:bg-slate-50 hover:text-primary sm:gap-1.5 sm:px-3 sm:text-sm"
                   >
                     <Shield className="h-3.5 w-3.5" /> 관리
@@ -115,7 +135,10 @@ export function Header() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate({ pathname: "/auth" })}
+                  onClick={() => {
+                    trackEvent("auth_login_clicked", { metadata: { from: location.pathname, surface: "header" } });
+                    navigate({ pathname: "/auth" });
+                  }}
                   className="gap-1.5 border-border bg-white px-2 text-xs hover:border-primary/40 hover:bg-slate-50 hover:text-primary sm:gap-1.5 sm:px-3 sm:text-sm"
                 >
                   <LogIn className="h-3.5 w-3.5" />
@@ -124,7 +147,11 @@ export function Header() {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => navigate(onFlatmates ? "/auth?next=/flatmates/post" : "/auth?next=/post-job")}
+                  onClick={() => {
+                    const target = onFlatmates ? "/auth?next=/flatmates/post" : "/auth?next=/post-job";
+                    trackPostCta(target);
+                    navigate(target);
+                  }}
                   className="gap-1 px-2 text-xs sm:gap-1.5 sm:px-3 sm:text-sm"
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -156,7 +183,11 @@ export function Header() {
                 return (
                   <DropdownMenuItem
                     key={path}
-                    onSelect={() => { if (path === "/") refreshHomeListings(); navigate(path); }}
+                    onSelect={() => {
+                      trackNavigation(label, path);
+                      if (path === "/") refreshHomeListings();
+                      navigate(path);
+                    }}
                     className={cn("justify-between text-sm font-black text-slate-950 [text-shadow:0.1px_0_0_currentColor]", isActive && "bg-primary/10")}
                   >
                     {label}
@@ -172,6 +203,7 @@ export function Header() {
               key={path}
               to={path}
               end
+              onClick={() => trackNavigation(label, path)}
               className={({ isActive }) =>
                 cn(
                   "inline-flex h-10 min-w-0 items-center justify-center rounded px-0.5 text-center text-[12px] font-black [text-shadow:0.12px_0_0_currentColor] transition-colors whitespace-nowrap sm:px-1 sm:text-[15px] lg:px-2 lg:text-base",

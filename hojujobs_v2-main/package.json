@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "news:upsert": "node scripts/upsert-news-articles.mjs",
     "test:watch": "vitest"
   },
   "dependencies": {

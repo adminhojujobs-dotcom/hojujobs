@@ -31,7 +31,8 @@ type FlatmateListing = {
 type BooleanFilter = "all" | "yes" | "no";
 type GenderFilter = "all" | "restricted" | "unrestricted" | "female_only" | "male_only";
 
-const LISTING_LIMIT = 500;
+const LISTING_LIMIT = 2000;
+const PAGE_SIZE = 20;
 const RENT_OPTIONS = Array.from({ length: 21 }, (_, index) => index * 50);
 const FLATMATES_SCROLL_KEY = "hoju_flatmates_scroll_y";
 
@@ -221,6 +222,20 @@ export default function Flatmates() {
 
   const hasFilters = keyword !== "" || selectedSuburbs.length > 0 || privateRoom !== "all" || gender !== "all" || privateBathroom !== "all" || minRent !== "" || maxRent !== "";
 
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [keyword, selectedSuburbs, privateRoom, gender, privateBathroom, minRent, maxRent]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredListings.length / PAGE_SIZE));
+  const paginatedListings = filteredListings.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const resetFilters = () => {
     setKeyword("");
     setSelectedSuburbs([]);
@@ -376,11 +391,58 @@ export default function Flatmates() {
                 </Button>
               </div>
             ) : (
-              <div className="grid gap-3">
-                {filteredListings.map((listing) => (
-                  <FlatmateCard key={listing.id} listing={listing} />
-                ))}
-              </div>
+              <>
+                <div className="grid gap-3">
+                  {paginatedListings.map((listing) => (
+                    <FlatmateCard key={listing.id} listing={listing} />
+                  ))}
+                </div>
+                <div className="mt-4 flex flex-col items-center gap-3 border-t border-slate-100 pt-4">
+                  {totalPages > 1 && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        disabled={currentPage === 1}
+                        onClick={() => goToPage(currentPage - 1)}
+                        className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-40"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      {getPageRange(currentPage, totalPages).map((p, i) =>
+                        p === "…" ? (
+                          <span key={`e${i}`} className="flex h-8 w-6 items-center justify-center text-xs text-slate-400">…</span>
+                        ) : (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => goToPage(p as number)}
+                            className={cn(
+                              "flex h-8 min-w-[2rem] items-center justify-center rounded-md border px-2 text-xs font-bold transition-colors",
+                              p === currentPage
+                                ? "border-primary bg-primary text-white"
+                                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                            )}
+                          >
+                            {p}
+                          </button>
+                        )
+                      )}
+                      <button
+                        type="button"
+                        disabled={currentPage === totalPages}
+                        onClick={() => goToPage(currentPage + 1)}
+                        className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-40"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                  <span className="text-xs text-slate-500">
+                    총 {filteredListings.length}개
+                    {totalPages > 1 && ` · ${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(currentPage * PAGE_SIZE, filteredListings.length)}번`}
+                  </span>
+                </div>
+              </>
             )}
           </section>
         </div>
@@ -628,6 +690,16 @@ function FlatmateCard({ listing }: { listing: FlatmateListing }) {
   const suburb = listing.suburb?.trim();
 
   const openDetail = () => {
+    trackEvent("rental_card_clicked", {
+      listing_type: "rental",
+      listing_id: listing.id,
+      metadata: {
+        title: listing.title,
+        suburb,
+        price: listing.price,
+        room_type: listing.private_room === true ? "private" : listing.private_room === false ? "shared" : undefined,
+      },
+    });
     sessionStorage.setItem(FLATMATES_SCROLL_KEY, String(window.scrollY));
     navigate(detailPath);
   };
@@ -828,6 +900,16 @@ function PhotoCarousel({ listing }: { listing: FlatmateListing }) {
       )}
     </div>
   );
+}
+
+function getPageRange(current: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | "…")[] = [1];
+  if (current > 3) pages.push("…");
+  for (let p = Math.max(2, current - 1); p <= Math.min(total - 1, current + 1); p++) pages.push(p);
+  if (current < total - 2) pages.push("…");
+  pages.push(total);
+  return pages;
 }
 
 function PhotoLightbox({

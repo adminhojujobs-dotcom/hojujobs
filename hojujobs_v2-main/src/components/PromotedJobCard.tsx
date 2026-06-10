@@ -12,6 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { trackEvent } from "@/lib/trackEvent";
 
 interface Job {
   id: number;
@@ -48,6 +49,17 @@ export function PromotedJobCard({
   const navigate = useNavigate();
 
   const openJob = () => {
+    trackEvent("job_card_clicked", {
+      listing_type: "job",
+      listing_id: job.id,
+      metadata: {
+        title: job.title,
+        category: job.industry,
+        suburb: job.location?.join(", "),
+        view_count: viewCount,
+        promoted: true,
+      },
+    });
     sessionStorage.setItem("hoju_scroll_y", String(window.scrollY));
     sessionStorage.setItem(`hoju_job_view_count_${job.id}`, String(viewCount));
     navigate(`/job/${job.id}`);

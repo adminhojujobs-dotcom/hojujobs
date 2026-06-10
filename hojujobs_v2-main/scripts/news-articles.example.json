@@ -1,0 +1,19 @@
+[
+  {
+    "category_key": "settle",
+    "category_label_ko": "정착·생활",
+    "category_summary_ko": "호주 생활에 바로 연결되는 뉴스를 골랐습니다.",
+    "category_tone": "from-blue-50 to-white border-blue-100",
+    "title": "예시 기사 제목",
+    "summary_ko": "예시 기사 요약입니다. 실제 업로드 전에는 최신 기사 내용으로 교체하세요.",
+    "meta": "생활 · 예시",
+    "published_at_label_ko": "2026년 6월 10일",
+    "source_name": "Example Source",
+    "source_url": "https://example.com/news/example-article",
+    "original_published_at": "2026-06-10T00:00:00+10:00",
+    "is_featured": false,
+    "show_on_news_page": true,
+    "show_on_dashboard": false,
+    "sort_order": 0
+  }
+]

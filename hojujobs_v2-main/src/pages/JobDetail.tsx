@@ -255,7 +255,24 @@ export default function JobDetail() {
 
               return (
                 <div key={loc} className="px-6 pb-4">
-                  <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="block group">
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block group"
+                    onClick={() => {
+                      trackEvent("map_clicked", {
+                        listing_type: "job",
+                        listing_id: job.id,
+                        metadata: {
+                          label: loc,
+                          surface: "job_detail_map",
+                          source: "google_maps",
+                          query,
+                        },
+                      });
+                    }}
+                  >
                     <div className="rounded-lg overflow-hidden border border-border relative">
                       <iframe
                         src={embedUrl}

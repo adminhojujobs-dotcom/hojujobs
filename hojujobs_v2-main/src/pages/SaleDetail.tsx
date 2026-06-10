@@ -192,7 +192,18 @@ export default function SaleDetail() {
               {deal.externalUrl && (
                 <div className="mt-4">
                   <Button asChild className="gap-2">
-                    <a href={deal.externalUrl} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={deal.externalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => {
+                        trackEvent("deal_outbound_clicked", {
+                          listing_type: "sale",
+                          listing_id: deal.rank,
+                          metadata: { title: deal.title, category: deal.category, url: deal.externalUrl, surface: "sale_detail" },
+                        });
+                      }}
+                    >
                       딜 보러가기
                       <ExternalLink className="h-4 w-4" />
                     </a>

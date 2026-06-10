@@ -11,6 +11,14 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Mail, Lock } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
+import { trackEvent } from "@/lib/trackEvent";
+
+const PENDING_AUTH_EVENT_KEY = "hoju_pending_auth_event";
+
+function queueAuthEvent(eventName: "auth_login_clicked" | "auth_signup_clicked" | "auth_google_clicked", metadata: Record<string, unknown>) {
+  sessionStorage.setItem(PENDING_AUTH_EVENT_KEY, JSON.stringify({ eventName, metadata }));
+  trackEvent(eventName, { metadata });
+}
 
 export default function Auth() {
   useSEO({ title: "로그인 | Hoju Jobs", description: "Hoju Jobs 로그인 페이지", noindex: true });
@@ -27,6 +35,17 @@ export default function Auth() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
+    const pendingAuthEvent = sessionStorage.getItem(PENDING_AUTH_EVENT_KEY);
+    if (pendingAuthEvent) {
+      sessionStorage.removeItem(PENDING_AUTH_EVENT_KEY);
+      try {
+        const parsed = JSON.parse(pendingAuthEvent) as {
+          eventName?: "auth_login_clicked" | "auth_signup_clicked" | "auth_google_clicked";
+          metadata?: Record<string, unknown>;
+        };
+        if (parsed.eventName) trackEvent(parsed.eventName, { metadata: parsed.metadata });
+      } catch {}
+    }
     const dest = getPostAuthDestination(searchParams);
     navigate(dest, { replace: true });
   }, [user, authLoading, searchParams, navigate]);
@@ -36,6 +55,7 @@ export default function Auth() {
     setLoading(true);
 
     if (isLogin) {
+      queueAuthEvent("auth_login_clicked", { method: "email", surface: "auth_form" });
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         toast.error(error.message);
@@ -44,6 +64,7 @@ export default function Auth() {
         // Redirect handled in useEffect once session is applied (avoids leaving /auth#)
       }
     } else {
+      queueAuthEvent("auth_signup_clicked", { method: "email", surface: "auth_form" });
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -59,6 +80,7 @@ export default function Auth() {
   };
 
   const handleGoogleSignIn = async () => {
+    queueAuthEvent("auth_google_clicked", { surface: "auth_form" });
     const next = getSafeNextPath(searchParams);
     const origin = getSiteOrigin();
     const returnUrl =
@@ -146,7 +168,10 @@ export default function Auth() {
             {isLogin ? "계정이 없으신가요?" : "이미 계정이 있으신가요?"}{" "}
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                trackEvent("auth_mode_toggled", { metadata: { next_mode: isLogin ? "signup" : "login" } });
+                setIsLogin(!isLogin);
+              }}
               className="text-primary hover:underline font-medium"
             >
               {isLogin ? "회원가입" : "로그인"}

@@ -224,11 +224,19 @@ export default function Sales() {
       ? selectedProductTypes[0]
       : `${selectedProductTypes.length}개 상품 선택`;
   const toggleProductType = (productType: string) => {
-    setSelectedProductTypes((current) =>
-      current.includes(productType)
+    setSelectedProductTypes((current) => {
+      const next = current.includes(productType)
         ? current.filter((item) => item !== productType)
-        : [...current, productType]
-    );
+        : [...current, productType];
+      trackEvent("sales_filter_changed", {
+        metadata: {
+          product_type: productType,
+          selected: next.includes(productType),
+          selected_count: next.length,
+        },
+      });
+      return next;
+    });
   };
   const handleDeleteDeal = async (deal: Deal) => {
     if (!isAdmin) return;
@@ -285,7 +293,10 @@ export default function Sales() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-[calc(100vw-2rem)] max-w-sm">
                     <DropdownMenuItem
-                      onSelect={() => setSelectedProductTypes([])}
+                      onSelect={() => {
+                        setSelectedProductTypes([]);
+                        trackEvent("sales_filter_changed", { metadata: { action: "clear", surface: "mobile" } });
+                      }}
                       className={cn("justify-between", selectedProductTypes.length === 0 && "font-semibold text-primary")}
                     >
                       <span>전체 상품</span>
@@ -311,7 +322,10 @@ export default function Sales() {
                   label="전체 상품"
                   count={deals.length}
                   active={selectedProductTypes.length === 0}
-                  onClick={() => setSelectedProductTypes([])}
+                  onClick={() => {
+                    setSelectedProductTypes([]);
+                    trackEvent("sales_filter_changed", { metadata: { action: "clear", surface: "desktop" } });
+                  }}
                 />
                 {productTypes.map((productType) => (
                   <SalesFilterItem
@@ -352,7 +366,14 @@ export default function Sales() {
               <article key={deal.rank} className="relative w-full max-w-full overflow-hidden rounded-md border bg-card transition-shadow hover:shadow-sm">
                 <Link
                   to={`/sales/${deal.rank}`}
-                  onClick={() => sessionStorage.setItem(SALES_SCROLL_KEY, String(window.scrollY))}
+                  onClick={() => {
+                    trackEvent("sale_card_clicked", {
+                      listing_type: "sale",
+                      listing_id: deal.rank,
+                      metadata: { title: deal.title, category: deal.category },
+                    });
+                    sessionStorage.setItem(SALES_SCROLL_KEY, String(window.scrollY));
+                  }}
                   className={cn(
                     "grid w-full min-w-0 gap-0",
                     deal.imageUrl ? "grid-cols-[5rem_minmax(0,1fr)] sm:grid-cols-[7rem_minmax(0,1fr)]" : "grid-cols-1"
@@ -423,7 +444,18 @@ export default function Sales() {
                 {deal.externalUrl && (
                   <div className="flex justify-end border-t bg-muted/20 px-2.5 py-2 sm:px-3">
                     <Button asChild size="sm" className="h-8 gap-1.5 px-3 text-xs">
-                      <a href={deal.externalUrl} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={deal.externalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => {
+                          trackEvent("deal_outbound_clicked", {
+                            listing_type: "sale",
+                            listing_id: deal.rank,
+                            metadata: { title: deal.title, category: deal.category, url: deal.externalUrl, surface: "sales_list" },
+                          });
+                        }}
+                      >
                         딜 보러가기
                         <ExternalLink className="h-3.5 w-3.5" />
                       </a>

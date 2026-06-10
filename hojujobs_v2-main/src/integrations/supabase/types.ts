@@ -238,6 +238,72 @@ export type Database = {
         }
         Relationships: []
       }
+      news_articles: {
+        Row: {
+          category_key: string
+          category_label_ko: string
+          category_summary_ko: string | null
+          category_tone: string | null
+          created_at: string
+          id: number
+          is_featured: boolean
+          meta: string | null
+          original_published_at: string | null
+          published_at_label_ko: string | null
+          show_on_dashboard: boolean
+          show_on_news_page: boolean
+          sort_order: number
+          source_domain: string | null
+          source_name: string
+          source_url: string
+          summary_ko: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category_key: string
+          category_label_ko: string
+          category_summary_ko?: string | null
+          category_tone?: string | null
+          created_at?: string
+          id?: number
+          is_featured?: boolean
+          meta?: string | null
+          original_published_at?: string | null
+          published_at_label_ko?: string | null
+          show_on_dashboard?: boolean
+          show_on_news_page?: boolean
+          sort_order?: number
+          source_domain?: string | null
+          source_name: string
+          source_url: string
+          summary_ko: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category_key?: string
+          category_label_ko?: string
+          category_summary_ko?: string | null
+          category_tone?: string | null
+          created_at?: string
+          id?: number
+          is_featured?: boolean
+          meta?: string | null
+          original_published_at?: string | null
+          published_at_label_ko?: string | null
+          show_on_dashboard?: boolean
+          show_on_news_page?: boolean
+          sort_order?: number
+          source_domain?: string | null
+          source_name?: string
+          source_url?: string
+          summary_ko?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ozbargain_deals: {
         Row: {
           category: string
