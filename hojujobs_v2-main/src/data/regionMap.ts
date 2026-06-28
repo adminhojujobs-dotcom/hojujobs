@@ -89,7 +89,7 @@ export const REGION_GROUPS: RegionGroup[] = [
   { state: "VIC", region: "사우스 이스트 멜버른", suburbs: [
     "사우스 이스트 멜버른", "채드스톤", "오클리", "오클리 이스트", "글렌 헌틀리", "헌팅데일", "카네기", "단데농", "댄드농", "녹스", "비스",
     "스프링베일", "클레이턴", "엔데버 힐스", "무라빈", "휠러스 힐", "멀그레이브", "치즐럼", "애스펜데일", "오피서", "브라이턴", "오클리 사우스", "버웍", "버윅", "콜필드",
-    "햄턴", "키즈버리",
+    "햄턴", "키즈버리", "키즈버러",
   ]},
   { state: "VIC", region: "노스 멜버른", suburbs: [
     "브로드메도우스", "에핑 (VIC)", "크레이기번", "선샤인", "노스 멜버른", "노스코트", "윌리엄스 랜딩", "디어 파크", "에센든", "케일러", "레이븐홀", "테일러스 레이크", "무니 폰즈",
@@ -538,6 +538,7 @@ export const SUBURB_EN: Record<string, string> = {
   "돈캐스터 이스트": "Doncaster East VIC",
   "햄턴": "Hampton VIC",
   "키즈버리": "Keysborough VIC",
+  "키즈버러": "Keysborough VIC",
   "번사이드": "Burnside SA",
   "라우즈힐": "Rouse Hill NSW",
   "브런즈윅 이스트": "Brunswick East VIC",
