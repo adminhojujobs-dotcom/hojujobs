@@ -13,6 +13,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { trackEvent } from "@/lib/trackEvent";
+import logoImage from "@/assets/hoju-jobs-logo.png";
 
 interface Job {
   id: number;
@@ -20,6 +21,7 @@ interface Job {
   location: string[];
   industry: string;
   uploaded_at?: string;
+  image_url?: string | null;
 }
 
 function formatDate(dateStr?: string) {
@@ -47,6 +49,7 @@ export function PromotedJobCard({
   onDelete?: (job: Job) => void | Promise<void>;
 }) {
   const navigate = useNavigate();
+  const imageSrc = job.image_url || logoImage;
 
   const openJob = () => {
     trackEvent("job_card_clicked", {
@@ -67,8 +70,16 @@ export function PromotedJobCard({
 
   return (
     <div className="block group cursor-pointer" role="link" tabIndex={0} onClick={openJob} onKeyDown={(e) => { if (e.key === "Enter") openJob(); }}>
-      <div className="bg-amber-50 border border-amber-300 rounded-lg px-4 h-[4.75rem] w-full flex items-center overflow-hidden hover:shadow-md hover:border-amber-400 transition-[box-shadow,border-color] duration-200">
+      <div className="bg-amber-50 border border-amber-300 rounded-lg px-3 h-[5.75rem] w-full flex items-center overflow-hidden hover:shadow-md hover:border-amber-400 transition-[box-shadow,border-color] duration-200 sm:px-4">
         <div className="flex items-center justify-between gap-3 w-full min-w-0">
+          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-amber-200 bg-white shadow-sm">
+            <img
+              src={imageSrc}
+              alt=""
+              className={job.image_url ? "h-full w-full object-contain p-1" : "h-full w-full object-contain p-2"}
+              loading="lazy"
+            />
+          </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-100 border border-amber-200 rounded px-1.5 py-0.5 shrink-0">

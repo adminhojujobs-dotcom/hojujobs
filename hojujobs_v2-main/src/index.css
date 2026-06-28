@@ -14,6 +14,29 @@ body[data-scroll-locked] {
   margin-right: 0 !important;
 }
 
+.promo-flip {
+  transform-origin: center top;
+  animation: promo-flip 520ms ease both;
+}
+
+@keyframes promo-flip {
+  0% {
+    opacity: 0;
+    transform: perspective(900px) rotateX(-18deg) translateY(4px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: perspective(900px) rotateX(0deg) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-flip {
+    animation: none;
+  }
+}
+
 /* Prevent iOS Safari from zooming in on input focus (requires font-size >= 16px) */
 @media screen and (max-width: 767px) {
   input, select, textarea {

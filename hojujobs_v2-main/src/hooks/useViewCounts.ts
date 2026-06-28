@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export async function incrementViewCount(jobId: number): Promise<number> {
+export async function incrementViewCount(jobId: number): Promise<number | null> {
   const { data, error } = await (supabase.rpc as unknown as (
     fn: "increment_view_count",
     args: { p_job_id: number }
@@ -11,10 +11,25 @@ export async function incrementViewCount(jobId: number): Promise<number> {
 
   if (error) {
     console.error("Error incrementing view count:", error);
-    return 0;
+    return null;
   }
 
   return data ?? 0;
+}
+
+export async function fetchViewCountByJobId(jobId: number): Promise<number> {
+  const { data, error } = await supabase
+    .from("view_counts")
+    .select("count")
+    .eq("job_id", jobId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching view count:", error);
+    return 0;
+  }
+
+  return data?.count ?? 0;
 }
 
 export async function fetchViewCountsByJobIds(jobIds: number[]): Promise<Record<number, number>> {
@@ -43,9 +58,11 @@ export function useViewCounts(initialCounts: Record<number, number> = {}) {
 
   const increment = useCallback(async (jobId: number) => {
     const newCount = await incrementViewCount(jobId);
+    if (newCount === null) return counts[jobId] ?? 0;
+
     setCounts((prev) => ({ ...prev, [jobId]: newCount }));
     return newCount;
-  }, []);
+  }, [counts]);
 
   const hydrateCounts = useCallback((nextCounts: Record<number, number>) => {
     setCounts((prev) => ({ ...prev, ...nextCounts }));

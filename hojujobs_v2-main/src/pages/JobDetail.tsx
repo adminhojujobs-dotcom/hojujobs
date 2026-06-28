@@ -5,11 +5,10 @@ import { ArrowLeft, MapPin, Briefcase, Eye, Calendar, ExternalLink } from "lucid
 import { ContactRevealSection } from "@/components/ContactRevealSection";
 import { DescriptionRevealSection } from "@/components/DescriptionRevealSection";
 import { ListingRevealProvider } from "@/hooks/useListingReveal";
-import { incrementViewCount } from "@/hooks/useViewCounts";
+import { fetchViewCountByJobId, incrementViewCount } from "@/hooks/useViewCounts";
 import { supabase } from "@/integrations/supabase/client";
 import { SUBURB_EN } from "@/data/regionMap";
 import { useSEO } from "@/hooks/useSEO";
-import { useAuth } from "@/hooks/useAuth";
 import { trackEvent } from "@/lib/trackEvent";
 
 function formatDate(dateStr?: string | null) {
@@ -33,14 +32,34 @@ interface Job {
 }
 
 const VISIBLE_JOB_DAYS = 6;
+const VIEW_DEDUPE_STORAGE_PREFIX = "job_viewed_v2";
 
 function cacheViewCount(jobId: number, count: number) {
   sessionStorage.setItem(`hoju_job_view_count_${jobId}`, String(count));
+
+  Object.keys(sessionStorage).forEach((key) => {
+    if (!key.startsWith("hoju_listing_cache_")) return;
+
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return;
+
+      const cached = JSON.parse(raw) as { counts?: Record<string, number> };
+      sessionStorage.setItem(key, JSON.stringify({
+        ...cached,
+        counts: {
+          ...(cached.counts ?? {}),
+          [jobId]: count,
+        },
+      }));
+    } catch {
+      // Ignore malformed or unavailable session cache entries.
+    }
+  });
 }
 
 export default function JobDetail() {
   const { id } = useParams();
-  const { user } = useAuth();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [viewCount, setViewCount] = useState(0);
@@ -60,29 +79,39 @@ export default function JobDetail() {
       if (cancelled) return;
 
       if (!error && data) {
-        const storageKey = `job_viewed_${data.id}`;
+        const storageKey = `${VIEW_DEDUPE_STORAGE_PREFIX}_${data.id}`;
         const lastViewedRaw = window.localStorage.getItem(storageKey);
         const now = Date.now();
         const THIRTY_MINUTES = 30 * 60 * 1000;
-        let count = 0;
+        const cachedCount = Number(sessionStorage.getItem(`hoju_job_view_count_${data.id}`));
+        let count = Number.isFinite(cachedCount) ? cachedCount : 0;
 
         if (lastViewedRaw) {
           const lastViewed = Number(lastViewedRaw);
           if (!Number.isNaN(lastViewed) && now - lastViewed < THIRTY_MINUTES) {
-            const { data: vcRow } = await supabase
-              .from("view_counts")
-              .select("count")
-              .eq("job_id", data.id)
-              .maybeSingle();
+            count = await fetchViewCountByJobId(data.id);
             if (cancelled) return;
-            count = vcRow?.count ?? 0;
           } else {
-            count = await incrementViewCount(data.id);
-            window.localStorage.setItem(storageKey, String(now));
+            const incrementedCount = await incrementViewCount(data.id);
+            if (cancelled) return;
+            if (incrementedCount === null) {
+              count = await fetchViewCountByJobId(data.id);
+              if (count === 0 && Number.isFinite(cachedCount)) count = cachedCount;
+            } else {
+              count = incrementedCount;
+              window.localStorage.setItem(storageKey, String(now));
+            }
           }
         } else {
-          count = await incrementViewCount(data.id);
-          window.localStorage.setItem(storageKey, String(now));
+          const incrementedCount = await incrementViewCount(data.id);
+          if (cancelled) return;
+          if (incrementedCount === null) {
+            count = await fetchViewCountByJobId(data.id);
+            if (count === 0 && Number.isFinite(cachedCount)) count = cachedCount;
+          } else {
+            count = incrementedCount;
+            window.localStorage.setItem(storageKey, String(now));
+          }
         }
 
         if (cancelled) return;

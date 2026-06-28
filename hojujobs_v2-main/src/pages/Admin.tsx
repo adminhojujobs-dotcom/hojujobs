@@ -31,6 +31,7 @@ interface Job {
   uploaded_at: string | null;
   user_id: string | null;
   Promoted: boolean | null;
+  image_url: string | null;
 }
 
 interface Deal {
@@ -86,7 +87,7 @@ export default function Admin() {
 
     const { data, error, count } = await supabase
       .from("jobs")
-      .select("id, title, location, industry, uploaded_at, user_id, Promoted", { count: "exact" })
+      .select("id, title, location, industry, uploaded_at, user_id, Promoted, image_url", { count: "exact" })
       .gte("uploaded_at", cutoff.toISOString())
       .lte("uploaded_at", new Date().toISOString())
       .order("uploaded_at", { ascending: false })

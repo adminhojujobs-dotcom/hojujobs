@@ -22,7 +22,7 @@ import { toast } from "sonner";
 const ITEMS_PER_PAGE = 50;
 const VISIBLE_JOB_DAYS = 6;
 const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
-const LISTING_CACHE_VERSION = 9;
+const LISTING_CACHE_VERSION = 11;
 const LISTING_REQUEST_TIMEOUT_MS = 15_000;
 const SALE_PROMO_TIMEOUT_MS = 5_000;
 const FILTER_METADATA_TIMEOUT_MS = 5_000;
@@ -30,7 +30,12 @@ const FILTER_METADATA_PAGE_SIZE = 1000;
 const VIEWS_SORT_PAGE_SIZE = 1000;
 const VIEWS_SORT_MAX_JOBS = 5000;
 const PROMO_CITY_FILTERS = new Set(["NSW", "VIC", "QLD"]);
-const FEATURED_SALE_PROMO_LIMIT = 2;
+const SALE_PROMO_POOL_LIMIT = 10;
+const SALE_PROMO_VISIBLE_COUNT = 2;
+const SALE_PROMO_ROTATE_MS = 4500;
+const FLATMATE_PROMO_POOL_LIMIT = 10;
+const FLATMATE_PROMO_VISIBLE_COUNT = 2;
+const FLATMATE_PROMO_ROTATE_MS = 4500;
 const NEWS_PROMO_LIMIT = 4;
 const SALE_PROMO_CACHE_KEY = "hoju_sale_promo_cache";
 const DEFAULT_SELECTED_LOCATIONS: string[] = [];
@@ -43,6 +48,7 @@ interface Job {
   location: string[];
   industry: string;
   uploaded_at: string;
+  image_url?: string | null;
   Promoted?: boolean | null;
 }
 
@@ -182,7 +188,13 @@ function readListingCache(key: string): ListingCache | null {
     if (!raw) return null;
 
     const parsed = JSON.parse(raw) as ListingCache;
-    if (parsed.version !== LISTING_CACHE_VERSION || !parsed.cachedAt || Date.now() - parsed.cachedAt > LISTING_CACHE_TTL_MS) {
+    const hasStalePromotedImages = parsed.jobsData.some((job) => job.Promoted === true && !("image_url" in job));
+    if (
+      parsed.version !== LISTING_CACHE_VERSION ||
+      !parsed.cachedAt ||
+      Date.now() - parsed.cachedAt > LISTING_CACHE_TTL_MS ||
+      hasStalePromotedImages
+    ) {
       sessionStorage.removeItem(key);
       return null;
     }
@@ -203,6 +215,22 @@ function writeListingCache(key: string, cache: Omit<ListingCache, "cachedAt" | "
   } catch {
     // Session storage may be unavailable in private or restricted browser contexts.
   }
+}
+
+function readSessionViewCount(jobId: number): number | null {
+  const cached = Number(sessionStorage.getItem(`hoju_job_view_count_${jobId}`));
+  return Number.isFinite(cached) ? cached : null;
+}
+
+function mergeSessionViewCounts(counts: Record<number, number>, jobs: Pick<Job, "id">[]) {
+  const nextCounts = { ...counts };
+
+  jobs.forEach((job) => {
+    const cached = readSessionViewCount(job.id);
+    if (cached !== null) nextCounts[job.id] = Math.max(nextCounts[job.id] ?? 0, cached);
+  });
+
+  return nextCounts;
 }
 
 function readSalePromoCache(): SalePromoDeal[] | null {
@@ -383,7 +411,9 @@ const Index = ({ cityFilter }: IndexProps) => {
   const [jobsError, setJobsError] = useState<string | null>(null);
   const [totalJobsCount, setTotalJobsCount] = useState<number | null>(initialListingCache?.totalJobsCount ?? null);
   const [salePromoDeals, setSalePromoDeals] = useState<SalePromoDeal[]>(initialSalePromoDeals);
+  const [salePromoPage, setSalePromoPage] = useState(0);
   const [flatmatePromoListings, setFlatmatePromoListings] = useState<FlatmatePromoListing[]>([]);
+  const [flatmatePromoPage, setFlatmatePromoPage] = useState(0);
   const [newsPromoArticles, setNewsPromoArticles] = useState<NewsPromoArticle[]>([]);
   const [loadingSalePromoDeals, setLoadingSalePromoDeals] = useState(initialSalePromoDeals.length === 0);
   const [loadingFlatmatePromoListings, setLoadingFlatmatePromoListings] = useState(true);
@@ -455,6 +485,21 @@ const Index = ({ cityFilter }: IndexProps) => {
     }));
   }, [filterKey, keyword, selectedLocations, industry, page, sortBy]);
 
+  useEffect(() => {
+    const hydrateVisibleCounts = () => {
+      if (jobsData.length === 0) return;
+      hydrateCounts(mergeSessionViewCounts({}, jobsData));
+    };
+
+    window.addEventListener("pageshow", hydrateVisibleCounts);
+    window.addEventListener("focus", hydrateVisibleCounts);
+
+    return () => {
+      window.removeEventListener("pageshow", hydrateVisibleCounts);
+      window.removeEventListener("focus", hydrateVisibleCounts);
+    };
+  }, [jobsData, hydrateCounts]);
+
   const filterTrackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstFilterRender = useRef(true);
   useEffect(() => {
@@ -504,9 +549,9 @@ const Index = ({ cityFilter }: IndexProps) => {
         supabase
           .from("ozbargain_deals")
           .select("rank, title, category, image_url")
-          .eq("promoted", true)
+          .lte("rank", SALE_PROMO_POOL_LIMIT)
           .order("rank", { ascending: true })
-          .limit(FEATURED_SALE_PROMO_LIMIT),
+          .limit(SALE_PROMO_POOL_LIMIT),
         SALE_PROMO_TIMEOUT_MS
       );
 
@@ -527,6 +572,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         category: deal.category,
         imageUrl: deal.image_url ?? undefined,
       }));
+      setSalePromoPage(0);
       setSalePromoDeals(nextDeals);
       writeSalePromoCache(nextDeals);
       setLoadingSalePromoDeals(false);
@@ -550,6 +596,17 @@ const Index = ({ cityFilter }: IndexProps) => {
   }, []);
 
   useEffect(() => {
+    const totalPages = Math.ceil(salePromoDeals.length / SALE_PROMO_VISIBLE_COUNT);
+    if (totalPages <= 1) return;
+
+    const intervalId = window.setInterval(() => {
+      setSalePromoPage((page) => (page + 1) % totalPages);
+    }, SALE_PROMO_ROTATE_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [salePromoDeals.length]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function fetchFlatmatePromoListings() {
@@ -560,7 +617,7 @@ const Index = ({ cityFilter }: IndexProps) => {
           .from("hojunara_realestate_share")
           .select("id, title, suburb, price, image_url, private_room, time_posted")
           .order("time_posted", { ascending: false })
-          .limit(2),
+          .limit(FLATMATE_PROMO_POOL_LIMIT),
         SALE_PROMO_TIMEOUT_MS
       );
 
@@ -581,6 +638,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         imageUrl: listing.image_url ?? undefined,
         privateRoom: listing.private_room,
       })));
+      setFlatmatePromoPage(0);
       setLoadingFlatmatePromoListings(false);
     }
 
@@ -595,6 +653,17 @@ const Index = ({ cityFilter }: IndexProps) => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const totalPages = Math.ceil(flatmatePromoListings.length / FLATMATE_PROMO_VISIBLE_COUNT);
+    if (totalPages <= 1) return;
+
+    const intervalId = window.setInterval(() => {
+      setFlatmatePromoPage((page) => (page + 1) % totalPages);
+    }, FLATMATE_PROMO_ROTATE_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [flatmatePromoListings.length]);
 
   useEffect(() => {
     let cancelled = false;
@@ -663,7 +732,7 @@ const Index = ({ cityFilter }: IndexProps) => {
     function buildJobsQuery(from: number, to: number, withCount = false, applyCityFilter = true) {
       let query = supabase
         .from("jobs")
-        .select("id, title, location, industry, uploaded_at, Promoted", withCount ? { count: "exact" } : undefined)
+        .select("id, title, location, industry, uploaded_at, image_url, Promoted", withCount ? { count: "exact" } : undefined)
         .gte("uploaded_at", cutoff.toISOString())
         .lte("uploaded_at", new Date().toISOString());
 
@@ -690,7 +759,7 @@ const Index = ({ cityFilter }: IndexProps) => {
     function buildPromotedJobsQuery() {
       let query = supabase
         .from("jobs")
-        .select("id, title, location, industry, uploaded_at, Promoted")
+        .select("id, title, location, industry, uploaded_at, image_url, Promoted")
         .eq("Promoted", true)
         .gte("uploaded_at", cutoff.toISOString())
         .lte("uploaded_at", new Date().toISOString());
@@ -835,7 +904,7 @@ const Index = ({ cityFilter }: IndexProps) => {
       const cacheKey = listingCacheKey({ cityFilter, page, keyword, selectedLocations, industry, sortBy });
       const cached = readListingCache(cacheKey);
       if (cached) {
-        hydrateCounts(cached.counts);
+        hydrateCounts(mergeSessionViewCounts(cached.counts, cached.jobsData));
         setJobsData(cached.jobsData);
         setFilterJobs(cached.filterJobs);
         setTotalJobsCount(cached.totalJobsCount);
@@ -905,9 +974,10 @@ const Index = ({ cityFilter }: IndexProps) => {
           ? mergeJobsById(promotedJobs, pageJobs)
           : pageJobs;
         const fallbackFilterJobs = resolvedPageJobs.map(({ location, industry }) => ({ location, industry }));
-        const countSnapshot = sortBy === "views"
+        const fetchedCountSnapshot = sortBy === "views"
           ? currentPageJobs.counts
           : await withTimeout(fetchViewCountsByJobIds(resolvedPageJobs.map((job) => job.id)));
+        const countSnapshot = mergeSessionViewCounts(fetchedCountSnapshot, resolvedPageJobs);
         if (cancelled) return;
 
         hydrateCounts(countSnapshot);
@@ -1022,9 +1092,18 @@ const Index = ({ cityFilter }: IndexProps) => {
   const showPromoSection = currentPage === 1 && !hasActiveFilters && (!cityFilter || PROMO_CITY_FILTERS.has(cityFilter));
   const showReadyPromoSection = showPromoSection && !loadingJobs && !loadingSalePromoDeals && !loadingFlatmatePromoListings && !loadingNewsPromoArticles;
   const showPromotedJobsInPromoSection = showReadyPromoSection;
-  const loadingCards = loadingJobs;
+  const loadingPromoSection = showPromoSection && !showReadyPromoSection;
+  const loadingCards = loadingJobs || loadingPromoSection;
   const featuredNewsArticle = newsPromoArticles[0];
   const headlineNewsArticles = newsPromoArticles.slice(1);
+  const visibleSalePromoDeals = salePromoDeals.slice(
+    salePromoPage * SALE_PROMO_VISIBLE_COUNT,
+    salePromoPage * SALE_PROMO_VISIBLE_COUNT + SALE_PROMO_VISIBLE_COUNT,
+  );
+  const visibleFlatmatePromoListings = flatmatePromoListings.slice(
+    flatmatePromoPage * FLATMATE_PROMO_VISIBLE_COUNT,
+    flatmatePromoPage * FLATMATE_PROMO_VISIBLE_COUNT + FLATMATE_PROMO_VISIBLE_COUNT,
+  );
   const regularPaginatedJobs = showPromotedJobsInPromoSection
     ? paginatedJobs.filter((job) => job.Promoted !== true)
     : paginatedJobs;
@@ -1135,7 +1214,7 @@ const Index = ({ cityFilter }: IndexProps) => {
                       <div className="min-w-0 flex-1">
                         <p className="flex items-center gap-1.5 text-sm font-extrabold text-slate-950 mb-0.5">
                           <Home className="h-4 w-4 text-rose-700" />
-                          최신 플렛 렌트도 확인해보세요
+                          최신 플렛 렌트
                         </p>
                         <p className="text-xs text-rose-900/75 leading-relaxed">쉐어하우스, 독방, 개인 화장실 조건을 한곳에서 비교하세요.</p>
                       </div>
@@ -1143,37 +1222,37 @@ const Index = ({ cityFilter }: IndexProps) => {
                         렌트 더 보기
                       </Link>
                     </div>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {flatmatePromoListings.map((listing) => {
+                    <div key={flatmatePromoPage} className="promo-flip grid gap-2 sm:grid-cols-2">
+                      {visibleFlatmatePromoListings.map((listing) => {
                         const suburb = listing.suburb?.trim();
                         return (
                           <Link
                             key={listing.id}
                             to={`/flatmates/${listing.id}`}
-                            className="flex min-w-0 gap-2 overflow-hidden rounded-md border border-slate-200 bg-white p-2 transition-colors hover:bg-slate-50"
+                            className="grid h-[7.75rem] min-w-0 grid-cols-[5.5rem_minmax(0,1fr)] gap-2 overflow-hidden rounded-md border border-slate-200 bg-white p-2 transition-colors hover:bg-slate-50 sm:h-[8.25rem] sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-3"
                           >
-                            {listing.imageUrl && (
-                              <div className="h-14 w-14 shrink-0 overflow-hidden rounded bg-slate-100">
+                            <div className="h-full min-h-0 w-full overflow-hidden rounded-md bg-slate-100">
+                              {listing.imageUrl && (
                                 <img
                                   src={listing.imageUrl}
                                   alt={listing.title ?? "플렛메이트 렌트"}
                                   className="h-full w-full object-cover"
                                   onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
                                 />
-                              </div>
-                            )}
-                            <div className="min-w-0 flex-1">
-                              <div className="mb-1 flex items-center gap-1.5">
+                              )}
+                            </div>
+                            <div className="flex min-h-0 min-w-0 flex-col">
+                              <div className="mb-1 flex min-h-[1.25rem] items-center gap-1.5 overflow-hidden">
                                 {suburb && <p className="truncate text-[11px] font-semibold text-rose-700">{suburb}</p>}
                                 {listing.privateRoom === true && (
-                                  <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">독방</span>
+                                  <span className="shrink-0 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">독방</span>
                                 )}
                                 {listing.privateRoom === false && (
-                                  <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">쉐어룸</span>
+                                  <span className="shrink-0 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">쉐어룸</span>
                                 )}
                               </div>
-                              <p className="line-clamp-2 text-xs font-bold leading-snug text-slate-900">{listing.title ?? "제목 없음"}</p>
-                              <p className="mt-1 text-xs font-black text-slate-950">{formatRent(listing.price)} <span className="font-semibold text-slate-500">/ 주</span></p>
+                              <p className="line-clamp-2 min-h-[2.1rem] text-xs font-bold leading-snug text-slate-900">{listing.title ?? "제목 없음"}</p>
+                              <p className="mt-auto text-xs font-black text-slate-950">{formatRent(listing.price)} <span className="font-semibold text-slate-500">/ 주</span></p>
                             </div>
                           </Link>
                         );
@@ -1283,7 +1362,7 @@ const Index = ({ cityFilter }: IndexProps) => {
                       <div className="min-w-0 flex-1">
                         <p className="flex items-center gap-1.5 text-sm font-extrabold text-slate-950 mb-0.5">
                           <ShoppingBag className="h-4 w-4 text-emerald-700" />
-                          최신 세일과 할인도 확인해보세요
+                          최신 세일과 할인
                         </p>
                         <p className="text-xs text-emerald-900/75 leading-relaxed">호주 생활에 필요한 할인 정보와 프로모션을 한곳에서 확인하세요.</p>
                       </div>
@@ -1291,24 +1370,24 @@ const Index = ({ cityFilter }: IndexProps) => {
                         세일 상품 더 보기
                       </Link>
                     </div>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {salePromoDeals.map((deal) => (
+                    <div key={salePromoPage} className="promo-flip grid gap-2 sm:grid-cols-2">
+                      {visibleSalePromoDeals.map((deal) => (
                         <Link
                           key={deal.rank}
                           to={`/sales/${deal.rank}`}
-                          className="flex min-w-0 gap-2 overflow-hidden rounded-md border border-slate-200 bg-white p-2 transition-colors hover:bg-slate-50"
+                          className="flex h-[4.5rem] min-w-0 gap-2 overflow-hidden rounded-md border border-slate-200 bg-white p-2 transition-colors hover:bg-slate-50"
                         >
-                          {deal.imageUrl && (
-                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded bg-white p-1.5">
+                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded bg-white p-1.5">
+                            {deal.imageUrl && (
                               <img
                                 src={deal.imageUrl}
                                 alt={deal.title}
                                 className="max-h-full w-full object-contain"
                                 onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
                               />
-                            </div>
-                          )}
-                          <div className="min-w-0 flex-1">
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1 overflow-hidden">
                             <p className="mb-1 text-[11px] font-semibold text-emerald-700">{deal.category}</p>
                             <p className="line-clamp-2 text-xs font-bold leading-snug text-slate-900">{highlightPrices(deal.title)}</p>
                           </div>

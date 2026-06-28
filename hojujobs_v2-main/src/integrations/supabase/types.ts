@@ -81,6 +81,7 @@ export type Database = {
           email: string | null
           google_search: string | null
           id: number
+          image_url: string | null
           industry: string | null
           kakaoid: string | null
           location: string[] | null
@@ -96,6 +97,7 @@ export type Database = {
           email?: string | null
           google_search?: string | null
           id?: never
+          image_url?: string | null
           industry?: string | null
           kakaoid?: string | null
           location?: string[] | null
@@ -111,6 +113,7 @@ export type Database = {
           email?: string | null
           google_search?: string | null
           id?: never
+          image_url?: string | null
           industry?: string | null
           kakaoid?: string | null
           location?: string[] | null
@@ -129,6 +132,7 @@ export type Database = {
           email: string | null
           google_search: string | null
           id: number
+          image_url: string | null
           industry: string | null
           kakaoid: string | null
           location: string[] | null
@@ -144,6 +148,7 @@ export type Database = {
           email?: string | null
           google_search?: string | null
           id?: never
+          image_url?: string | null
           industry?: string | null
           kakaoid?: string | null
           location?: string[] | null
@@ -159,6 +164,7 @@ export type Database = {
           email?: string | null
           google_search?: string | null
           id?: never
+          image_url?: string | null
           industry?: string | null
           kakaoid?: string | null
           location?: string[] | null
@@ -482,19 +488,7 @@ export type Database = {
             }
             Returns: boolean
           }
-      increment_view_count:
-        | {
-            Args: { p_job_id: number }
-            Returns: {
-              error: true
-            } & "Could not choose the best candidate function between: public.increment_view_count(p_job_id => int8), public.increment_view_count(p_job_id => int4). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
-          }
-        | {
-            Args: { p_job_id: number }
-            Returns: {
-              error: true
-            } & "Could not choose the best candidate function between: public.increment_view_count(p_job_id => int8), public.increment_view_count(p_job_id => int4). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
-          }
+      increment_view_count: { Args: { p_job_id: number }; Returns: number }
       map_location_to_region: { Args: { suburbs: string[] }; Returns: string[] }
     }
     Enums: {
