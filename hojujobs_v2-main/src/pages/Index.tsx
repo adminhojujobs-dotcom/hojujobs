@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useLayoutEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Home, Newspaper, Search, ChevronDown, ShoppingBag } from "lucide-react";
+import { ExternalLink, Home, Newspaper, Search, ChevronDown, ShoppingBag } from "lucide-react";
 import { Header } from "@/components/Header";
 import { MobileLocationFilter } from "@/components/MobileLocationFilter";
 import { MobileIndustryFilter } from "@/components/MobileIndustryFilter";
@@ -22,7 +22,7 @@ import { toast } from "sonner";
 const ITEMS_PER_PAGE = 50;
 const VISIBLE_JOB_DAYS = 6;
 const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
-const LISTING_CACHE_VERSION = 8;
+const LISTING_CACHE_VERSION = 9;
 const LISTING_REQUEST_TIMEOUT_MS = 15_000;
 const SALE_PROMO_TIMEOUT_MS = 5_000;
 const FILTER_METADATA_TIMEOUT_MS = 5_000;
@@ -31,6 +31,7 @@ const VIEWS_SORT_PAGE_SIZE = 1000;
 const VIEWS_SORT_MAX_JOBS = 5000;
 const PROMO_CITY_FILTERS = new Set(["NSW", "VIC", "QLD"]);
 const FEATURED_SALE_PROMO_LIMIT = 2;
+const NEWS_PROMO_LIMIT = 4;
 const SALE_PROMO_CACHE_KEY = "hoju_sale_promo_cache";
 const DEFAULT_SELECTED_LOCATIONS: string[] = [];
 
@@ -64,6 +65,16 @@ interface FlatmatePromoListing {
   price: number | null;
   imageUrl?: string;
   privateRoom: boolean | null;
+}
+
+interface NewsPromoArticle {
+  id: number;
+  title: string;
+  sourceName: string;
+  sourceUrl: string;
+  publishedAt: string | null;
+  imageUrl: string | null;
+  categoryKey: string;
 }
 
 interface SalePromoCache {
@@ -146,6 +157,10 @@ function mergeJobsById(...groups: Job[][]) {
   });
 
   return merged;
+}
+
+function translatedNewsUrl(url: string) {
+  return `https://translate.google.com/translate?sl=auto&tl=ko&u=${encodeURIComponent(url)}`;
 }
 
 function matchesAnyLocation(locations: string[], locationSet: Set<string>) {
@@ -369,8 +384,10 @@ const Index = ({ cityFilter }: IndexProps) => {
   const [totalJobsCount, setTotalJobsCount] = useState<number | null>(initialListingCache?.totalJobsCount ?? null);
   const [salePromoDeals, setSalePromoDeals] = useState<SalePromoDeal[]>(initialSalePromoDeals);
   const [flatmatePromoListings, setFlatmatePromoListings] = useState<FlatmatePromoListing[]>([]);
+  const [newsPromoArticles, setNewsPromoArticles] = useState<NewsPromoArticle[]>([]);
   const [loadingSalePromoDeals, setLoadingSalePromoDeals] = useState(initialSalePromoDeals.length === 0);
   const [loadingFlatmatePromoListings, setLoadingFlatmatePromoListings] = useState(true);
+  const [loadingNewsPromoArticles, setLoadingNewsPromoArticles] = useState(true);
   const [retryNonce, setRetryNonce] = useState(0);
 
   const { counts, getCount, hydrateCounts } = useViewCounts(initialListingCache?.counts ?? {});
@@ -572,6 +589,56 @@ const Index = ({ cityFilter }: IndexProps) => {
       console.error("flatmate promo listings fetch failed:", error);
       setFlatmatePromoListings([]);
       setLoadingFlatmatePromoListings(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchNewsPromoArticles() {
+      setLoadingNewsPromoArticles(true);
+
+      const { data, error } = await withTimeout(
+        supabase
+          .from("news_articles")
+          .select("id, title, source_name, source_url, published_at_label_ko, original_published_at, sort_order, image_url, category_key")
+          .eq("show_on_dashboard", true)
+          .order("sort_order", { ascending: true })
+          .order("original_published_at", { ascending: false })
+          .limit(NEWS_PROMO_LIMIT),
+        SALE_PROMO_TIMEOUT_MS
+      );
+
+      if (cancelled) return;
+
+      if (error) {
+        console.error("news promo articles fetch error:", error);
+        setNewsPromoArticles([]);
+        setLoadingNewsPromoArticles(false);
+        return;
+      }
+
+      setNewsPromoArticles((data ?? []).map((article) => ({
+        id: article.id,
+        title: article.title,
+        sourceName: article.source_name,
+        sourceUrl: article.source_url,
+        publishedAt: article.published_at_label_ko,
+        imageUrl: article.image_url ?? null,
+        categoryKey: article.category_key,
+      })));
+      setLoadingNewsPromoArticles(false);
+    }
+
+    fetchNewsPromoArticles().catch((error) => {
+      if (cancelled) return;
+      console.error("news promo articles fetch failed:", error);
+      setNewsPromoArticles([]);
+      setLoadingNewsPromoArticles(false);
     });
 
     return () => {
@@ -879,7 +946,7 @@ const Index = ({ cityFilter }: IndexProps) => {
 
   const scrollRestored = useRef(false);
   useLayoutEffect(() => {
-    if (!loadingJobs && !loadingSalePromoDeals && !loadingFlatmatePromoListings && !scrollRestored.current) {
+    if (!loadingJobs && !loadingSalePromoDeals && !loadingFlatmatePromoListings && !loadingNewsPromoArticles && !scrollRestored.current) {
       scrollRestored.current = true;
       const savedY = sessionStorage.getItem("hoju_scroll_y");
       if (savedY) {
@@ -887,7 +954,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         window.scrollTo({ top: Number(savedY) });
       }
     }
-  }, [loadingJobs, loadingSalePromoDeals, loadingFlatmatePromoListings]);
+  }, [loadingJobs, loadingSalePromoDeals, loadingFlatmatePromoListings, loadingNewsPromoArticles]);
 
   // City pages derive their jobs from the shared recent-jobs query shape.
   const cityJobs = useMemo(() => jobsData, [jobsData]);
@@ -953,9 +1020,11 @@ const Index = ({ cityFilter }: IndexProps) => {
   const currentPage = Math.min(page, displayTotalPages || 1);
   const paginatedJobs = filtered;
   const showPromoSection = currentPage === 1 && !hasActiveFilters && (!cityFilter || PROMO_CITY_FILTERS.has(cityFilter));
-  const showReadyPromoSection = showPromoSection && !loadingJobs && !loadingSalePromoDeals && !loadingFlatmatePromoListings;
+  const showReadyPromoSection = showPromoSection && !loadingJobs && !loadingSalePromoDeals && !loadingFlatmatePromoListings && !loadingNewsPromoArticles;
   const showPromotedJobsInPromoSection = showReadyPromoSection;
   const loadingCards = loadingJobs;
+  const featuredNewsArticle = newsPromoArticles[0];
+  const headlineNewsArticles = newsPromoArticles.slice(1);
   const regularPaginatedJobs = showPromotedJobsInPromoSection
     ? paginatedJobs.filter((job) => job.Promoted !== true)
     : paginatedJobs;
@@ -1060,46 +1129,6 @@ const Index = ({ cityFilter }: IndexProps) => {
             {/* Promoted jobs - only on page 1 with no active filters */}
             {showReadyPromoSection && (
               <div className="space-y-2 mb-2">
-                {salePromoDeals.length > 0 && (
-                  <div className="rounded-md border-2 border-emerald-300 bg-emerald-50/70 px-4 py-3 shadow-sm ring-1 ring-emerald-100">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="flex items-center gap-1.5 text-sm font-extrabold text-slate-950 mb-0.5">
-                          <ShoppingBag className="h-4 w-4 text-emerald-700" />
-                          새로 열린 온세일도 확인해보세요
-                        </p>
-                        <p className="text-xs text-emerald-900/75 leading-relaxed">호주 생활에 필요한 할인 정보와 프로모션을 한곳에서 확인하세요.</p>
-                      </div>
-                      <Link to="/sales" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-emerald-700 px-3 text-xs font-bold text-white shadow-sm hover:bg-emerald-800">
-                        세일 상품 더 보기
-                      </Link>
-                    </div>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {salePromoDeals.map((deal) => (
-                        <Link
-                          key={deal.rank}
-                          to={`/sales/${deal.rank}`}
-                          className="flex min-w-0 gap-2 overflow-hidden rounded-md border border-slate-200 bg-white p-2 transition-colors hover:bg-slate-50"
-                        >
-                          {deal.imageUrl && (
-                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded bg-white p-1.5">
-                              <img
-                                src={deal.imageUrl}
-                                alt={deal.title}
-                                className="max-h-full w-full object-contain"
-                                onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
-                              />
-                            </div>
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <p className="mb-1 text-[11px] font-semibold text-emerald-700">{deal.category}</p>
-                            <p className="line-clamp-2 text-xs font-bold leading-snug text-slate-900">{highlightPrices(deal.title)}</p>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
                 {flatmatePromoListings.length > 0 && (
                   <div className="rounded-md border-2 border-rose-200 bg-rose-50/70 px-4 py-3 shadow-sm ring-1 ring-rose-100">
                     <div className="mb-3 flex items-center justify-between gap-3">
@@ -1153,21 +1182,141 @@ const Index = ({ cityFilter }: IndexProps) => {
                   </div>
                 )}
                 <div className="rounded-md border-2 border-blue-300 bg-blue-50/70 px-4 py-3 shadow-sm ring-1 ring-blue-100">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="mb-3 flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <p className="flex items-center gap-1.5 text-sm font-extrabold text-slate-950 mb-0.5">
                         <Newspaper className="h-4 w-4 text-blue-700" />
-                        호주 생활 정보도 확인해보세요
+                        호주 생활 뉴스
                       </p>
-                      <p className="text-xs text-blue-900/75 leading-relaxed">환율, 최신 호주 뉴스, 구직 팁을 한곳에서 볼 수 있습니다.</p>
+                      <p className="text-xs text-blue-900/75 leading-relaxed">오늘 알아두면 좋은 호주 생활 이슈를 빠르게 확인하세요.</p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1.5">
-                      <Link to="/news" className="inline-flex h-9 items-center justify-center rounded-md bg-blue-700 px-3 text-xs font-bold text-white shadow-sm hover:bg-blue-800">
+                    <Link to="/news" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-blue-700 px-3 text-xs font-bold text-white shadow-sm hover:bg-blue-800">
+                      뉴스 더 보기
+                    </Link>
+                  </div>
+
+                  {featuredNewsArticle ? (
+                    <div className="overflow-hidden rounded-md border border-slate-200 bg-white">
+                      <a
+                        href={translatedNewsUrl(featuredNewsArticle.sourceUrl)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => {
+                          trackEvent("news_article_clicked", {
+                            listing_id: featuredNewsArticle.id,
+                            metadata: {
+                              title: featuredNewsArticle.title,
+                              source: featuredNewsArticle.sourceName,
+                              source_url: featuredNewsArticle.sourceUrl,
+                              category: featuredNewsArticle.categoryKey,
+                              surface: "home_news_promo_featured",
+                            },
+                          });
+                        }}
+                        className="grid gap-3 p-3 transition-colors hover:bg-slate-50 sm:grid-cols-[7.5rem_1fr]"
+                      >
+                        {featuredNewsArticle.imageUrl && (
+                          <div className="h-24 overflow-hidden rounded-md bg-slate-100 sm:h-full">
+                            <img
+                              src={featuredNewsArticle.imageUrl}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                            />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="mb-1 flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+                            {featuredNewsArticle.sourceName}
+                            {featuredNewsArticle.publishedAt && <span className="font-semibold text-slate-400">· {featuredNewsArticle.publishedAt}</span>}
+                          </p>
+                          <p className="line-clamp-2 text-sm font-black leading-snug text-slate-950 sm:text-base">{featuredNewsArticle.title}</p>
+                          <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-blue-700">
+                            기사 보기
+                            <ExternalLink className="h-3 w-3" />
+                          </p>
+                        </div>
+                      </a>
+
+                      {headlineNewsArticles.length > 0 && (
+                        <div className="divide-y divide-slate-200 border-t border-slate-200">
+                          {headlineNewsArticles.map((article) => (
+                            <a
+                              key={article.id}
+                              href={translatedNewsUrl(article.sourceUrl)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => {
+                                trackEvent("news_article_clicked", {
+                                  listing_id: article.id,
+                                  metadata: {
+                                    title: article.title,
+                                    source: article.sourceName,
+                                    source_url: article.sourceUrl,
+                                    category: article.categoryKey,
+                                    surface: "home_news_promo_headline",
+                                  },
+                                });
+                              }}
+                              className="flex min-w-0 items-center justify-between gap-3 px-3 py-2.5 text-xs font-bold leading-snug text-slate-800 transition-colors hover:bg-slate-50"
+                            >
+                              <span className="line-clamp-1">{article.title}</span>
+                              <ExternalLink className="h-3 w-3 shrink-0 text-slate-400" />
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-3 py-2">
+                      <p className="text-xs font-semibold text-blue-900/75">환율, 최신 호주 뉴스, 구직 팁을 한곳에서 볼 수 있습니다.</p>
+                      <Link to="/news" className="inline-flex h-8 shrink-0 items-center justify-center rounded-md bg-blue-700 px-3 text-xs font-bold text-white shadow-sm hover:bg-blue-800">
                         뉴스
                       </Link>
                     </div>
-                  </div>
+                  )}
                 </div>
+                {salePromoDeals.length > 0 && (
+                  <div className="rounded-md border-2 border-emerald-300 bg-emerald-50/70 px-4 py-3 shadow-sm ring-1 ring-emerald-100">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="flex items-center gap-1.5 text-sm font-extrabold text-slate-950 mb-0.5">
+                          <ShoppingBag className="h-4 w-4 text-emerald-700" />
+                          최신 세일과 할인도 확인해보세요
+                        </p>
+                        <p className="text-xs text-emerald-900/75 leading-relaxed">호주 생활에 필요한 할인 정보와 프로모션을 한곳에서 확인하세요.</p>
+                      </div>
+                      <Link to="/sales" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-emerald-700 px-3 text-xs font-bold text-white shadow-sm hover:bg-emerald-800">
+                        세일 상품 더 보기
+                      </Link>
+                    </div>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {salePromoDeals.map((deal) => (
+                        <Link
+                          key={deal.rank}
+                          to={`/sales/${deal.rank}`}
+                          className="flex min-w-0 gap-2 overflow-hidden rounded-md border border-slate-200 bg-white p-2 transition-colors hover:bg-slate-50"
+                        >
+                          {deal.imageUrl && (
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded bg-white p-1.5">
+                              <img
+                                src={deal.imageUrl}
+                                alt={deal.title}
+                                className="max-h-full w-full object-contain"
+                                onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
+                              />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="mb-1 text-[11px] font-semibold text-emerald-700">{deal.category}</p>
+                            <p className="line-clamp-2 text-xs font-bold leading-snug text-slate-900">{highlightPrices(deal.title)}</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {showPromotedJobsInPromoSection && promotedJobs.length > 0 && (
                   <>
                     <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide">추천 일자리</p>
