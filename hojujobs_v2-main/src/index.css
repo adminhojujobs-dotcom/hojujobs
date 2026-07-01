@@ -39,8 +39,30 @@ body[data-scroll-locked] {
   }
 }
 
+@keyframes flatmate-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.flatmate-marquee-track {
+  display: flex;
+  gap: 0.75rem;
+  width: max-content;
+  will-change: transform;
+  animation: flatmate-marquee 60s linear infinite;
+}
+
+@media (pointer: coarse) {
+  .flatmate-marquee-track {
+    animation-duration: 55s;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .promo-flip {
+    animation: none;
+  }
+  .flatmate-marquee-track {
     animation: none;
   }
 }

@@ -71,9 +71,9 @@ export function PromotedJobCard({
 
   return (
     <div className="block group cursor-pointer" role="link" tabIndex={0} onClick={openJob} onKeyDown={(e) => { if (e.key === "Enter") openJob(); }}>
-      <div className="bg-amber-50 border border-amber-300 rounded-lg px-3 h-[5.75rem] w-full flex items-center overflow-hidden hover:shadow-md hover:border-amber-400 transition-[box-shadow,border-color] duration-200 sm:px-4">
+      <div className="rounded-lg border border-indigo-200 bg-indigo-50/70 px-3 h-[5.75rem] w-full flex items-center overflow-hidden shadow-md hover:border-indigo-300 hover:shadow-lg transition-[box-shadow,border-color] duration-200 sm:px-4">
         <div className="flex items-center justify-between gap-3 w-full min-w-0">
-          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-amber-200 bg-white shadow-sm">
+          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
             <img
               src={imageSrc}
               alt=""
@@ -83,7 +83,7 @@ export function PromotedJobCard({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-100 border border-amber-200 rounded px-1.5 py-0.5 shrink-0">
+              <span className="inline-flex items-center gap-1 rounded border border-indigo-300 bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 shrink-0">
                 <Sparkles className="h-2.5 w-2.5" />
                 추천
               </span>
@@ -93,7 +93,7 @@ export function PromotedJobCard({
                   유저 업로드
                 </span>
               )}
-              <h3 className="text-xs sm:text-sm font-bold text-foreground truncate group-hover:text-amber-700 transition-colors">{job.title}</h3>
+              <h3 className="text-xs sm:text-sm font-bold text-foreground truncate group-hover:text-slate-700 transition-colors">{job.title}</h3>
             </div>
             <div className="flex items-center gap-x-3 text-xs text-muted-foreground overflow-hidden">
               {job.location?.length > 0 && <span className="flex items-center gap-1 min-w-0 shrink"><MapPin className="h-3 w-3 text-accent/60 shrink-0" /><span className="truncate">{job.location.slice(0, 2).join(", ")}</span></span>}
@@ -106,7 +106,7 @@ export function PromotedJobCard({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 gap-1.5 border-amber-300 bg-amber-50 text-xs hover:bg-amber-100"
+                className="h-8 gap-1.5 border-slate-300 bg-white text-xs hover:bg-slate-50"
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/edit-job/${job.id}?from=admin`);
@@ -121,7 +121,7 @@ export function PromotedJobCard({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 gap-1.5 border-destructive/30 bg-amber-50 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      className="h-8 gap-1.5 border-destructive/30 bg-white text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -144,7 +144,7 @@ export function PromotedJobCard({
               )}
             </div>
           )}
-          <ChevronRight className="h-4 w-4 text-amber-400 group-hover:text-amber-600 shrink-0 transition-colors" />
+          <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-700 shrink-0 transition-colors" />
         </div>
       </div>
     </div>

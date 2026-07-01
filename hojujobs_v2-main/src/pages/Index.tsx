@@ -573,6 +573,9 @@ const Index = ({ cityFilter }: IndexProps) => {
 
   const filterTrackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstFilterRender = useRef(true);
+  const [flatmateManualScroll, setFlatmateManualScroll] = useState(false);
+  const flatmateOuterRef = useRef<HTMLDivElement | null>(null);
+  const flatmateTrackRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (isFirstFilterRender.current) {
       isFirstFilterRender.current = false;
@@ -676,6 +679,7 @@ const Index = ({ cityFilter }: IndexProps) => {
 
     return () => window.clearInterval(intervalId);
   }, [salePromoDeals.length]);
+
 
   useEffect(() => {
     let cancelled = false;
@@ -1269,28 +1273,36 @@ const Index = ({ cityFilter }: IndexProps) => {
             {showReadyPromoSection && (
               <div className="space-y-2 mb-2">
                 {flatmatePromoListings.length > 0 && (
-                  <div className="rounded-md border-2 border-rose-200 bg-rose-50/70 px-4 py-3 shadow-sm ring-1 ring-rose-100">
+                  <div className="border border-border bg-white px-4 py-3 shadow-sm">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="flex items-center gap-1.5 text-sm font-extrabold text-slate-950 mb-0.5">
-                          <Home className="h-4 w-4 text-rose-700" />
+                        <p className="flex items-center gap-1.5 text-base font-extrabold text-slate-950">
+                          <Home className="h-4 w-4 text-slate-700" />
                           최신 플렛 렌트
                         </p>
-                        <p className="text-xs text-rose-900/75 leading-relaxed">쉐어하우스, 독방, 개인 화장실 조건을 한곳에서 비교하세요.</p>
                       </div>
-                      <Link to="/flatmates" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-rose-400 px-3 text-xs font-bold text-white shadow-sm hover:bg-rose-500">
+                      <Link to="/flatmates" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-rose-300 px-3 text-xs font-bold text-slate-900 shadow-sm hover:bg-rose-400">
                         렌트 더 보기
                       </Link>
                     </div>
-                    <div className="promo-carousel -mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1">
-                      {flatmatePromoListings.map((listing) => {
+                    {(() => {
+                      const switchToManual = () => {
+                        if (flatmateManualScroll) return;
+                        const track = flatmateTrackRef.current;
+                        const outer = flatmateOuterRef.current;
+                        const x = track ? -new DOMMatrixReadOnly(getComputedStyle(track).transform).m41 : 0;
+                        setFlatmateManualScroll(true);
+                        requestAnimationFrame(() => { if (outer) outer.scrollLeft = Math.max(0, x); });
+                      };
+                      const makeCards = (listings: typeof flatmatePromoListings, keyPrefix = "") =>
+                        listings.map((listing, i) => {
                         const suburb = listing.suburb?.trim();
                         const tags = flatmatePromoTags(listing);
                         return (
                           <Link
-                            key={listing.id}
+                            key={`${keyPrefix}${listing.id}-${i}`}
                             to={`/flatmates/${listing.id}`}
-                            className="w-[10.25rem] shrink-0 snap-start overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm transition-[box-shadow,border-color] hover:border-rose-200 hover:shadow-md sm:w-[11.25rem]"
+                            className="w-[10.25rem] shrink-0 overflow-hidden rounded-md border border-slate-200 bg-white transition-[box-shadow,border-color] hover:border-slate-400 hover:shadow-sm sm:w-[11.25rem]"
                           >
                             <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
                               <FlatmatePromoImage listing={listing} />
@@ -1306,27 +1318,43 @@ const Index = ({ cityFilter }: IndexProps) => {
                             </div>
                             <div className="flex h-[6.25rem] min-w-0 flex-col p-2">
                               <div className="mb-1 flex min-h-[1rem] items-center gap-1.5 overflow-hidden">
-                                {suburb && <p className="truncate text-[11px] font-semibold text-rose-700">{suburb}</p>}
+                                {suburb && <p className="truncate text-[11px] font-semibold text-slate-500">{suburb}</p>}
                               </div>
                               <p className="line-clamp-2 min-h-[2.1rem] text-xs font-extrabold leading-snug text-slate-950">{listing.title ?? "제목 없음"}</p>
                               <p className="mt-auto text-sm font-black text-slate-950">{formatRent(listing.price)} <span className="text-xs font-semibold text-slate-500">/ 주</span></p>
                             </div>
                           </Link>
                         );
-                      })}
-                    </div>
+                        });
+                      return flatmateManualScroll ? (
+                        <div ref={flatmateOuterRef} className="promo-carousel -mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
+                          {makeCards(flatmatePromoListings)}
+                        </div>
+                      ) : (
+                        <div
+                          ref={flatmateOuterRef}
+                          className="overflow-x-hidden pb-1"
+                          onTouchStart={switchToManual}
+                          onPointerDown={(e) => { if (e.pointerType !== "touch") switchToManual(); }}
+                          onWheel={switchToManual}
+                        >
+                          <div ref={flatmateTrackRef} className="flatmate-marquee-track">
+                            {makeCards([...flatmatePromoListings, ...flatmatePromoListings], "dup")}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
-                <div className="rounded-md border-2 border-blue-300 bg-blue-50/70 px-4 py-3 shadow-sm ring-1 ring-blue-100">
+                <div className="border border-border bg-white px-4 py-3 shadow-sm">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="flex items-center gap-1.5 text-sm font-extrabold text-slate-950 mb-0.5">
-                        <Newspaper className="h-4 w-4 text-blue-700" />
+                      <p className="flex items-center gap-1.5 text-base font-extrabold text-slate-950">
+                        <Newspaper className="h-4 w-4 text-slate-700" />
                         호주 생활 뉴스
                       </p>
-                      <p className="text-xs text-blue-900/75 leading-relaxed">오늘 알아두면 좋은 호주 생활 이슈를 빠르게 확인하세요.</p>
                     </div>
-                    <Link to="/news" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-blue-700 px-3 text-xs font-bold text-white shadow-sm hover:bg-blue-800">
+                    <Link to="/news" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-blue-300 px-3 text-xs font-bold text-slate-900 shadow-sm hover:bg-blue-400">
                       뉴스 더 보기
                     </Link>
                   </div>
@@ -1368,7 +1396,7 @@ const Index = ({ cityFilter }: IndexProps) => {
                             {featuredNewsArticle.publishedAt && <span className="font-semibold text-slate-400">· {featuredNewsArticle.publishedAt}</span>}
                           </p>
                           <p className="line-clamp-2 text-sm font-black leading-snug text-slate-950 sm:text-base">{featuredNewsArticle.title}</p>
-                          <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-blue-700">
+                          <p className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-slate-700">
                             기사 보기
                             <ExternalLink className="h-3 w-3" />
                           </p>
@@ -1406,24 +1434,23 @@ const Index = ({ cityFilter }: IndexProps) => {
                     </div>
                   ) : (
                     <div className="flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-3 py-2">
-                      <p className="text-xs font-semibold text-blue-900/75">환율, 최신 호주 뉴스, 구직 팁을 한곳에서 볼 수 있습니다.</p>
-                      <Link to="/news" className="inline-flex h-8 shrink-0 items-center justify-center rounded-md bg-blue-700 px-3 text-xs font-bold text-white shadow-sm hover:bg-blue-800">
+                      <p className="text-xs font-semibold text-muted-foreground">환율, 최신 호주 뉴스, 구직 팁을 한곳에서 볼 수 있습니다.</p>
+                      <Link to="/news" className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-slate-900 transition-colors hover:bg-slate-50">
                         뉴스
                       </Link>
                     </div>
                   )}
                 </div>
                 {salePromoDeals.length > 0 && (
-                  <div className="rounded-md border-2 border-emerald-300 bg-emerald-50/70 px-4 py-3 shadow-sm ring-1 ring-emerald-100">
+                  <div className="border border-border bg-white px-4 py-3 shadow-sm">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <p className="flex items-center gap-1.5 text-sm font-extrabold text-slate-950 mb-0.5">
-                          <ShoppingBag className="h-4 w-4 text-emerald-700" />
+                        <p className="flex items-center gap-1.5 text-base font-extrabold text-slate-950">
+                          <ShoppingBag className="h-4 w-4 text-slate-700" />
                           최신 세일과 할인
                         </p>
-                        <p className="text-xs text-emerald-900/75 leading-relaxed">호주 생활에 필요한 할인 정보와 프로모션을 한곳에서 확인하세요.</p>
                       </div>
-                      <Link to="/sales" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-emerald-700 px-3 text-xs font-bold text-white shadow-sm hover:bg-emerald-800">
+                      <Link to="/sales" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-emerald-300 px-3 text-xs font-bold text-slate-900 shadow-sm hover:bg-emerald-400">
                         세일 상품 더 보기
                       </Link>
                     </div>
@@ -1445,7 +1472,7 @@ const Index = ({ cityFilter }: IndexProps) => {
                             )}
                           </div>
                           <div className="min-w-0 flex-1 overflow-hidden">
-                            <p className="mb-1 text-[11px] font-semibold text-emerald-700">{deal.category}</p>
+                            <p className="mb-1 text-[11px] font-semibold text-slate-500">{deal.category}</p>
                             <p className="line-clamp-2 text-xs font-bold leading-snug text-slate-900">{highlightPrices(deal.title)}</p>
                           </div>
                         </Link>
@@ -1455,18 +1482,18 @@ const Index = ({ cityFilter }: IndexProps) => {
                 )}
                 {showPromotedJobsInPromoSection && promotedJobs.length > 0 && (
                   <>
-                    <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide">추천 일자리</p>
+                    <p className="border-t border-border pt-3 text-xs font-semibold uppercase tracking-wide text-slate-600">추천 일자리</p>
                     {promotedJobs.map((job) => (
                       <PromotedJobCard key={job.id} job={job} viewCount={getCount(job.id)} showEditButton={isAdmin} onDelete={isAdmin ? handleDeleteJob : undefined} />
                     ))}
                   </>
                 )}
                 {/* Promote-your-post CTA */}
-                <div className="rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-3">
+                <div className="rounded-lg border border-border bg-white px-4 py-3 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-amber-700 mb-0.5">📣 내 공고를 상단에 올리세요</p>
-                      <p className="text-xs text-amber-800/70 leading-relaxed">추천 공고는 일반 공고보다 <span className="font-semibold">3배 더 많이 조회</span>되고 지원 전환율이 <span className="font-semibold">60% 높습니다</span>. 문의: <a href="mailto:admin.hojujobs@gmail.com" onClick={() => trackEvent("promote_cta_clicked", { metadata: { surface: "job_list_promo" } })} className="font-semibold underline underline-offset-2 hover:text-amber-900">admin.hojujobs@gmail.com</a></p>
+                      <p className="text-xs font-bold text-slate-900 mb-0.5">내 공고를 상단에 올리세요</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">추천 공고는 일반 공고보다 <span className="font-semibold text-slate-700">3배 더 많이 조회</span>되고 지원 전환율이 <span className="font-semibold text-slate-700">60% 높습니다</span>. 문의: <a href="mailto:admin.hojujobs@gmail.com" onClick={() => trackEvent("promote_cta_clicked", { metadata: { surface: "job_list_promo" } })} className="font-semibold text-slate-800 underline underline-offset-2 hover:text-slate-950">admin.hojujobs@gmail.com</a></p>
                     </div>
                   </div>
                 </div>
