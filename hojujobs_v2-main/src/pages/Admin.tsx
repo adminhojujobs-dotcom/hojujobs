@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Trash2, Shield, ExternalLink, Pencil, MapPin, Check, X, Sparkles, ShoppingBag, Users } from "lucide-react";
+import { ArrowLeft, Trash2, Shield, ExternalLink, Pencil, MapPin, Check, X, Sparkles, ShoppingBag, Users, UserCheck } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import { LocationPicker } from "@/components/LocationPicker";
 import { Pagination } from "@/components/Pagination";
@@ -56,6 +56,15 @@ function clearPromotionCaches() {
   } catch {
     // Session storage may be unavailable in private or restricted browser contexts.
   }
+}
+
+function UserUploadedBadge() {
+  return (
+    <span className="inline-flex shrink-0 items-center gap-1 rounded border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-[10px] font-bold text-sky-700">
+      <UserCheck className="h-2.5 w-2.5" />
+      유저 업로드
+    </span>
+  );
 }
 
 export default function Admin() {
@@ -281,6 +290,7 @@ export default function Admin() {
                     <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0 flex-1">
                         <div className="flex min-w-0 items-center gap-1.5">
+                          {job.user_id && <UserUploadedBadge />}
                           <Link to={`/job/${job.id}`} className="truncate text-sm font-semibold text-foreground hover:text-primary">
                             {job.title}
                           </Link>

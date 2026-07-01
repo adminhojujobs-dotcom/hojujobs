@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bath, BedSingle, Check, ChevronDown, ChevronLeft, ChevronRight, MapPin, RotateCcw, Search, ShieldCheck, X } from "lucide-react";
+import { Bath, BedSingle, Check, ChevronDown, ChevronLeft, ChevronRight, MapPin, RotateCcw, Search, ShieldCheck, UserCheck, X } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useSEO } from "@/hooks/useSEO";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/trackEvent";
 
@@ -26,6 +27,7 @@ type FlatmateListing = {
   gender_restriction: string | null;
   private_bathroom: boolean | null;
   suburb: string | null;
+  user_id: string | null;
 };
 
 type BooleanFilter = "all" | "yes" | "no";
@@ -100,6 +102,7 @@ export default function Flatmates() {
     htmlLang: "ko",
     ogLocale: "ko_KR",
   });
+  const { isAdmin } = useAuth();
 
   const [listings, setListings] = useState<FlatmateListing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -148,7 +151,7 @@ export default function Flatmates() {
 
       const { data, error: fetchError } = await supabase
         .from("hojunara_realestate_share")
-        .select("id, url, title, description, price, contact_number, enquiry_email, state_location, time_posted, uploaded_at, image_url, post_photo, private_room, gender_restriction, private_bathroom, suburb")
+        .select("id, url, title, description, price, contact_number, enquiry_email, state_location, time_posted, uploaded_at, image_url, post_photo, private_room, gender_restriction, private_bathroom, suburb, user_id")
         .order("time_posted", { ascending: false })
         .limit(LISTING_LIMIT);
 
@@ -394,7 +397,7 @@ export default function Flatmates() {
               <>
                 <div className="grid gap-3">
                   {paginatedListings.map((listing) => (
-                    <FlatmateCard key={listing.id} listing={listing} />
+                    <FlatmateCard key={listing.id} listing={listing} isAdmin={isAdmin} />
                   ))}
                 </div>
                 <div className="mt-4 flex flex-col items-center gap-3 border-t border-slate-100 pt-4">
@@ -683,7 +686,7 @@ function SuburbDropdown({
   );
 }
 
-function FlatmateCard({ listing }: { listing: FlatmateListing }) {
+function FlatmateCard({ listing, isAdmin }: { listing: FlatmateListing; isAdmin: boolean }) {
   const description = compactDescription(listing.description);
   const navigate = useNavigate();
   const detailPath = `/flatmates/${listing.id}`;
@@ -722,6 +725,12 @@ function FlatmateCard({ listing }: { listing: FlatmateListing }) {
 
         <div className="flex min-h-[14rem] min-w-0 flex-col p-4">
           <div className="mb-2 flex flex-wrap items-center gap-1.5">
+            {isAdmin && listing.user_id && (
+              <span className="inline-flex items-center gap-1 rounded-md border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-bold text-sky-700">
+                <UserCheck className="h-3.5 w-3.5" />
+                유저 업로드
+              </span>
+            )}
             {suburb && (
               <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-bold text-primary">
                 <MapPin className="h-3.5 w-3.5" />
@@ -787,17 +796,39 @@ function listingPhotos(listing: FlatmateListing) {
 
 function PhotoCarousel({ listing }: { listing: FlatmateListing }) {
   const photos = listingPhotos(listing);
+  const [failedPhotos, setFailedPhotos] = useState<Set<string>>(() => new Set());
+  const availablePhotos = photos.filter((photo) => !failedPhotos.has(photo));
   const [photoIndex, setPhotoIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const currentPhoto = photos[photoIndex];
-  const hasMultiplePhotos = photos.length > 1;
+  const currentPhoto = availablePhotos[photoIndex];
+  const hasMultiplePhotos = availablePhotos.length > 1;
+
+  useEffect(() => {
+    setFailedPhotos(new Set());
+    setPhotoIndex(0);
+    setLightboxIndex(null);
+  }, [listing.id]);
+
+  useEffect(() => {
+    if (photoIndex >= availablePhotos.length) {
+      setPhotoIndex(Math.max(0, availablePhotos.length - 1));
+    }
+  }, [availablePhotos.length, photoIndex]);
 
   const showPrevious = () => {
-    setPhotoIndex((current) => (current === 0 ? photos.length - 1 : current - 1));
+    setPhotoIndex((current) => (current === 0 ? availablePhotos.length - 1 : current - 1));
   };
 
   const showNext = () => {
-    setPhotoIndex((current) => (current + 1) % photos.length);
+    setPhotoIndex((current) => (current + 1) % availablePhotos.length);
+  };
+
+  const markPhotoFailed = (photo: string) => {
+    setFailedPhotos((current) => {
+      const next = new Set(current);
+      next.add(photo);
+      return next;
+    });
   };
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
@@ -836,7 +867,7 @@ function PhotoCarousel({ listing }: { listing: FlatmateListing }) {
             alt={listing.title ?? "플렛메이트 렌트"}
             className="h-full w-full object-cover"
             loading="lazy"
-            onError={(event) => { event.currentTarget.style.display = "none"; }}
+            onError={() => markPhotoFailed(currentPhoto)}
           />
         </button>
       ) : (
@@ -870,7 +901,7 @@ function PhotoCarousel({ listing }: { listing: FlatmateListing }) {
             <ChevronRight className="h-4 w-4" />
           </button>
           <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1 rounded-full bg-black/45 px-2 py-1">
-            {photos.map((photo, index) => (
+            {availablePhotos.map((photo, index) => (
               <button
                 key={`${photo}-${index}`}
                 type="button"
@@ -891,7 +922,7 @@ function PhotoCarousel({ listing }: { listing: FlatmateListing }) {
 
       {lightboxIndex !== null && (
         <PhotoLightbox
-          photos={photos}
+          photos={availablePhotos}
           photoIndex={lightboxIndex}
           title={listing.title ?? "플렛메이트 렌트"}
           onPhotoIndexChange={setLightboxIndex}

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { MapPin, Briefcase, ChevronRight, Eye, Sparkles, Pencil, Trash2 } from "lucide-react";
+import { MapPin, Briefcase, ChevronRight, Eye, Sparkles, Pencil, Trash2, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -22,6 +22,7 @@ interface Job {
   industry: string;
   uploaded_at?: string;
   image_url?: string | null;
+  user_id?: string | null;
 }
 
 function formatDate(dateStr?: string) {
@@ -86,6 +87,12 @@ export function PromotedJobCard({
                 <Sparkles className="h-2.5 w-2.5" />
                 추천
               </span>
+              {showEditButton && job.user_id && (
+                <span className="inline-flex shrink-0 items-center gap-1 rounded border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-[10px] font-bold text-sky-700">
+                  <UserCheck className="h-2.5 w-2.5" />
+                  유저 업로드
+                </span>
+              )}
               <h3 className="text-xs sm:text-sm font-bold text-foreground truncate group-hover:text-amber-700 transition-colors">{job.title}</h3>
             </div>
             <div className="flex items-center gap-x-3 text-xs text-muted-foreground overflow-hidden">

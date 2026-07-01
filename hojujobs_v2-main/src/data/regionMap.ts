@@ -12,7 +12,7 @@ export interface RegionGroup {
 export const REGION_GROUPS: RegionGroup[] = [
   // NSW - Sydney
   { state: "NSW", region: "시드니 시티", suburbs: [
-    "시드니 CBD", "킹스크로스", "차이나타운", "헤이마켓",
+    "시드니 시티", "시드니 CBD", "킹스크로스", "차이나타운", "헤이마켓",
     "뉴타운", "서리 힐스", "울티모", "알렉산드리아", "로젤",
     "레드펀", "록스", "더 록스", "드러모인", "드라모인", "바랑가루", "팟츠 포인트", "피어몬트", "타운홀", "매릭빌",
     "그린 스퀘어", "치펜데일", "패딩턴", "라이카트", "이너 웨스트", "센트럴 파크",
@@ -33,7 +33,7 @@ export const REGION_GROUPS: RegionGroup[] = [
   ]},
   { state: "NSW", region: "라이드 / 이스트우드", suburbs: [
     "라이드", "이스트우드", "에핑", "웨스트 라이드", "탑라이드", "메도우뱅크", "매도뱅크", "메도뱅크", "맥쿼리", "맥쿼리빌", "어밍톤", "어밍턴",
-    "리달미어", "라이달미어", "맥쿼리 파크", "글레이즈빌", "멜로즈 파크", "노스 라이드", "이스트 라이드", "퍼트니",
+    "리달미어", "라이달미어", "맥쿼리 파크", "글레이즈빌", "멜로즈 파크", "노스 라이드", "노스 랠러", "이스트 라이드", "퍼트니",
   ]},
   { state: "NSW", region: "파라마타 / 웨스트", suburbs: [
     "파라마타", "실버워터", "리드컴", "로즈", "스트라스필드", "버우드", "애쉬필드", "웬트워스 포인트",
@@ -41,7 +41,7 @@ export const REGION_GROUPS: RegionGroup[] = [
     "레드콤브", "버른", "지라윈", "노스 파라마타", "그랜빌", "던다스",
     "콩코드", "콩코드 웨스트", "올림픽 파크", "홈부쉬", "홈부시", "메릴랜즈", "비르와", "노스미드", "웨스트미드", "오트랜즈",
     "리전츠 파크", "리젠트 파크", "버워", "엔필드", "모틀레이크", "치즈윅", "펜들 힐", "로즈힐",
-    "홀로이드", "퉁가비",
+    "홀로이드", "퉁가비", "스트라이레",
   ]},
   { state: "NSW", region: "힐스 지구", suburbs: [
     "노웨스트", "켈리빌", "라우스 힐", "라우즈힐", "스탠호프 가든스", "체리브룩", "카슬힐", "듀럴", "노스 록스", "스카트필드", "칼링포드", "페넌트 힐스",
@@ -52,17 +52,17 @@ export const REGION_GROUPS: RegionGroup[] = [
     "허스트빌", "사우스 허스트빌", "마스콧", "본다이", "본다이 정션",
     "랜드윅", "로즈랜즈", "로즈랜드", "미란다", "울리 크릭", "쿠지", "킹스포드",
     "리버우드", "마트라빌", "로즈 베이", "이스트가든스", "픽허스트", "클로벨리",
-    "켄싱턴", "도버 하이츠", "마루브라", "웨이벌리", "코가라", "카링바", "더블 베이", "킹스그로브", "울루웨어", "보타니", "안클리프", "에지클리프", "록데일",
+    "켄싱턴", "도버 하이츠", "마루브라", "웨이벌리", "코가라", "카링바", "더블 베이", "킹스그로브", "울루웨어", "보타니", "안클리프", "에지클리프", "록데일", "벡슬리",
     "이스턴 서버브", "이스터른 서버어브", "실바니아", "루가르노", "브론테", "바클루즈", "버크루즈", "키라위",
     "힐스데일",
   ]},
   { state: "NSW", region: "사우스웨스트", suburbs: [
     "캠벨타운", "마운트 드루이트", "스프링우드", "리버풀", "뱅크스타운", "페어필드", "펜리스", "웨스턴 에어리어",
-    "블랙타운", "캐브라마타", "웨더릴 파크", "카술라", "라켐바", "레이컴바", "벨모어", "세인트 메리스", "스미스필드", "빌라우드", "레브즈비", "출로라", "무어뱅크", "오크허스트", "어스킨 파크",
+    "블랙타운", "캐브라마타", "카브라마타", "웨더릴 파크", "카술라", "라켐바", "레이컴바", "벨모어", "세인트 메리스", "스미스필드", "빌라우드", "레브즈비", "출로라", "무어뱅크", "오크허스트", "어스킨 파크",
     "맥아더", "빌우드", "세인트 클레어", "글렌모어 파크", "민토", "실버데일",
     "자미슨타운", "나렐란", "잉글번",
   ]},
-  { state: "NSW", region: "센트럴 코스트", suburbs: ["센트럴 코스트", "센트럴코스트", "고스포드", "테리갈"] },
+  { state: "NSW", region: "센트럴 코스트", suburbs: ["센트럴 코스트", "센트럴코스트", "고스포드", "테리갈", "와이와이"] },
   { state: "NSW", region: "기타 NSW", suburbs: [
     "포트 맥쿼리", "울릉공", "울굴가", "굴번", "배서스트",
     "코프스 하버", "웬트워스", "윈덤", "샌디 비치", "쿠퍼스 하버",
@@ -70,16 +70,16 @@ export const REGION_GROUPS: RegionGroup[] = [
     "캡스 하버", "그래프턴", "싱글턴", "부카",
     "엔스워", "웨어하우스", "래빙턴", "윈저", "오렌지", "덥보",
     "와가 와가", "와가와가", "미트라고웅", "미타공", "그리피스", "레일러", "스탠웰 파크", "코린디", "더보",
-    "트위드 헤즈", "킹스클리프", "포츠빌",
+    "트위드 헤즈", "킹스클리프", "포츠빌", "코린디 비치", "나나 글렌",
     "탬워스", "엔스위 오렌지",
     "하울롱",
   ]},
 
   // VIC - Melbourne
   { state: "VIC", region: "멜버른 CBD / 이너", suburbs: [
-    "멜버른 CBD", "도클랜드", "사우스 야라", "프라란", "세인트 킬다", "엘스터윅", "엘스터닉", "콜링우드", "피츠로이", "칼튼",
+    "멜버른 시티", "멜버른 CBD", "도클랜드", "사우스 야라", "프라란", "세인트 킬다", "엘스터윅", "엘스터닉", "콜링우드", "피츠로이", "칼튼",
     "앨버트 파크", "사우스뱅크", "사우스 워프", "세든", "풋스크레이", "매리비농", "칼턴", "브런즈윅",
-    "리치몬드", "토트넘", "포트 멜버른",
+    "리치몬드", "토트넘", "포트 멜버른", "사우스 멜버른",
     "브런즈윅 이스트",
   ]},
   { state: "VIC", region: "이너 이스트 멜버른", suburbs: [
@@ -105,7 +105,7 @@ export const REGION_GROUPS: RegionGroup[] = [
 
   // QLD - Brisbane
   { state: "QLD", region: "골드코스트", suburbs: ["골드코스트"] },
-  { state: "QLD", region: "기타 퀸즐랜드", suburbs: ["타운스빌", "케언즈", "선샤인 코스트", "캐블처 사우스", "캐불처 사우스", "해밀턴"] },
+  { state: "QLD", region: "기타 퀸즐랜드", suburbs: ["타운스빌", "케언즈", "선샤인 코스트", "캐블처 사우스", "캐불처 사우스", "해밀턴", "모레이필드"] },
 
 ];
 
@@ -120,6 +120,7 @@ REGION_GROUPS.forEach((g) => {
 /** Korean suburb name → English name for Google Maps */
 export const SUBURB_EN: Record<string, string> = {
   "시드니": "Sydney NSW",
+  "시드니 시티": "Sydney CBD NSW",
   "시드니 CBD": "Sydney CBD NSW",
   "킹스크로스": "Kings Cross NSW",
   "차이나타운": "Chinatown Sydney NSW",
@@ -212,12 +213,14 @@ export const SUBURB_EN: Record<string, string> = {
   "글레이즈빌": "Gladesville NSW",
   "멜로즈 파크": "Melrose Park NSW",
   "노스 라이드": "North Ryde NSW",
+  "노스 랠러": "North Ryde NSW",
   "퍼트니": "Putney NSW",
   "파라마타": "Parramatta NSW",
   "실버워터": "Silverwater NSW",
   "리드컴": "Lidcombe NSW",
   "로즈": "Rhodes NSW",
   "스트라스필드": "Strathfield NSW",
+  "스트라이레": "Strathfield NSW",
   "버우드": "Burwood NSW",
   "애쉬필드": "Ashfield NSW",
   "웬트워스 포인트": "Wentworth Point NSW",
@@ -301,6 +304,7 @@ export const SUBURB_EN: Record<string, string> = {
   "웨스턴 에어리어": "Western Sydney NSW",
   "블랙타운": "Blacktown NSW",
   "캐브라마타": "Cabramatta NSW",
+  "카브라마타": "Cabramatta NSW",
   "웨더릴 파크": "Wetherill Park NSW",
   "카슬라": "Casula NSW",
   "라켐바": "Lakemba NSW",
@@ -314,12 +318,15 @@ export const SUBURB_EN: Record<string, string> = {
   "센트럴코스트": "Central Coast NSW",
   "고스포드": "Gosford NSW",
   "테리갈": "Terrigal NSW",
+  "와이와이": "Woy Woy NSW",
   "포트 맥쿼리": "Port Macquarie NSW",
   "울릉공": "Wollongong NSW",
   "울굴가": "Woolgoolga NSW",
   "굴번": "Goulburn NSW",
   "배서스트": "Bathurst NSW",
   "코프스 하버": "Coffs Harbour NSW",
+  "코린디 비치": "Corindi Beach NSW",
+  "나나 글렌": "Nana Glen NSW",
   "뉴카슬": "Newcastle NSW",
   "카툼바": "Katoomba NSW",
   "헌터 밸리": "Hunter Valley NSW",
@@ -344,6 +351,7 @@ export const SUBURB_EN: Record<string, string> = {
   "덜위치 힐": "Dulwich Hill NSW",
   "에지클리프": "Edgecliff NSW",
   "록데일": "Rockdale NSW",
+  "벡슬리": "Bexley NSW",
   "이스턴 서버브": "Eastern Suburbs Sydney NSW",
   "이스터른 서버어브": "Eastern Suburbs Sydney NSW",
   "실바니아": "Sylvania NSW",
@@ -358,7 +366,9 @@ export const SUBURB_EN: Record<string, string> = {
   "덥보": "Dubbo NSW",
   // VIC - Melbourne
   "멜버른": "Melbourne VIC",
+  "멜버른 시티": "Melbourne CBD VIC",
   "멜버른 CBD": "Melbourne CBD VIC",
+  "사우스 멜버른": "South Melbourne VIC",
   "사우스 야라": "South Yarra VIC",
   "프라란": "Prahran VIC",
   "세인트 킬다": "St Kilda VIC",
@@ -436,6 +446,7 @@ export const SUBURB_EN: Record<string, string> = {
   "타운스빌": "Townsville QLD",
   "케언즈": "Cairns QLD",
   "선샤인 코스트": "Sunshine Coast QLD",
+  "모레이필드": "Morayfield QLD",
   // SA - Adelaide
   "애들레이드": "Adelaide SA",
   "글렌리그": "Glenelg SA",

@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Bath, BedSingle, Calendar, ChevronLeft, ChevronRight, MapPin, ShieldCheck, X } from "lucide-react";
+import { ArrowLeft, Bath, BedSingle, Calendar, ChevronLeft, ChevronRight, MapPin, ShieldCheck, UserCheck, X } from "lucide-react";
 import { ContactRevealSection } from "@/components/ContactRevealSection";
 import { DescriptionRevealSection } from "@/components/DescriptionRevealSection";
 import { ListingRevealProvider } from "@/hooks/useListingReveal";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
 import { cn } from "@/lib/utils";
 import { trackEvent } from "@/lib/trackEvent";
@@ -28,6 +29,7 @@ type FlatmateListing = {
   gender_restriction: string | null;
   private_bathroom: boolean | null;
   suburb: string | null;
+  user_id: string | null;
 };
 
 function formatPrice(price: number | null) {
@@ -63,6 +65,7 @@ function listingPhotos(listing: FlatmateListing) {
 
 export default function FlatmateDetail() {
   const { id } = useParams();
+  const { isAdmin } = useAuth();
   const [listing, setListing] = useState<FlatmateListing | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -77,7 +80,7 @@ export default function FlatmateDetail() {
 
       const { data, error } = await supabase
         .from("hojunara_realestate_share")
-        .select("id, url, title, description, price, contact_number, enquiry_email, kakaoid, state_location, time_posted, uploaded_at, image_url, post_photo, private_room, gender_restriction, private_bathroom, suburb")
+        .select("id, url, title, description, price, contact_number, enquiry_email, kakaoid, state_location, time_posted, uploaded_at, image_url, post_photo, private_room, gender_restriction, private_bathroom, suburb, user_id")
         .eq("id", Number(id))
         .maybeSingle();
 
@@ -155,6 +158,12 @@ export default function FlatmateDetail() {
 
           <div className="p-5 sm:p-6">
             <div className="mb-3 flex flex-wrap items-center gap-1.5">
+              {isAdmin && listing.user_id && (
+                <span className="inline-flex items-center gap-1 rounded-md border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-bold text-sky-700">
+                  <UserCheck className="h-3.5 w-3.5" />
+                  유저 업로드
+                </span>
+              )}
               <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-bold text-primary">
                 <MapPin className="h-3.5 w-3.5" />
                 {listing.suburb ?? "지역 미기재"}
@@ -220,17 +229,39 @@ export default function FlatmateDetail() {
 
 function PhotoGallery({ listing }: { listing: FlatmateListing }) {
   const photos = listingPhotos(listing);
+  const [failedPhotos, setFailedPhotos] = useState<Set<string>>(() => new Set());
+  const availablePhotos = photos.filter((photo) => !failedPhotos.has(photo));
   const [photoIndex, setPhotoIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const currentPhoto = photos[photoIndex];
-  const hasMultiplePhotos = photos.length > 1;
+  const currentPhoto = availablePhotos[photoIndex];
+  const hasMultiplePhotos = availablePhotos.length > 1;
+
+  useEffect(() => {
+    setFailedPhotos(new Set());
+    setPhotoIndex(0);
+    setLightboxIndex(null);
+  }, [listing.id]);
+
+  useEffect(() => {
+    if (photoIndex >= availablePhotos.length) {
+      setPhotoIndex(Math.max(0, availablePhotos.length - 1));
+    }
+  }, [availablePhotos.length, photoIndex]);
 
   const showPrevious = () => {
-    setPhotoIndex((current) => (current === 0 ? photos.length - 1 : current - 1));
+    setPhotoIndex((current) => (current === 0 ? availablePhotos.length - 1 : current - 1));
   };
 
   const showNext = () => {
-    setPhotoIndex((current) => (current + 1) % photos.length);
+    setPhotoIndex((current) => (current + 1) % availablePhotos.length);
+  };
+
+  const markPhotoFailed = (photo: string) => {
+    setFailedPhotos((current) => {
+      const next = new Set(current);
+      next.add(photo);
+      return next;
+    });
   };
 
   return (
@@ -247,6 +278,7 @@ function PhotoGallery({ listing }: { listing: FlatmateListing }) {
               src={currentPhoto}
               alt={listing.title ?? "플렛메이트 렌트"}
               className="h-full w-full object-cover"
+              onError={() => markPhotoFailed(currentPhoto)}
             />
           </button>
         ) : (
@@ -279,7 +311,7 @@ function PhotoGallery({ listing }: { listing: FlatmateListing }) {
 
       {hasMultiplePhotos && (
         <div className="flex gap-2 overflow-x-auto border-t bg-white p-3">
-          {photos.map((photo, index) => (
+          {availablePhotos.map((photo, index) => (
             <button
               key={`${photo}-${index}`}
               type="button"
@@ -290,7 +322,7 @@ function PhotoGallery({ listing }: { listing: FlatmateListing }) {
               )}
               aria-label={`${index + 1}번째 사진`}
             >
-              <img src={photo} alt="" className="h-full w-full object-cover" />
+              <img src={photo} alt="" className="h-full w-full object-cover" onError={() => markPhotoFailed(photo)} />
             </button>
           ))}
         </div>
@@ -298,7 +330,7 @@ function PhotoGallery({ listing }: { listing: FlatmateListing }) {
 
       {lightboxIndex !== null && (
         <PhotoLightbox
-          photos={photos}
+          photos={availablePhotos}
           photoIndex={lightboxIndex}
           title={listing.title ?? "플렛메이트 렌트"}
           onPhotoIndexChange={setLightboxIndex}

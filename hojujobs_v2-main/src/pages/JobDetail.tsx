@@ -1,13 +1,14 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { Header } from "@/components/Header";
-import { ArrowLeft, MapPin, Briefcase, Eye, Calendar, ExternalLink } from "lucide-react";
+import { ArrowLeft, MapPin, Briefcase, Eye, Calendar, ExternalLink, UserCheck } from "lucide-react";
 import { ContactRevealSection } from "@/components/ContactRevealSection";
 import { DescriptionRevealSection } from "@/components/DescriptionRevealSection";
 import { ListingRevealProvider } from "@/hooks/useListingReveal";
 import { fetchViewCountByJobId, incrementViewCount } from "@/hooks/useViewCounts";
 import { supabase } from "@/integrations/supabase/client";
 import { SUBURB_EN } from "@/data/regionMap";
+import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
 import { trackEvent } from "@/lib/trackEvent";
 
@@ -28,6 +29,7 @@ interface Job {
   description: string | null;
   google_search: string | null;
   uploaded_at: string | null;
+  user_id?: string | null;
   archived?: boolean;
 }
 
@@ -60,6 +62,7 @@ function cacheViewCount(jobId: number, count: number) {
 
 export default function JobDetail() {
   const { id } = useParams();
+  const { isAdmin } = useAuth();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [viewCount, setViewCount] = useState(0);
@@ -72,7 +75,7 @@ export default function JobDetail() {
 
       const { data, error } = await supabase
         .from("jobs")
-        .select("id, title, location, industry, contact, email, kakaoid, description, google_search, uploaded_at")
+        .select("id, title, location, industry, contact, email, kakaoid, description, google_search, uploaded_at, user_id")
         .eq("id", Number(id))
         .maybeSingle();
 
@@ -242,6 +245,12 @@ export default function JobDetail() {
         </div>
 
         <div className="bg-card border border-border rounded-xl p-6 mb-6">
+          {isAdmin && job.user_id && (
+            <span className="mb-3 inline-flex items-center gap-1 rounded border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-bold text-sky-700">
+              <UserCheck className="h-3.5 w-3.5" />
+              유저 업로드
+            </span>
+          )}
           <h1 className="text-2xl font-bold text-foreground mb-3">{job.title}</h1>
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
             {locations.length > 0 && <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-accent" />{locations.join(", ")}</span>}

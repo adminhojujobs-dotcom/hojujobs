@@ -22,7 +22,7 @@ import { toast } from "sonner";
 const ITEMS_PER_PAGE = 50;
 const VISIBLE_JOB_DAYS = 6;
 const LISTING_CACHE_TTL_MS = 5 * 60 * 1000;
-const LISTING_CACHE_VERSION = 11;
+const LISTING_CACHE_VERSION = 13;
 const LISTING_REQUEST_TIMEOUT_MS = 15_000;
 const SALE_PROMO_TIMEOUT_MS = 5_000;
 const FILTER_METADATA_TIMEOUT_MS = 5_000;
@@ -34,9 +34,8 @@ const SALE_PROMO_POOL_LIMIT = 10;
 const SALE_PROMO_VISIBLE_COUNT = 2;
 const SALE_PROMO_ROTATE_MS = 4500;
 const FLATMATE_PROMO_POOL_LIMIT = 10;
-const FLATMATE_PROMO_VISIBLE_COUNT = 2;
-const FLATMATE_PROMO_ROTATE_MS = 4500;
-const NEWS_PROMO_LIMIT = 4;
+const NEWS_PROMO_CANDIDATE_LIMIT = 24;
+const NEWS_PROMO_HEADLINE_LIMIT = 3;
 const SALE_PROMO_CACHE_KEY = "hoju_sale_promo_cache";
 const DEFAULT_SELECTED_LOCATIONS: string[] = [];
 
@@ -50,6 +49,7 @@ interface Job {
   uploaded_at: string;
   image_url?: string | null;
   Promoted?: boolean | null;
+  user_id?: string | null;
 }
 
 interface JobFilterMeta {
@@ -70,7 +70,10 @@ interface FlatmatePromoListing {
   suburb: string | null;
   price: number | null;
   imageUrl?: string;
+  photoUrls: string[];
   privateRoom: boolean | null;
+  privateBathroom: boolean | null;
+  genderRestriction: string | null;
 }
 
 interface NewsPromoArticle {
@@ -167,6 +170,72 @@ function mergeJobsById(...groups: Job[][]) {
 
 function translatedNewsUrl(url: string) {
   return `https://translate.google.com/translate?sl=auto&tl=ko&u=${encodeURIComponent(url)}`;
+}
+
+function flatmatePromoTags(listing: FlatmatePromoListing) {
+  const tags: string[] = [];
+
+  if (listing.privateRoom === true) tags.push("독방");
+  if (listing.privateRoom === false) tags.push("쉐어룸");
+  if (listing.privateBathroom === true) tags.push("개인욕실");
+  if (listing.genderRestriction === "female_only") tags.push("여성전용");
+  if (listing.genderRestriction === "male_only") tags.push("남성전용");
+
+  return tags.slice(0, 3);
+}
+
+function flatmatePromoPhotos(imageUrl?: string, postPhoto?: string[] | null) {
+  return [
+    imageUrl,
+    ...(Array.isArray(postPhoto) ? postPhoto : []),
+  ].filter((photo): photo is string => Boolean(photo?.trim()));
+}
+
+function FlatmatePromoImage({ listing }: { listing: FlatmatePromoListing }) {
+  const uniquePhotos = useMemo(() => [...new Set(listing.photoUrls)], [listing.photoUrls]);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const currentPhoto = uniquePhotos[photoIndex];
+
+  useEffect(() => {
+    setPhotoIndex(0);
+  }, [listing.id]);
+
+  if (!currentPhoto) return null;
+
+  return (
+    <img
+      src={currentPhoto}
+      alt={listing.title ?? "플렛메이트 렌트"}
+      className="h-full w-full object-cover"
+      onError={() => {
+        setPhotoIndex((index) => (index + 1 < uniquePhotos.length ? index + 1 : index));
+      }}
+    />
+  );
+}
+
+function selectNewsPromoHeadlines(articles: NewsPromoArticle[]) {
+  const featured = articles[0];
+  const usedCategories = new Set<string>();
+  if (featured?.categoryKey) usedCategories.add(featured.categoryKey);
+
+  const categoryDiverseHeadlines = articles.slice(1).filter((article) => {
+    if (usedCategories.has(article.categoryKey)) return false;
+    usedCategories.add(article.categoryKey);
+    return true;
+  });
+
+  if (categoryDiverseHeadlines.length >= NEWS_PROMO_HEADLINE_LIMIT) {
+    return categoryDiverseHeadlines.slice(0, NEWS_PROMO_HEADLINE_LIMIT);
+  }
+
+  const selectedIds = new Set(categoryDiverseHeadlines.map((article) => article.id));
+  const fallbackHeadlines = articles
+    .slice(1)
+    .filter((article) => !selectedIds.has(article.id))
+    .slice(0, NEWS_PROMO_HEADLINE_LIMIT - categoryDiverseHeadlines.length);
+
+  return [...categoryDiverseHeadlines, ...fallbackHeadlines];
 }
 
 function matchesAnyLocation(locations: string[], locationSet: Set<string>) {
@@ -416,7 +485,6 @@ const Index = ({ cityFilter }: IndexProps) => {
   const [salePromoDeals, setSalePromoDeals] = useState<SalePromoDeal[]>(initialSalePromoDeals);
   const [salePromoPage, setSalePromoPage] = useState(0);
   const [flatmatePromoListings, setFlatmatePromoListings] = useState<FlatmatePromoListing[]>([]);
-  const [flatmatePromoPage, setFlatmatePromoPage] = useState(0);
   const [newsPromoArticles, setNewsPromoArticles] = useState<NewsPromoArticle[]>([]);
   const [loadingSalePromoDeals, setLoadingSalePromoDeals] = useState(initialSalePromoDeals.length === 0);
   const [loadingFlatmatePromoListings, setLoadingFlatmatePromoListings] = useState(true);
@@ -618,7 +686,7 @@ const Index = ({ cityFilter }: IndexProps) => {
       const { data, error } = await withTimeout(
         supabase
           .from("hojunara_realestate_share")
-          .select("id, title, suburb, price, image_url, private_room, time_posted")
+          .select("id, title, suburb, price, image_url, post_photo, private_room, private_bathroom, gender_restriction, time_posted")
           .order("time_posted", { ascending: false })
           .limit(FLATMATE_PROMO_POOL_LIMIT),
         SALE_PROMO_TIMEOUT_MS
@@ -639,9 +707,11 @@ const Index = ({ cityFilter }: IndexProps) => {
         suburb: listing.suburb,
         price: listing.price,
         imageUrl: listing.image_url ?? undefined,
+        photoUrls: flatmatePromoPhotos(listing.image_url ?? undefined, listing.post_photo),
         privateRoom: listing.private_room,
+        privateBathroom: listing.private_bathroom,
+        genderRestriction: listing.gender_restriction,
       })));
-      setFlatmatePromoPage(0);
       setLoadingFlatmatePromoListings(false);
     }
 
@@ -658,30 +728,20 @@ const Index = ({ cityFilter }: IndexProps) => {
   }, []);
 
   useEffect(() => {
-    const totalPages = Math.ceil(flatmatePromoListings.length / FLATMATE_PROMO_VISIBLE_COUNT);
-    if (totalPages <= 1) return;
-
-    const intervalId = window.setInterval(() => {
-      setFlatmatePromoPage((page) => (page + 1) % totalPages);
-    }, FLATMATE_PROMO_ROTATE_MS);
-
-    return () => window.clearInterval(intervalId);
-  }, [flatmatePromoListings.length]);
-
-  useEffect(() => {
     let cancelled = false;
 
     async function fetchNewsPromoArticles() {
       setLoadingNewsPromoArticles(true);
 
+      const newsSelect = "id, title, source_name, source_url, published_at_label_ko, original_published_at, sort_order, image_url, category_key";
       const { data, error } = await withTimeout(
         supabase
           .from("news_articles")
-          .select("id, title, source_name, source_url, published_at_label_ko, original_published_at, sort_order, image_url, category_key")
-          .eq("show_on_dashboard", true)
+          .select(newsSelect)
+          .eq("show_on_news_page", true)
           .order("sort_order", { ascending: true })
           .order("original_published_at", { ascending: false })
-          .limit(NEWS_PROMO_LIMIT),
+          .limit(NEWS_PROMO_CANDIDATE_LIMIT),
         SALE_PROMO_TIMEOUT_MS
       );
 
@@ -735,7 +795,8 @@ const Index = ({ cityFilter }: IndexProps) => {
     function buildJobsQuery(from: number, to: number, withCount = false, applyCityFilter = true) {
       let query = supabase
         .from("jobs")
-        .select("id, title, location, industry, uploaded_at, image_url, Promoted", withCount ? { count: "exact" } : undefined)
+        .select("id, title, location, industry, uploaded_at, image_url, Promoted, user_id", withCount ? { count: "exact" } : undefined)
+        .or("Promoted.is.null,Promoted.eq.false")
         .gte("uploaded_at", cutoff.toISOString())
         .lte("uploaded_at", new Date().toISOString());
 
@@ -762,7 +823,7 @@ const Index = ({ cityFilter }: IndexProps) => {
     function buildPromotedJobsQuery() {
       let query = supabase
         .from("jobs")
-        .select("id, title, location, industry, uploaded_at, image_url, Promoted")
+        .select("id, title, location, industry, uploaded_at, image_url, Promoted, user_id")
         .eq("Promoted", true)
         .gte("uploaded_at", cutoff.toISOString())
         .lte("uploaded_at", new Date().toISOString());
@@ -778,6 +839,7 @@ const Index = ({ cityFilter }: IndexProps) => {
       let query = supabase
         .from("jobs")
         .select("location, industry")
+        .or("Promoted.is.null,Promoted.eq.false")
         .gte("uploaded_at", cutoff.toISOString())
         .lte("uploaded_at", new Date().toISOString());
 
@@ -972,8 +1034,7 @@ const Index = ({ cityFilter }: IndexProps) => {
           console.error("promoted jobs fetch error:", promoted.error);
         }
 
-        const fetchHasActiveFilters = !!keyword || selectedLocations.length > 0 || industry !== "all";
-        const resolvedPageJobs = page === 1 && !fetchHasActiveFilters
+        const resolvedPageJobs = page === 1
           ? mergeJobsById(promotedJobs, pageJobs)
           : pageJobs;
         const fallbackFilterJobs = resolvedPageJobs.map(({ location, industry }) => ({ location, industry }));
@@ -1092,20 +1153,16 @@ const Index = ({ cityFilter }: IndexProps) => {
   const displayTotalPages = Math.ceil((displayTotalCount ?? filtered.length) / ITEMS_PER_PAGE);
   const currentPage = Math.min(page, displayTotalPages || 1);
   const paginatedJobs = filtered;
-  const showPromoSection = currentPage === 1 && !hasActiveFilters && (!cityFilter || PROMO_CITY_FILTERS.has(cityFilter));
+  const showPromoSection = currentPage === 1 && (!cityFilter || PROMO_CITY_FILTERS.has(cityFilter));
   const showReadyPromoSection = showPromoSection && !loadingJobs && !loadingSalePromoDeals && !loadingFlatmatePromoListings && !loadingNewsPromoArticles;
   const showPromotedJobsInPromoSection = showReadyPromoSection;
   const loadingPromoSection = showPromoSection && !showReadyPromoSection;
   const loadingCards = loadingJobs || loadingPromoSection;
   const featuredNewsArticle = newsPromoArticles[0];
-  const headlineNewsArticles = newsPromoArticles.slice(1);
+  const headlineNewsArticles = selectNewsPromoHeadlines(newsPromoArticles);
   const visibleSalePromoDeals = salePromoDeals.slice(
     salePromoPage * SALE_PROMO_VISIBLE_COUNT,
     salePromoPage * SALE_PROMO_VISIBLE_COUNT + SALE_PROMO_VISIBLE_COUNT,
-  );
-  const visibleFlatmatePromoListings = flatmatePromoListings.slice(
-    flatmatePromoPage * FLATMATE_PROMO_VISIBLE_COUNT,
-    flatmatePromoPage * FLATMATE_PROMO_VISIBLE_COUNT + FLATMATE_PROMO_VISIBLE_COUNT,
   );
   const regularPaginatedJobs = showPromotedJobsInPromoSection
     ? paginatedJobs.filter((job) => job.Promoted !== true)
@@ -1208,7 +1265,7 @@ const Index = ({ cityFilter }: IndexProps) => {
               </div>
             </div>
 
-            {/* Promoted jobs - only on page 1 with no active filters */}
+            {/* Promotional cards and promoted jobs stay pinned above filtered regular jobs. */}
             {showReadyPromoSection && (
               <div className="space-y-2 mb-2">
                 {flatmatePromoListings.length > 0 && (
@@ -1225,37 +1282,34 @@ const Index = ({ cityFilter }: IndexProps) => {
                         렌트 더 보기
                       </Link>
                     </div>
-                    <div key={flatmatePromoPage} className="promo-flip grid gap-2 sm:grid-cols-2">
-                      {visibleFlatmatePromoListings.map((listing) => {
+                    <div className="promo-carousel -mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1">
+                      {flatmatePromoListings.map((listing) => {
                         const suburb = listing.suburb?.trim();
+                        const tags = flatmatePromoTags(listing);
                         return (
                           <Link
                             key={listing.id}
                             to={`/flatmates/${listing.id}`}
-                            className="grid h-[7.75rem] min-w-0 grid-cols-[5.5rem_minmax(0,1fr)] gap-2 overflow-hidden rounded-md border border-slate-200 bg-white p-2 transition-colors hover:bg-slate-50 sm:h-[8.25rem] sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-3"
+                            className="w-[10.25rem] shrink-0 snap-start overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm transition-[box-shadow,border-color] hover:border-rose-200 hover:shadow-md sm:w-[11.25rem]"
                           >
-                            <div className="h-full min-h-0 w-full overflow-hidden rounded-md bg-slate-100">
-                              {listing.imageUrl && (
-                                <img
-                                  src={listing.imageUrl}
-                                  alt={listing.title ?? "플렛메이트 렌트"}
-                                  className="h-full w-full object-cover"
-                                  onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
-                                />
+                            <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
+                              <FlatmatePromoImage listing={listing} />
+                              {tags.length > 0 && (
+                                <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1">
+                                  {tags.map((tag) => (
+                                    <span key={tag} className="rounded bg-white/95 px-1.5 py-0.5 text-[10px] font-extrabold text-slate-900 shadow-sm ring-1 ring-slate-200/80">
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
                               )}
                             </div>
-                            <div className="flex min-h-0 min-w-0 flex-col">
-                              <div className="mb-1 flex min-h-[1.25rem] items-center gap-1.5 overflow-hidden">
+                            <div className="flex h-[6.25rem] min-w-0 flex-col p-2">
+                              <div className="mb-1 flex min-h-[1rem] items-center gap-1.5 overflow-hidden">
                                 {suburb && <p className="truncate text-[11px] font-semibold text-rose-700">{suburb}</p>}
-                                {listing.privateRoom === true && (
-                                  <span className="shrink-0 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">독방</span>
-                                )}
-                                {listing.privateRoom === false && (
-                                  <span className="shrink-0 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">쉐어룸</span>
-                                )}
                               </div>
-                              <p className="line-clamp-2 min-h-[2.1rem] text-xs font-bold leading-snug text-slate-900">{listing.title ?? "제목 없음"}</p>
-                              <p className="mt-auto text-xs font-black text-slate-950">{formatRent(listing.price)} <span className="font-semibold text-slate-500">/ 주</span></p>
+                              <p className="line-clamp-2 min-h-[2.1rem] text-xs font-extrabold leading-snug text-slate-950">{listing.title ?? "제목 없음"}</p>
+                              <p className="mt-auto text-sm font-black text-slate-950">{formatRent(listing.price)} <span className="text-xs font-semibold text-slate-500">/ 주</span></p>
                             </div>
                           </Link>
                         );

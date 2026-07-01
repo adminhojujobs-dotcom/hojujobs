@@ -19,6 +19,14 @@ body[data-scroll-locked] {
   animation: promo-flip 520ms ease both;
 }
 
+.promo-carousel {
+  scrollbar-width: none;
+}
+
+.promo-carousel::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes promo-flip {
   0% {
     opacity: 0;
