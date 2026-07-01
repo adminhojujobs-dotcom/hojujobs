@@ -1281,7 +1281,7 @@ const Index = ({ cityFilter }: IndexProps) => {
                           최신 플렛 렌트
                         </p>
                       </div>
-                      <Link to="/flatmates" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-rose-300 px-3 text-xs font-bold text-slate-900 shadow-sm hover:bg-rose-400">
+                      <Link to="/flatmates" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-slate-900 px-3 text-xs font-bold text-white shadow-sm hover:bg-slate-800">
                         렌트 더 보기
                       </Link>
                     </div>
@@ -1354,7 +1354,7 @@ const Index = ({ cityFilter }: IndexProps) => {
                         호주 생활 뉴스
                       </p>
                     </div>
-                    <Link to="/news" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-blue-300 px-3 text-xs font-bold text-slate-900 shadow-sm hover:bg-blue-400">
+                    <Link to="/news" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-slate-900 px-3 text-xs font-bold text-white shadow-sm hover:bg-slate-800">
                       뉴스 더 보기
                     </Link>
                   </div>
@@ -1450,8 +1450,8 @@ const Index = ({ cityFilter }: IndexProps) => {
                           최신 세일과 할인
                         </p>
                       </div>
-                      <Link to="/sales" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-emerald-300 px-3 text-xs font-bold text-slate-900 shadow-sm hover:bg-emerald-400">
-                        세일 상품 더 보기
+                      <Link to="/sales" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-slate-900 px-3 text-xs font-bold text-white shadow-sm hover:bg-slate-800">
+                        세일 더보기
                       </Link>
                     </div>
                     <div key={salePromoPage} className="promo-flip grid gap-2 sm:grid-cols-2">
