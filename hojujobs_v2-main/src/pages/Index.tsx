@@ -218,7 +218,10 @@ function writeListingCache(key: string, cache: Omit<ListingCache, "cachedAt" | "
 }
 
 function readSessionViewCount(jobId: number): number | null {
-  const cached = Number(sessionStorage.getItem(`hoju_job_view_count_${jobId}`));
+  const raw = sessionStorage.getItem(`hoju_job_view_count_${jobId}`);
+  if (raw === null) return null;
+
+  const cached = Number(raw);
   return Number.isFinite(cached) ? cached : null;
 }
 
