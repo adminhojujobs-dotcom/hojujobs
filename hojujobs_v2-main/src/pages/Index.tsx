@@ -1451,7 +1451,7 @@ const Index = ({ cityFilter }: IndexProps) => {
                         </p>
                       </div>
                       <Link to="/sales" className="inline-flex h-9 shrink-0 items-center justify-center rounded-md bg-slate-900 px-3 text-xs font-bold text-white shadow-sm hover:bg-slate-800">
-                        세일 더보기
+                        세일 더 보기
                       </Link>
                     </div>
                     <div key={salePromoPage} className="promo-flip grid gap-2 sm:grid-cols-2">
