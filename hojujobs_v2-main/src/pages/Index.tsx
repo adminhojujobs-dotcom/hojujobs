@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import {
   ChevronRight,
   ExternalLink,
-  Search,
   ShieldAlert,
 } from "lucide-react";
 import { ModernHeader } from "@/components/ModernHeader";
@@ -677,18 +676,6 @@ const Index = ({ cityFilter }: IndexProps) => {
     <div className="min-h-screen overflow-x-hidden bg-white text-neutral-950">
       <ModernHeader />
       <main>
-        <section className="mx-auto max-w-[1520px] px-5 py-8 lg:hidden">
-          <div className="flex">
-            <form className="flex h-12 w-full items-center rounded-full border-2 border-blue-600 bg-white pl-6 pr-5" onSubmit={(event) => event.preventDefault()}>
-              <input
-                aria-label="알바 검색"
-                className="min-w-0 flex-1 bg-transparent text-base font-semibold text-neutral-900 outline-none placeholder:text-slate-400"
-                placeholder="어떤 알바를 찾으세요?"
-              />
-              <Search className="h-6 w-6 text-neutral-300" />
-            </form>
-          </div>
-        </section>
         <QuickSections />
         <LocationSection />
         <FeaturedJobs jobs={homepageJobCards} isLoading={isLoadingHomepageJobCards} />

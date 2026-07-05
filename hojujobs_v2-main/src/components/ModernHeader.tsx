@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import hojuJobsLogo from "@/assets/hoju-jobs-logo.png";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const navItems = [
   { label: "채용정보", to: "/" },
@@ -15,7 +16,52 @@ export function ModernHeader() {
 
   return (
     <header className="border-b border-neutral-100 bg-white">
-      <div className="mx-auto flex max-w-[1520px] flex-col gap-5 px-5 py-6 lg:px-14">
+      <div className="mx-auto flex max-w-[1520px] items-center justify-between px-6 py-5 lg:hidden">
+        <Link to="/" className="inline-flex min-w-0 items-center" aria-label="Hoju Jobs home">
+          <img src={hojuJobsLogo} alt="Hoju Jobs" className="h-9 w-auto max-w-[190px] object-contain" />
+        </Link>
+
+        <div className="flex shrink-0 items-center gap-5">
+          <button type="button" aria-label="검색" className="inline-flex h-11 w-11 items-center justify-center text-neutral-950" onClick={() => navigate("/")}>
+            <Search className="h-9 w-9" strokeWidth={2.4} />
+          </button>
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <button type="button" aria-label="메뉴 열기" className="inline-flex h-11 w-11 items-center justify-center text-neutral-950">
+                <Menu className="h-10 w-10" strokeWidth={2.4} />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[min(22rem,85vw)] p-0">
+              <SheetHeader className="border-b border-slate-100 px-6 py-5 text-left">
+                <SheetTitle>
+                  <img src={hojuJobsLogo} alt="Hoju Jobs" className="h-8 w-auto" />
+                </SheetTitle>
+              </SheetHeader>
+              <nav className="grid gap-1 px-6 py-5 text-xl font-black text-neutral-950">
+                {navItems.map((item) => (
+                  <Link key={item.label} to={item.to} className="rounded-md py-3 transition-colors hover:text-blue-700">
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+              <div className="grid gap-2 border-t border-slate-100 px-6 py-5">
+                <button type="button" onClick={() => navigate("/auth")} className="h-12 rounded-md bg-blue-600 px-5 text-base font-black text-white">
+                  회원가입
+                </button>
+                <button type="button" onClick={() => navigate("/auth")} className="h-12 rounded-md border border-slate-200 px-5 text-base font-black text-slate-700">
+                  로그인
+                </button>
+                <button type="button" onClick={() => navigate("/post-job")} className="h-12 rounded-md border border-slate-200 px-5 text-base font-black text-slate-700">
+                  공고 등록
+                </button>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+
+      <div className="mx-auto hidden max-w-[1520px] flex-col gap-5 px-5 py-6 lg:flex lg:px-14">
         <div className="flex items-center justify-between gap-5">
           <div className="flex flex-1 items-center gap-10">
             <Link to="/" className="inline-flex items-center" aria-label="Hoju Jobs home">
