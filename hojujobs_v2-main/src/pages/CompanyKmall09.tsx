@@ -217,11 +217,12 @@ export default function CompanyKmall09() {
   const [profile, setProfile] = useState<CompanyProfileRow>(fallbackProfile);
   const [branches, setBranches] = useState<CompanyBranchRow[]>(fallbackBranches);
   const [selectedBranchId, setSelectedBranchId] = useState<string>(fallbackBranches[0].id);
+  const [isLoadingCompany, setIsLoadingCompany] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
-    async function fetchCompanyProfile() {
+    async function fetchCompanyData() {
       const { data, error } = await supabase
         .from("company_profiles")
         .select("*")
@@ -229,25 +230,28 @@ export default function CompanyKmall09() {
         .eq("is_active", true)
         .maybeSingle();
 
-      if (cancelled || error || !data) return;
-      setProfile(data);
-    }
-
-    async function fetchBranches() {
-      const { data, error } = await supabase
+      const { data: branchData, error: branchError } = await supabase
         .from("company_branches")
         .select("*")
         .eq("company_slug", slug)
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
 
-      if (cancelled || error || !data || data.length === 0) return;
-      setBranches(data);
-      setSelectedBranchId(data[0].id);
+      if (cancelled) return;
+
+      if (!error && data) {
+        setProfile(data);
+      }
+
+      if (!branchError && branchData && branchData.length > 0) {
+        setBranches(branchData);
+        setSelectedBranchId(branchData[0].id);
+      }
+
+      setIsLoadingCompany(false);
     }
 
-    fetchCompanyProfile();
-    fetchBranches();
+    fetchCompanyData();
 
     return () => {
       cancelled = true;
@@ -278,6 +282,78 @@ export default function CompanyKmall09() {
     ogLocale: "ko_KR",
     keywords: `${profile.name} 채용, 리드컴 한인마트 구인, 이스트우드 구인, 뱅크스타운 구인, 시드니 한인 구인, Korean jobs Australia`,
   });
+
+  if (isLoadingCompany) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">
+        <ModernHeader />
+        <main className="mx-auto w-full max-w-[1220px] px-5 py-8 sm:py-12">
+          <div className="mb-6 h-5 w-24 rounded bg-slate-100" />
+          <section className="rounded-lg border border-slate-200 bg-white p-6 sm:p-10">
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-center">
+              <div>
+                <div className="mb-5 flex flex-wrap gap-2">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <span key={`kmall-hero-skeleton-${index}`} className="h-8 w-24 rounded-full bg-slate-100" />
+                  ))}
+                </div>
+                <div className="h-12 max-w-2xl rounded bg-slate-100" />
+                <div className="mt-5 h-6 max-w-lg rounded bg-slate-100" />
+              </div>
+              <div className="h-32 rounded-2xl border border-slate-100 bg-slate-50" />
+            </div>
+          </section>
+
+          <section className="mt-14 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+            <div>
+              <div className="mb-6 h-9 w-40 rounded bg-slate-100" />
+              <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+                <div className="h-72 w-full bg-slate-100 sm:h-96" />
+                <div className="space-y-4 p-6">
+                  <div className="h-5 w-full rounded bg-slate-100" />
+                  <div className="h-5 w-11/12 rounded bg-slate-100" />
+                  <div className="h-5 w-4/5 rounded bg-slate-100" />
+                </div>
+              </div>
+            </div>
+            <aside className="h-fit rounded-lg border border-slate-200 bg-white p-6">
+              <div className="mb-5 h-8 w-28 rounded bg-slate-100" />
+              <div className="space-y-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={`kmall-contact-skeleton-${index}`} className="h-20 rounded-md bg-slate-50" />
+                ))}
+              </div>
+            </aside>
+          </section>
+
+          <section className="mt-14">
+            <div className="mb-3 h-5 w-48 rounded bg-slate-100" />
+            <div className="grid grid-cols-1 border border-slate-200 sm:grid-flow-col sm:auto-cols-fr">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={`kmall-branch-skeleton-${index}`} className="h-20 border-b border-slate-200 bg-white sm:border-b-0 sm:border-r last:border-r-0" />
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-16">
+            <div className="mb-6 h-9 w-44 rounded bg-slate-100" />
+            <div className="border-y border-t-neutral-950 border-b-slate-200 bg-white">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={`kmall-job-skeleton-${index}`} className="grid gap-4 border-b border-slate-200 px-5 py-7 lg:grid-cols-[5rem_13rem_minmax(0,1fr)_11rem_9rem_6rem]">
+                  <div className="hidden h-6 w-6 rounded bg-slate-100 lg:block" />
+                  <div className="h-12 rounded bg-slate-100" />
+                  <div className="h-14 rounded bg-slate-100" />
+                  <div className="h-10 rounded bg-slate-100" />
+                  <div className="h-10 rounded bg-slate-100" />
+                  <div className="h-10 rounded bg-slate-100" />
+                </div>
+              ))}
+            </div>
+          </section>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">

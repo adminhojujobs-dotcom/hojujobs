@@ -658,7 +658,21 @@ function JobCard({ job }: { job: JobCardItem }) {
   );
 }
 
-function FeaturedJobs({ jobs }: { jobs: JobCardItem[] }) {
+function JobCardSkeleton() {
+  return (
+    <div className="flex min-h-[240px] flex-col rounded-2xl bg-white px-7 py-8">
+      <div className="mb-7 h-12 w-36 rounded-md bg-slate-100" />
+      <div className="mb-3 h-5 w-48 rounded bg-slate-100" />
+      <div className="space-y-3">
+        <div className="h-6 w-full rounded bg-slate-100" />
+        <div className="h-6 w-4/5 rounded bg-slate-100" />
+      </div>
+      <div className="mt-auto h-5 w-40 rounded bg-slate-100" />
+    </div>
+  );
+}
+
+function FeaturedJobs({ jobs, isLoading }: { jobs: JobCardItem[]; isLoading: boolean }) {
   return (
     <section className="bg-neutral-50 py-16 sm:py-20">
       <div className="mx-auto max-w-[1520px] px-5 lg:px-9">
@@ -679,9 +693,9 @@ function FeaturedJobs({ jobs }: { jobs: JobCardItem[] }) {
           </div>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-          {jobs.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
+          {isLoading
+            ? Array.from({ length: 12 }).map((_, index) => <JobCardSkeleton key={`job-card-skeleton-${index}`} />)
+            : jobs.map((job) => <JobCard key={job.id} job={job} />)}
         </div>
       </div>
     </section>
@@ -690,7 +704,8 @@ function FeaturedJobs({ jobs }: { jobs: JobCardItem[] }) {
 
 const Index = ({ cityFilter }: IndexProps) => {
   const meta = cityFilter ? routeMeta[cityFilter] : undefined;
-  const [homepageJobCards, setHomepageJobCards] = useState<JobCardItem[]>(fallbackJobCards);
+  const [homepageJobCards, setHomepageJobCards] = useState<JobCardItem[]>([]);
+  const [isLoadingHomepageJobCards, setIsLoadingHomepageJobCards] = useState(true);
 
   useSEO({
     title: meta?.title ?? "호주잡스 - 호주 구인구직 | 한인 채용정보",
@@ -713,13 +728,20 @@ const Index = ({ cityFilter }: IndexProps) => {
         .order("created_at", { ascending: false })
         .limit(12);
 
-      if (cancelled || error || !data || data.length === 0) return;
+      if (cancelled) return;
+
+      if (error || !data || data.length === 0) {
+        setHomepageJobCards(fallbackJobCards);
+        setIsLoadingHomepageJobCards(false);
+        return;
+      }
 
       const cards = withPinnedCards(data.map(mapHomepageJobCard));
       const companySlugs = [...new Set(cards.map((card) => companySlugFromJobUrl(card.jobUrl)).filter(Boolean))];
 
       if (companySlugs.length === 0) {
         setHomepageJobCards(cards);
+        setIsLoadingHomepageJobCards(false);
         return;
       }
 
@@ -737,6 +759,7 @@ const Index = ({ cityFilter }: IndexProps) => {
       }, {});
 
       setHomepageJobCards(applyMultipleBranchLabels(cards, branchCounts));
+      setIsLoadingHomepageJobCards(false);
     }
 
     fetchHomepageJobCards();
@@ -764,7 +787,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         </section>
         <QuickSections />
         <LocationSection />
-        <FeaturedJobs jobs={homepageJobCards} />
+        <FeaturedJobs jobs={homepageJobCards} isLoading={isLoadingHomepageJobCards} />
         <section className="bg-neutral-50 pb-16">
           <div className="mx-auto flex max-w-[1520px] items-center justify-center gap-3 px-5 text-sm font-semibold text-slate-500 lg:px-9">
             <ShieldAlert className="h-4 w-4 text-blue-600" />
