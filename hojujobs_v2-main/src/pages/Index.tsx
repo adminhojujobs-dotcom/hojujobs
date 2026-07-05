@@ -204,6 +204,13 @@ function applyMultipleBranchLabels(cards: JobCardItem[], branchCounts: Record<st
   });
 }
 
+function filterCompanyCards(cards: JobCardItem[], activeCompanySlugs: Set<string>) {
+  return cards.filter((card) => {
+    const slug = companySlugFromJobUrl(card.jobUrl);
+    return slug ? activeCompanySlugs.has(slug) : false;
+  });
+}
+
 const kmall09JobCard: JobCardItem = {
   id: "fallback-kmall09",
   logo: "KMALL09",
@@ -340,126 +347,6 @@ const fallbackJobCards: JobCardItem[] = [
   yanggaDeliJobCard,
   stoneageJobCard,
   dkHairStudioJobCard,
-  {
-    id: "fallback-1",
-    logo: "coupang\nfulfillment services",
-    logoTone: "blue",
-    company: "쿠팡CFS 인천,부천센터 입사 ...",
-    location: "인천 남동구",
-    title: "★인센티브 진짜 마감임박★최대 1,251만원 3달근무시★집앞셔틀&...",
-    payType: "월급",
-    pay: "3,946,136원",
-  },
-  {
-    id: "fallback-2",
-    logo: "BURGER\nKING",
-    logoTone: "red",
-    company: "버거킹",
-    location: "전국",
-    title: "전국 버거킹 아르바이트 모집",
-    payType: "￦",
-    pay: "공고별 확인",
-  },
-  {
-    id: "fallback-3",
-    logo: "No Brand\nBurger",
-    logoTone: "black",
-    company: "No-Brand안양평촌점",
-    location: "경기 안양시",
-    title: "노브랜드 안양평촌점 스태프 모집",
-    payType: "시급",
-    pay: "11,500원",
-  },
-  {
-    id: "fallback-4",
-    logo: "coupang\nlogistics services",
-    logoTone: "blue-dark",
-    company: "#보너스150만원 #초간단즉시...",
-    location: "경남 양산시",
-    title: "[연최대5020만] 물류 알바관리자 채용(헬퍼리더)",
-    payType: "연봉",
-    pay: "50,200,000원",
-  },
-  {
-    id: "fallback-5",
-    logo: "UNI\nQLO",
-    logoTone: "red",
-    company: "에프알엘코리아주식회사",
-    location: "경기 의왕시",
-    title: "[유니클로] 롯데몰 의왕점 오픈멤버 풀타이머 모집(주 5일, 일 8시간)",
-    payType: "연봉",
-    pay: "33,320,000원",
-  },
-  {
-    id: "fallback-6",
-    logo: "coupang\nlogistics services",
-    logoTone: "blue-dark",
-    company: "#보너스150만원 #초간단즉시...",
-    location: "인천 서구",
-    title: "[연최대5020만] 물류 알바관리자 채용(헬퍼리더)",
-    payType: "연봉",
-    pay: "50,200,000원",
-  },
-  {
-    id: "fallback-7",
-    logo: "DELI\nby ASHLEY",
-    logoTone: "neutral",
-    company: "(주)이랜드이츠",
-    location: "전국",
-    title: "애슐리퀸즈와 함께할 아르바이트를 모집합니다.",
-    payType: "￦",
-    pay: "공고별 확인",
-  },
-  {
-    id: "fallback-8",
-    logo: "coupang\nfulfillment services",
-    logoTone: "blue",
-    company: "쿠팡CFS 인천,부천센터 입사 ...",
-    location: "인천 미추홀",
-    title: "[마감임박]입사인센티브 받자!3달 근무시 +717만★4시간/주말/주3일",
-    payType: "월급",
-    pay: "2,035,729원",
-  },
-  {
-    id: "fallback-9",
-    logo: "Kurly",
-    logoTone: "purple",
-    company: "컬리",
-    location: "서울 송파구",
-    title: "마켓컬리 새벽배송 물류센터 파트타이머 모집",
-    payType: "시급",
-    pay: "12,200원",
-  },
-  {
-    id: "fallback-10",
-    logo: "coupang\nlogistics services",
-    logoTone: "blue-dark",
-    company: "쿠팡로지스틱스",
-    location: "전국",
-    title: "배송 캠프 운영 지원 아르바이트 모집",
-    payType: "일급",
-    pay: "160,000원",
-  },
-  {
-    id: "fallback-11",
-    logo: "coupang\nfulfillment services",
-    logoTone: "blue",
-    company: "쿠팡CFS",
-    location: "경기 부천시",
-    title: "물류센터 주간/야간 단기 알바 대규모 모집",
-    payType: "월급",
-    pay: "3,120,000원",
-  },
-  {
-    id: "fallback-12",
-    logo: "coupang\nfulfillment services",
-    logoTone: "blue",
-    company: "쿠팡CFS",
-    location: "인천 중구",
-    title: "입출고/포장 스태프 즉시 근무 가능자 채용",
-    payType: "시급",
-    pay: "11,900원",
-  },
 ];
 
 function PromoLink({ href, external, className, children }: { href: string; external?: boolean; className: string; children: ReactNode }) {
@@ -736,20 +623,37 @@ const Index = ({ cityFilter }: IndexProps) => {
         return;
       }
 
-      const cards = withPinnedCards(data.map(mapHomepageJobCard));
-      const companySlugs = [...new Set(cards.map((card) => companySlugFromJobUrl(card.jobUrl)).filter(Boolean))];
+      const rawCards = withPinnedCards(data.map(mapHomepageJobCard));
+      const companySlugs = [...new Set(rawCards.map((card) => companySlugFromJobUrl(card.jobUrl)).filter(Boolean))];
 
       if (companySlugs.length === 0) {
-        setHomepageJobCards(cards);
+        setHomepageJobCards(fallbackJobCards);
         setIsLoadingHomepageJobCards(false);
         return;
       }
+
+      const { data: profiles, error: profilesError } = await supabase
+        .from("company_profiles")
+        .select("slug")
+        .eq("is_active", true)
+        .in("slug", companySlugs);
+
+      if (cancelled) return;
+
+      if (profilesError || !profiles || profiles.length === 0) {
+        setHomepageJobCards(fallbackJobCards);
+        setIsLoadingHomepageJobCards(false);
+        return;
+      }
+
+      const activeCompanySlugs = new Set(profiles.map((profile) => profile.slug));
+      const cards = filterCompanyCards(rawCards, activeCompanySlugs);
 
       const { data: branches } = await supabase
         .from("company_branches")
         .select("company_slug")
         .eq("is_active", true)
-        .in("company_slug", companySlugs);
+        .in("company_slug", [...activeCompanySlugs]);
 
       if (cancelled) return;
 
