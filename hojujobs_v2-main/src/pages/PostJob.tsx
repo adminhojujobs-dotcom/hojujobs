@@ -47,11 +47,6 @@ export default function PostJob() {
   const locations = useMemo(() => [...new Set(existingJobs.flatMap((j) => j.location ?? []))].sort(), [existingJobs]);
   const industries = useMemo(() => [...new Set(existingJobs.map((j) => j.industry).filter(Boolean))].sort() as string[], [existingJobs]);
 
-  if (!user) {
-    navigate("/auth?next=/post-job");
-    return null;
-  }
-
   const updateField = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -77,7 +72,7 @@ export default function PostJob() {
       kakaoid: form.kakaoid || null,
       google_search: form.google_search || null,
       description: form.description || null,
-      user_id: user.id,
+      user_id: user?.id ?? null,
     });
 
     if (error) {

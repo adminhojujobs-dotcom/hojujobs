@@ -14,36 +14,179 @@ export type Database = {
   }
   public: {
     Tables: {
-      user_click_events: {
+      anonymous_click_events: {
         Row: {
-          id: string
-          user_id: string
+          anonymous_id: string | null
+          country: string | null
+          created_at: string | null
           event_name: string
-          listing_type: string | null
+          id: string
           listing_id: string | null
+          listing_type: string | null
+          metadata: Json | null
           page_url: string | null
-          metadata: Json
-          created_at: string
+          user_agent: string | null
         }
         Insert: {
-          id?: string
-          user_id: string
+          anonymous_id?: string | null
+          country?: string | null
+          created_at?: string | null
           event_name: string
-          listing_type?: string | null
+          id?: string
           listing_id?: string | null
+          listing_type?: string | null
+          metadata?: Json | null
           page_url?: string | null
-          metadata?: Json
-          created_at?: string
+          user_agent?: string | null
         }
         Update: {
-          id?: string
-          user_id?: string
+          anonymous_id?: string | null
+          country?: string | null
+          created_at?: string | null
           event_name?: string
-          listing_type?: string | null
+          id?: string
           listing_id?: string | null
+          listing_type?: string | null
+          metadata?: Json | null
           page_url?: string | null
-          metadata?: Json
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      company_branches: {
+        Row: {
+          address: string
+          branch_label: string | null
+          branch_name: string
+          company_slug: string
+          condition_rows: Json
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          map_query: string | null
+          phone: string | null
+          phone_href: string | null
+          recruitment_rows: Json
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          branch_label?: string | null
+          branch_name: string
+          company_slug: string
+          condition_rows?: Json
           created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          map_query?: string | null
+          phone?: string | null
+          phone_href?: string | null
+          recruitment_rows?: Json
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          branch_label?: string | null
+          branch_name?: string
+          company_slug?: string
+          condition_rows?: Json
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          map_query?: string | null
+          phone?: string | null
+          phone_href?: string | null
+          recruitment_rows?: Json
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_branches_company_slug_fkey"
+            columns: ["company_slug"]
+            isOneToOne: false
+            referencedRelation: "company_profiles"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      company_profiles: {
+        Row: {
+          about_paragraphs: string[]
+          address: string
+          badges: string[]
+          condition_rows: Json
+          created_at: string
+          email: string | null
+          id: string
+          instagram_handle: string | null
+          instagram_url: string | null
+          is_active: boolean
+          logo_url: string
+          map_query: string | null
+          name: string
+          phone: string | null
+          phone_href: string | null
+          photo_url: string | null
+          profile_title: string
+          recruitment_rows: Json
+          skill_tags: string[]
+          slug: string
+          subtitle: string
+          updated_at: string
+        }
+        Insert: {
+          about_paragraphs?: string[]
+          address: string
+          badges?: string[]
+          condition_rows?: Json
+          created_at?: string
+          email?: string | null
+          id?: string
+          instagram_handle?: string | null
+          instagram_url?: string | null
+          is_active?: boolean
+          logo_url: string
+          map_query?: string | null
+          name: string
+          phone?: string | null
+          phone_href?: string | null
+          photo_url?: string | null
+          profile_title: string
+          recruitment_rows?: Json
+          skill_tags?: string[]
+          slug: string
+          subtitle: string
+          updated_at?: string
+        }
+        Update: {
+          about_paragraphs?: string[]
+          address?: string
+          badges?: string[]
+          condition_rows?: Json
+          created_at?: string
+          email?: string | null
+          id?: string
+          instagram_handle?: string | null
+          instagram_url?: string | null
+          is_active?: boolean
+          logo_url?: string
+          map_query?: string | null
+          name?: string
+          phone?: string | null
+          phone_href?: string | null
+          photo_url?: string | null
+          profile_title?: string
+          recruitment_rows?: Json
+          skill_tags?: string[]
+          slug?: string
+          subtitle?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -71,6 +214,126 @@ export type Database = {
           fetched_at?: string | null
           jpy?: number | null
           usd?: number | null
+        }
+        Relationships: []
+      }
+      hojunara_realestate_share: {
+        Row: {
+          category: string | null
+          contact_number: string | null
+          description: string | null
+          enquiry_email: string | null
+          gender_restriction: string | null
+          id: number
+          image_url: string | null
+          kakaoid: string | null
+          post_photo: string[] | null
+          price: number | null
+          private_bathroom: boolean | null
+          private_room: boolean | null
+          state_location: string | null
+          sub_category: string | null
+          suburb: string | null
+          time_posted: string | null
+          title: string | null
+          uploaded_at: string | null
+          url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          contact_number?: string | null
+          description?: string | null
+          enquiry_email?: string | null
+          gender_restriction?: string | null
+          id?: never
+          image_url?: string | null
+          kakaoid?: string | null
+          post_photo?: string[] | null
+          price?: number | null
+          private_bathroom?: boolean | null
+          private_room?: boolean | null
+          state_location?: string | null
+          sub_category?: string | null
+          suburb?: string | null
+          time_posted?: string | null
+          title?: string | null
+          uploaded_at?: string | null
+          url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          contact_number?: string | null
+          description?: string | null
+          enquiry_email?: string | null
+          gender_restriction?: string | null
+          id?: never
+          image_url?: string | null
+          kakaoid?: string | null
+          post_photo?: string[] | null
+          price?: number | null
+          private_bathroom?: boolean | null
+          private_room?: boolean | null
+          state_location?: string | null
+          sub_category?: string | null
+          suburb?: string | null
+          time_posted?: string | null
+          title?: string | null
+          uploaded_at?: string | null
+          url?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      homepage_job_cards: {
+        Row: {
+          company_label: string
+          created_at: string
+          id: string
+          is_active: boolean
+          job_url: string | null
+          location_label: string
+          logo_text: string
+          logo_tone: string
+          logo_url: string | null
+          pay_amount: string
+          pay_type: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_label: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          job_url?: string | null
+          location_label: string
+          logo_text: string
+          logo_tone?: string
+          logo_url?: string | null
+          pay_amount: string
+          pay_type: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_label?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          job_url?: string | null
+          location_label?: string
+          logo_text?: string
+          logo_tone?: string
+          logo_url?: string | null
+          pay_amount?: string
+          pay_type?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -176,74 +439,6 @@ export type Database = {
         }
         Relationships: []
       }
-      hojunara_realestate_share: {
-        Row: {
-          category: string | null
-          contact_number: string | null
-          description: string | null
-          enquiry_email: string | null
-          gender_restriction: string | null
-          id: number
-          image_url: string | null
-          kakaoid: string | null
-          post_photo: string[] | null
-          price: number | null
-          private_bathroom: boolean | null
-          private_room: boolean | null
-          state_location: string | null
-          sub_category: string | null
-          suburb: string | null
-          time_posted: string | null
-          title: string | null
-          uploaded_at: string | null
-          url: string | null
-          user_id: string | null
-        }
-        Insert: {
-          category?: string | null
-          contact_number?: string | null
-          description?: string | null
-          enquiry_email?: string | null
-          gender_restriction?: string | null
-          id?: number
-          image_url?: string | null
-          kakaoid?: string | null
-          post_photo?: string[] | null
-          price?: number | null
-          private_bathroom?: boolean | null
-          private_room?: boolean | null
-          state_location?: string | null
-          sub_category?: string | null
-          suburb?: string | null
-          time_posted?: string | null
-          title?: string | null
-          uploaded_at?: string | null
-          url?: string | null
-        }
-        Update: {
-          category?: string | null
-          contact_number?: string | null
-          description?: string | null
-          enquiry_email?: string | null
-          gender_restriction?: string | null
-          id?: number
-          image_url?: string | null
-          kakaoid?: string | null
-          post_photo?: string[] | null
-          price?: number | null
-          private_bathroom?: boolean | null
-          private_room?: boolean | null
-          state_location?: string | null
-          sub_category?: string | null
-          suburb?: string | null
-          time_posted?: string | null
-          title?: string | null
-          uploaded_at?: string | null
-          url?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       news_articles: {
         Row: {
           category_key: string
@@ -252,6 +447,7 @@ export type Database = {
           category_tone: string | null
           created_at: string
           id: number
+          image_url: string | null
           is_featured: boolean
           meta: string | null
           original_published_at: string | null
@@ -273,6 +469,7 @@ export type Database = {
           category_tone?: string | null
           created_at?: string
           id?: number
+          image_url?: string | null
           is_featured?: boolean
           meta?: string | null
           original_published_at?: string | null
@@ -294,6 +491,7 @@ export type Database = {
           category_tone?: string | null
           created_at?: string
           id?: number
+          image_url?: string | null
           is_featured?: boolean
           meta?: string | null
           original_published_at?: string | null
@@ -317,8 +515,8 @@ export type Database = {
           external_url: string | null
           id: number
           image_url: string | null
-          promoted: boolean
           promo_codes: Json
+          promoted: boolean
           rank: number
           teaser_description: string | null
           title: string
@@ -330,8 +528,8 @@ export type Database = {
           external_url?: string | null
           id?: number
           image_url?: string | null
-          promoted?: boolean
           promo_codes?: Json
+          promoted?: boolean
           rank: number
           teaser_description?: string | null
           title: string
@@ -343,8 +541,8 @@ export type Database = {
           external_url?: string | null
           id?: number
           image_url?: string | null
-          promoted?: boolean
           promo_codes?: Json
+          promoted?: boolean
           rank?: number
           teaser_description?: string | null
           title?: string
@@ -352,78 +550,39 @@ export type Database = {
         }
         Relationships: []
       }
-      sales_deals: {
+      user_click_events: {
         Row: {
-          comments_count: number
-          created_at: string
-          deal_url: string
-          delivery_ko: string | null
-          description_ko: string[]
+          country: string | null
+          created_at: string | null
+          event_name: string
           id: string
-          image_url: string | null
-          is_active: boolean
-          original_price: string | null
-          posted_at: string | null
-          posted_by: string | null
-          price: string
-          promo_code: string | null
-          product_type_ko: string
-          retailer: string
-          retailer_domain: string
-          retailer_url: string | null
-          score: number
-          source_node_id: number | null
-          source_url: string
-          title_ko: string
-          updated_at: string
+          listing_id: string | null
+          listing_type: string | null
+          metadata: Json | null
+          page_url: string | null
+          user_id: string
         }
         Insert: {
-          comments_count?: number
-          created_at?: string
-          deal_url: string
-          delivery_ko?: string | null
-          description_ko?: string[]
+          country?: string | null
+          created_at?: string | null
+          event_name: string
           id?: string
-          image_url?: string | null
-          is_active?: boolean
-          original_price?: string | null
-          posted_at?: string | null
-          posted_by?: string | null
-          price: string
-          promo_code?: string | null
-          product_type_ko?: string
-          retailer: string
-          retailer_domain: string
-          retailer_url?: string | null
-          score?: number
-          source_node_id?: number | null
-          source_url: string
-          title_ko: string
-          updated_at?: string
+          listing_id?: string | null
+          listing_type?: string | null
+          metadata?: Json | null
+          page_url?: string | null
+          user_id: string
         }
         Update: {
-          comments_count?: number
-          created_at?: string
-          deal_url?: string
-          delivery_ko?: string | null
-          description_ko?: string[]
+          country?: string | null
+          created_at?: string | null
+          event_name?: string
           id?: string
-          image_url?: string | null
-          is_active?: boolean
-          original_price?: string | null
-          posted_at?: string | null
-          posted_by?: string | null
-          price?: string
-          promo_code?: string | null
-          product_type_ko?: string
-          retailer?: string
-          retailer_domain?: string
-          retailer_url?: string | null
-          score?: number
-          source_node_id?: number | null
-          source_url?: string
-          title_ko?: string
-          updated_at?: string
+          listing_id?: string | null
+          listing_type?: string | null
+          metadata?: Json | null
+          page_url?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -451,18 +610,21 @@ export type Database = {
           id: string
           job_id: number
           updated_at: string
+          uploaded_at: string | null
         }
         Insert: {
           count?: number
           id?: string
           job_id: number
           updated_at?: string
+          uploaded_at?: string | null
         }
         Update: {
           count?: number
           id?: string
           job_id?: number
           updated_at?: string
+          uploaded_at?: string | null
         }
         Relationships: [
           {
@@ -476,9 +638,98 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_activity_summary: {
+        Row: {
+          contact_text_selections: number | null
+          country: string | null
+          dashboard_page_views: number | null
+          display_name: string | null
+          email: string | null
+          email_clicks: number | null
+          filters_changed: number | null
+          first_activity: string | null
+          flatmates_page_views: number | null
+          job_posts_started: number | null
+          job_posts_submitted: number | null
+          job_views: number | null
+          kakao_clicks: number | null
+          last_activity: string | null
+          news_page_views: number | null
+          phone_clicks: number | null
+          rental_posts_started: number | null
+          rental_posts_submitted: number | null
+          rental_views: number | null
+          sale_views: number | null
+          sales_page_views: number | null
+          searches_performed: number | null
+          total_contact_clicks: number | null
+          total_events: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_anonymous_activity_summary: {
+        Args: { since?: string }
+        Returns: {
+          country: string
+          event_name: string
+          first_activity: string
+          label: string
+          last_activity: string
+          listing_id: string
+          listing_type: string
+          page_path: string
+          source: string
+          surface: string
+          total_events: number
+          unique_visitors: number
+        }[]
+      }
+      get_user_activity_summary: {
+        Args: { since?: string }
+        Returns: {
+          admin_clicks: number
+          auth_events: number
+          contact_text_selections: number
+          country: string
+          dashboard_page_views: number
+          deal_outbound_clicks: number
+          display_name: string
+          email: string
+          email_clicks: number
+          filters_changed: number
+          first_activity: string
+          flatmates_page_views: number
+          job_card_clicks: number
+          job_posts_started: number
+          job_posts_submitted: number
+          job_views: number
+          kakao_clicks: number
+          last_activity: string
+          map_clicks: number
+          my_posts_clicks: number
+          navigation_clicks: number
+          news_article_clicks: number
+          news_page_views: number
+          phone_clicks: number
+          post_cta_clicks: number
+          promote_cta_clicks: number
+          rental_card_clicks: number
+          rental_posts_started: number
+          rental_posts_submitted: number
+          rental_views: number
+          sale_card_clicks: number
+          sale_views: number
+          sales_filters_changed: number
+          sales_page_views: number
+          searches_performed: number
+          total_contact_clicks: number
+          total_events: number
+          user_id: string
+        }[]
+      }
       has_role:
         | { Args: { _role: string; _user_id: string }; Returns: boolean }
         | {
@@ -488,8 +739,10 @@ export type Database = {
             }
             Returns: boolean
           }
+      increment_job_view_counts: { Args: never; Returns: undefined }
       increment_view_count: { Args: { p_job_id: number }; Returns: number }
       map_location_to_region: { Args: { suburbs: string[] }; Returns: string[] }
+      sync_jobs_archive_id_sequence: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

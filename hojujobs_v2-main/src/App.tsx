@@ -27,6 +27,12 @@ import News from "./pages/News";
 import Flatmates from "./pages/Flatmates";
 import FlatmateDetail from "./pages/FlatmateDetail";
 import FlatmatesPost from "./pages/FlatmatesPost";
+import CompanyKmall09 from "./pages/CompanyKmall09";
+import CompanyBunsik from "./pages/CompanyBunsik";
+import CompanySushiYuzen from "./pages/CompanySushiYuzen";
+import CompanyChickenV from "./pages/CompanyChickenV";
+import CompanyParkBongsook from "./pages/CompanyParkBongsook";
+import CompanyYanggaDeli from "./pages/CompanyYanggaDeli";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +51,12 @@ const App = () => (
               <Route path="/brisbane" element={<Index key="QLD" cityFilter="QLD" />} />
               <Route path="/adelaide" element={<Index key="SA" cityFilter="SA" />} />
               <Route path="/job/:id" element={<JobDetail />} />
+              <Route path="/company/kmall09" element={<CompanyKmall09 />} />
+              <Route path="/company/bunsik" element={<CompanyBunsik />} />
+              <Route path="/company/sushiyuzen" element={<CompanySushiYuzen />} />
+              <Route path="/company/chickenv" element={<CompanyChickenV />} />
+              <Route path="/company/parkbongsook" element={<CompanyParkBongsook />} />
+              <Route path="/company/yanggadeli" element={<CompanyYanggaDeli />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/post-job" element={<PostJob />} />
               <Route path="/my-posts" element={<MyPosts />} />

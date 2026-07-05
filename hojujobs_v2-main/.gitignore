@@ -15,6 +15,9 @@ supabase/.temp
 .env
 .env.*
 
+# Scratch folder for dropping images to upload
+/uploads
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -34,25 +34,22 @@ export default function MyPosts() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
     fetchAll();
   }, [user]);
 
   const fetchAll = async () => {
+    const jobsQuery = supabase
+      .from("jobs")
+      .select("id, title, location, industry, uploaded_at")
+      .order("uploaded_at", { ascending: false });
+    const rentQuery = supabase
+      .from("hojunara_realestate_share")
+      .select("id, title, suburb, state_location, price, uploaded_at")
+      .order("uploaded_at", { ascending: false });
+
     const [jobsRes, rentRes] = await Promise.all([
-      supabase
-        .from("jobs")
-        .select("id, title, location, industry, uploaded_at")
-        .eq("user_id", user!.id)
-        .order("uploaded_at", { ascending: false }),
-      supabase
-        .from("hojunara_realestate_share")
-        .select("id, title, suburb, state_location, price, uploaded_at")
-        .eq("user_id", user!.id)
-        .order("uploaded_at", { ascending: false }),
+      user ? jobsQuery.eq("user_id", user.id) : jobsQuery.is("user_id", null),
+      user ? rentQuery.eq("user_id", user.id) : rentQuery.is("user_id", null),
     ]);
 
     if (jobsRes.error) toast.error("공고 불러오기 실패");
@@ -66,7 +63,8 @@ export default function MyPosts() {
 
   const handleDeleteJob = async (id: number) => {
     if (!confirm("이 공고를 삭제하시겠습니까?")) return;
-    const { error } = await supabase.from("jobs").delete().eq("id", id).eq("user_id", user!.id);
+    const query = supabase.from("jobs").delete().eq("id", id);
+    const { error } = await (user ? query.eq("user_id", user.id) : query.is("user_id", null));
     if (error) toast.error("삭제 실패: " + error.message);
     else {
       toast.success("공고가 삭제되었습니다.");
@@ -76,15 +74,14 @@ export default function MyPosts() {
 
   const handleDeleteRent = async (id: number) => {
     if (!confirm("이 렌트 게시글을 삭제하시겠습니까?")) return;
-    const { error } = await supabase.from("hojunara_realestate_share").delete().eq("id", id).eq("user_id", user!.id);
+    const query = supabase.from("hojunara_realestate_share").delete().eq("id", id);
+    const { error } = await (user ? query.eq("user_id", user.id) : query.is("user_id", null));
     if (error) toast.error("삭제 실패: " + error.message);
     else {
       toast.success("게시글이 삭제되었습니다.");
       setRentListings((prev) => prev.filter((r) => r.id !== id));
     }
   };
-
-  if (!user) return null;
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col">
@@ -99,9 +96,11 @@ export default function MyPosts() {
 
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-foreground">내 프로필</h2>
-          <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 text-muted-foreground hover:text-primary">
-            <LogOut className="h-4 w-4" /> 로그아웃
-          </Button>
+          {user && (
+            <Button variant="ghost" size="sm" onClick={signOut} className="gap-1.5 text-muted-foreground hover:text-primary">
+              <LogOut className="h-4 w-4" /> 로그아웃
+            </Button>
+          )}
         </div>
 
         {loading ? (
