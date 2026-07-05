@@ -195,15 +195,15 @@ function detailRowsFromJson(value: Json): DetailRow[] {
 }
 
 const fallbackJobOpenings: BranchJobOpening[] = [
-  { id: "fallback-eastwood-1", area: "NSW", suburb: "Eastwood", title: "KMALL09 이스트우드점 상품 진열 및 재고관리 직원 모집", company: "KMALL09 1호점 이스트우드점", pay: "면접 시 협의", payType: "급여", hours: "풀타임/파트타임", postedAt: "상시" },
+  { id: "fallback-kopo-lidcombe-1", area: "NSW", suburb: "Lidcombe", title: "리드컴 케이몰 KOPO 분식매장 직원 모집", company: "KMALL09 KOPO 분식매장", pay: "면접 시 협의", payType: "급여", hours: "풀타임 / 파트타임", postedAt: "상시" },
   { id: "fallback-eastwood-2", area: "NSW", suburb: "Eastwood", title: "KMALL09 이스트우드점 캐셔 및 고객응대 직원 모집", company: "KMALL09 1호점 이스트우드점", pay: "면접 시 협의", payType: "급여", hours: "시간협의", postedAt: "상시" },
   { id: "fallback-eastwood-3", area: "NSW", suburb: "Eastwood", title: "KMALL09 이스트우드점 어드민/매장 운영 지원 모집", company: "KMALL09 1호점 이스트우드점", pay: "면접 시 협의", payType: "급여", hours: "시간협의", postedAt: "상시" },
   { id: "fallback-lidcombe-1", area: "NSW", suburb: "Lidcombe", title: "KMALL09 리드컴 2호점 진열파트 직원 모집", company: "KMALL09 2호점 리드컴점", pay: "면접 시 협의", payType: "급여", hours: "풀타임/오전 파트타임", postedAt: "상시" },
   { id: "fallback-lidcombe-2", area: "NSW", suburb: "Lidcombe", title: "KMALL09 리드컴 2호점 어드민 직원 모집", company: "KMALL09 2호점 리드컴점", pay: "면접 시 협의", payType: "급여", hours: "시간협의", postedAt: "상시" },
-  { id: "fallback-lidcombe-3", area: "NSW", suburb: "Lidcombe", title: "KMALL09 리드컴 2호점 캐셔 및 고객응대 직원 모집", company: "KMALL09 2호점 리드컴점", pay: "면접 시 협의", payType: "급여", hours: "시간협의", postedAt: "상시" },
-  { id: "fallback-bankstown-1", area: "NSW", suburb: "Bankstown", title: "KMALL09 뱅크스타운점 캐셔 직원 모집", company: "KMALL09 3호점 뱅크스타운점", pay: "면접 시 협의", payType: "급여", hours: "풀타임/파트타임", postedAt: "상시" },
+  { id: "fallback-lidcombe-3", area: "NSW", suburb: "Lidcombe", title: "KMALL09 리드컴 2호점 직원 모집", company: "KMALL09 2호점 리드컴점", pay: "면접 시 협의", payType: "급여", hours: "풀타임 / 오전 파트타임", postedAt: "상시" },
+  { id: "fallback-bankstown-1", area: "NSW", suburb: "Bankstown", title: "KMALL09 뱅크스타운 3호점 직원 모집", company: "KMALL09 3호점 뱅크스타운점", pay: "면접 시 협의", payType: "급여", hours: "풀타임 / 파트타임", postedAt: "상시" },
   { id: "fallback-bankstown-2", area: "NSW", suburb: "Bankstown", title: "KMALL09 뱅크스타운점 입고·진열·리빙섹션 직원 모집", company: "KMALL09 3호점 뱅크스타운점", pay: "면접 시 협의", payType: "급여", hours: "주말 포함 협의", postedAt: "상시" },
-  { id: "fallback-city-1", area: "NSW", suburb: "Sydney CBD", title: "KMALL09 시드니 시티점 매니저 후보 모집", company: "KMALL09 4호점 · 오픈예정 시드니 시티점", pay: "면접 시 협의", payType: "급여", hours: "풀타임", postedAt: "오픈예정" },
+  { id: "fallback-city-1", area: "NSW", suburb: "Sydney CBD", title: "KMALL09 시티 4호점 직원 모집", company: "KMALL09 4호점 시드니 시티점", pay: "면접 시 협의", payType: "급여", hours: "풀타임 / 파트타임", postedAt: "시티오픈" },
   { id: "fallback-city-2", area: "NSW", suburb: "Sydney CBD", title: "KMALL09 시드니 시티점 진열파트 직원 모집", company: "KMALL09 4호점 · 오픈예정 시드니 시티점", pay: "면접 시 협의", payType: "급여", hours: "풀타임/파트타임", postedAt: "오픈예정" },
   { id: "fallback-city-3", area: "NSW", suburb: "Sydney CBD", title: "KMALL09 시드니 시티점 어드민 및 캐셔 직원 모집", company: "KMALL09 4호점 · 오픈예정 시드니 시티점", pay: "면접 시 협의", payType: "급여", hours: "시간협의", postedAt: "오픈예정" },
 ];
@@ -353,7 +353,7 @@ export default function CompanyKmall09() {
             <div className="hidden grid-cols-[10rem_minmax(0,1fr)_11rem_9rem] items-center border-b border-slate-200 px-5 py-5 text-center text-base font-black text-neutral-950 lg:grid">
               <div className="text-left">지역</div>
               <div>모집제목/기업명</div>
-              <div>급여(원)</div>
+              <div>급여</div>
               <div>근무시간</div>
             </div>
 
@@ -407,7 +407,6 @@ export default function CompanyKmall09() {
 
                     <div className="flex flex-wrap items-center justify-center gap-2 text-center">
                       <span className="text-base font-black text-neutral-950">{opening.pay}</span>
-                      <span className="rounded-full border border-blue-600 px-2.5 py-1 text-xs font-black text-blue-700">{opening.payType}</span>
                     </div>
 
                     <p className="text-center text-sm font-black text-neutral-950">{opening.hours}</p>

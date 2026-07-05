@@ -162,51 +162,69 @@ export type Database = {
       }
       company_job_openings: {
         Row: {
+          apply_email: string | null
           area: string
           branch_id: string | null
           company: string
           company_slug: string
+          condition_rows: Json
           created_at: string
+          detail_intro: string | null
+          detail_sections: Json
           hours: string
           id: string
           is_active: boolean
           pay: string
           pay_type: string
           posted_at: string
+          recruitment_rows: Json
+          skill_tags: string[]
           sort_order: number
           suburb: string
           title: string
           updated_at: string
         }
         Insert: {
+          apply_email?: string | null
           area: string
           branch_id?: string | null
           company: string
           company_slug: string
+          condition_rows?: Json
           created_at?: string
+          detail_intro?: string | null
+          detail_sections?: Json
           hours: string
           id?: string
           is_active?: boolean
           pay: string
           pay_type?: string
           posted_at?: string
+          recruitment_rows?: Json
+          skill_tags?: string[]
           sort_order?: number
           suburb: string
           title: string
           updated_at?: string
         }
         Update: {
+          apply_email?: string | null
           area?: string
           branch_id?: string | null
           company?: string
           company_slug?: string
+          condition_rows?: Json
           created_at?: string
+          detail_intro?: string | null
+          detail_sections?: Json
           hours?: string
           id?: string
           is_active?: boolean
           pay?: string
           pay_type?: string
           posted_at?: string
+          recruitment_rows?: Json
+          skill_tags?: string[]
           sort_order?: number
           suburb?: string
           title?: string

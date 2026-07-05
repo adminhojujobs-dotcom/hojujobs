@@ -75,7 +75,9 @@ const fallbackProfile: CompanyProfileRow = {
 };
 
 const fallbackJobOpenings: JobOpening[] = [
-  { id: "fallback-1", area: "NSW", suburb: "Sydney CBD", title: "Chicken V 직원 모집", company: "Chicken V", pay: "면접 시 협의", payType: "급여", hours: "11:00 ~ 24:00 (시티점은 익일 새벽까지)", postedAt: "상시" },
+  { id: "fallback-eastwood", area: "NSW", suburb: "Eastwood", title: "Chicken V Eastwood 홀/주방 직원 모집", company: "Chicken V Eastwood & Busanjip", pay: "면접 시 협의", payType: "급여", hours: "11:00 - 24:00", postedAt: "상시" },
+  { id: "fallback-city-kitchen", area: "NSW", suburb: "Sydney CBD", title: "Chicken V & Busan Pocha City 주방 직원 모집", company: "Chicken V & Busan Pocha City", pay: "면접 후 경력에 따라 협의", payType: "급여", hours: "17:00 - 26:00", postedAt: "상시" },
+  { id: "fallback-city-hall", area: "NSW", suburb: "Sydney CBD", title: "Busan Pocha & Chicken V 홀 파트타임 직원 모집", company: "Busan Pocha & Chicken V City", pay: "면접 시 협의", payType: "급여", hours: "주 2-3일", postedAt: "상시" },
 ];
 
 export default function CompanyChickenV() {
@@ -206,7 +208,7 @@ export default function CompanyChickenV() {
             <div className="hidden grid-cols-[10rem_minmax(0,1fr)_11rem_9rem] items-center border-b border-slate-200 px-5 py-5 text-center text-base font-black text-neutral-950 lg:grid">
               <div className="text-left">지역</div>
               <div>모집제목/기업명</div>
-              <div>급여(원)</div>
+              <div>급여</div>
               <div>근무시간</div>
             </div>
 
@@ -260,7 +262,6 @@ export default function CompanyChickenV() {
 
                     <div className="flex flex-wrap items-center justify-center gap-2 text-center">
                       <span className="text-base font-black text-neutral-950">{opening.pay}</span>
-                      <span className="rounded-full border border-blue-600 px-2.5 py-1 text-xs font-black text-blue-700">{opening.payType}</span>
                     </div>
 
                     <p className="text-center text-sm font-black text-neutral-950">{opening.hours}</p>

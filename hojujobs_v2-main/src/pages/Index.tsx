@@ -899,7 +899,7 @@ function FeaturedJobs({ jobs, isLoading }: { jobs: JobCardItem[]; isLoading: boo
         <div className="mb-8 flex items-center justify-between gap-4 sm:mb-10">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-black tracking-[-0.045em] text-neutral-950 sm:text-2xl">
-              <span className="sm:hidden">적극🔥 채용 중인 공고</span>
+              <span className="sm:hidden">지금 가장 주목받는 알바</span>
               <span className="hidden sm:inline">지금 가장 주목받는 알바</span>
             </h2>
           </div>

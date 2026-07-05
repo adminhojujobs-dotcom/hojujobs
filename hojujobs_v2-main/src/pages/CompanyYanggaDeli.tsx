@@ -75,7 +75,8 @@ const fallbackProfile: CompanyProfileRow = {
 };
 
 const fallbackJobOpenings: JobOpening[] = [
-  { id: "fallback-1", area: "NSW", suburb: "Chatswood", title: "Yangga Deli 직원 모집", company: "Yangga Deli", pay: "면접 시 경력에 따라 협의", payType: "급여", hours: "07:00~15:00 / 07:00~16:30 (매장별 상이)", postedAt: "상시" },
+  { id: "fallback-1", area: "NSW", suburb: "Rhodes", title: "Yangga Deli 로즈점 주방 직원 모집", company: "Yangga Deli 로즈점", pay: "면접 시 경력에 따라 협의", payType: "급여", hours: "7am - 3pm", postedAt: "상시" },
+  { id: "fallback-2", area: "NSW", suburb: "Chatswood", title: "Yangga Korean Deli 채스우드점 홀 스태프 모집", company: "Yangga Korean Deli 채스우드점", pay: "면접 시 경력에 따라 협의", payType: "급여", hours: "목, 금, 토, 일", postedAt: "상시" },
 ];
 
 export default function CompanyYanggaDeli() {
@@ -206,7 +207,7 @@ export default function CompanyYanggaDeli() {
             <div className="hidden grid-cols-[10rem_minmax(0,1fr)_11rem_9rem] items-center border-b border-slate-200 px-5 py-5 text-center text-base font-black text-neutral-950 lg:grid">
               <div className="text-left">지역</div>
               <div>모집제목/기업명</div>
-              <div>급여(원)</div>
+              <div>급여</div>
               <div>근무시간</div>
             </div>
 
@@ -260,7 +261,6 @@ export default function CompanyYanggaDeli() {
 
                     <div className="flex flex-wrap items-center justify-center gap-2 text-center">
                       <span className="text-base font-black text-neutral-950">{opening.pay}</span>
-                      <span className="rounded-full border border-blue-600 px-2.5 py-1 text-xs font-black text-blue-700">{opening.payType}</span>
                     </div>
 
                     <p className="text-center text-sm font-black text-neutral-950">{opening.hours}</p>

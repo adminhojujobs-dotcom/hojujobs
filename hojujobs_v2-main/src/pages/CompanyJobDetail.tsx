@@ -85,19 +85,32 @@ export default function CompanyJobDetail() {
   }, [slug, openingId]);
 
   const conditionRows = useMemo(
-    () => detailRowsFromJson(branch?.condition_rows ?? profile?.condition_rows ?? []),
-    [branch, profile],
+    () => {
+      const rows = detailRowsFromJson(opening?.condition_rows ?? []);
+      if (!branch?.address) return rows;
+
+      return rows.map(([label, value, note]) =>
+        label === "근무지역"
+          ? [label, branch.address, note ?? branch.branch_label ?? branch.branch_name] satisfies DetailRow
+          : [label, value, note] satisfies DetailRow
+      );
+    },
+    [branch, opening],
   );
   const recruitmentRows = useMemo(
-    () => detailRowsFromJson(branch?.recruitment_rows ?? profile?.recruitment_rows ?? []),
-    [branch, profile],
+    () => detailRowsFromJson(opening?.recruitment_rows ?? []),
+    [opening],
   );
 
   const address = branch?.address ?? profile?.address ?? "";
   const mapQuery = encodeURIComponent(branch?.map_query || branch?.address || profile?.map_query || profile?.address || "");
   const contactPhone = branch?.phone ?? profile?.phone ?? null;
   const contactPhoneHref = branch?.phone_href ?? profile?.phone_href ?? null;
-  const contactEmail = branch?.email ?? profile?.email ?? null;
+  const contactEmail = opening?.apply_email ?? null;
+  const skillTags =
+    opening && opening.skill_tags.length > 0
+      ? opening.skill_tags
+      : profile?.skill_tags ?? [];
 
   useSEO({
     title: opening ? `${opening.title} | 호주잡스` : "채용정보 | 호주잡스",
@@ -207,7 +220,7 @@ export default function CompanyJobDetail() {
           </section>
         )}
 
-        {(recruitmentRows.length > 0 || (profile?.skill_tags.length ?? 0) > 0) && (
+        {recruitmentRows.length > 0 && (
           <section className="mt-8 border-t border-slate-200 pt-6">
             <h2 className="mb-5 text-xl font-bold text-neutral-900">모집조건</h2>
             <div className="space-y-4">
@@ -218,16 +231,17 @@ export default function CompanyJobDetail() {
                 </div>
               ))}
             </div>
-            {profile && profile.skill_tags.length > 0 && (
-              <div className="mt-6 border-t border-slate-200 pt-6">
-                <p className="mb-3 text-sm font-bold text-blue-700">이런 스킬이 있으면 좋아요!</p>
-                <div className="flex flex-wrap gap-2">
-                  {profile.skill_tags.map((tag) => (
-                    <span key={tag} className="rounded-md bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700">{tag}</span>
-                  ))}
-                </div>
-              </div>
-            )}
+          </section>
+        )}
+
+        {skillTags.length > 0 && (
+          <section className="mt-8 border-t border-slate-200 pt-6">
+            <p className="mb-3 text-sm font-bold text-blue-700">이런 스킬이 있으면 좋아요!</p>
+            <div className="flex flex-wrap gap-2">
+              {skillTags.map((tag) => (
+                <span key={tag} className="rounded-md bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700">{tag}</span>
+              ))}
+            </div>
           </section>
         )}
 

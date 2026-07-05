@@ -76,7 +76,7 @@ const fallbackProfile: CompanyProfileRow = {
 };
 
 const fallbackJobOpenings: JobOpening[] = [
-  { id: "fallback-1", area: "NSW", suburb: "Parramatta", title: "SUSHI YUZEN 직원 모집", company: "SUSHI YUZEN", pay: "$31.19 ~ $35.15 + Super", payType: "시급", hours: "매장별 상이 (예: 08:00~14:30)", postedAt: "상시" },
+  { id: "fallback-sydney-cbd-rollmaker", area: "NSW", suburb: "Sydney CBD", title: "SUSHI YUZEN Sydney CBD 롤메이커 모집", company: "SUSHI YUZEN Sydney CBD", pay: "$33.19 + Super", payType: "시급", hours: "08:00 - 14:30", postedAt: "상시" },
 ];
 
 export default function CompanySushiYuzen() {
@@ -207,7 +207,7 @@ export default function CompanySushiYuzen() {
             <div className="hidden grid-cols-[10rem_minmax(0,1fr)_11rem_9rem] items-center border-b border-slate-200 px-5 py-5 text-center text-base font-black text-neutral-950 lg:grid">
               <div className="text-left">지역</div>
               <div>모집제목/기업명</div>
-              <div>급여(원)</div>
+              <div>급여</div>
               <div>근무시간</div>
             </div>
 
@@ -261,7 +261,6 @@ export default function CompanySushiYuzen() {
 
                     <div className="flex flex-wrap items-center justify-center gap-2 text-center">
                       <span className="text-base font-black text-neutral-950">{opening.pay}</span>
-                      <span className="rounded-full border border-blue-600 px-2.5 py-1 text-xs font-black text-blue-700">{opening.payType}</span>
                     </div>
 
                     <p className="text-center text-sm font-black text-neutral-950">{opening.hours}</p>
