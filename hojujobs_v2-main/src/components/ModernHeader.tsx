@@ -16,20 +16,20 @@ export function ModernHeader() {
 
   return (
     <header className="border-b border-neutral-100 bg-white">
-      <div className="mx-auto flex max-w-[1520px] items-center justify-between px-6 py-5 lg:hidden">
+      <div className="mx-auto flex h-[76px] max-w-[1520px] items-center justify-between px-6 lg:hidden">
         <Link to="/" className="inline-flex min-w-0 items-center" aria-label="Hoju Jobs home">
-          <img src={hojuJobsLogo} alt="Hoju Jobs" className="h-9 w-auto max-w-[190px] object-contain" />
+          <img src={hojuJobsLogo} alt="Hoju Jobs" className="h-[46px] w-auto max-w-[220px] object-contain" />
         </Link>
 
-        <div className="flex shrink-0 items-center gap-5">
-          <button type="button" aria-label="검색" className="inline-flex h-11 w-11 items-center justify-center text-neutral-950" onClick={() => navigate("/")}>
-            <Search className="h-9 w-9" strokeWidth={2.4} />
+        <div className="flex shrink-0 items-center gap-4">
+          <button type="button" aria-label="검색" className="inline-flex h-12 w-12 items-center justify-center text-neutral-950" onClick={() => navigate("/")}>
+            <Search className="h-[34px] w-[34px]" strokeWidth={2.6} />
           </button>
 
           <Sheet>
             <SheetTrigger asChild>
-              <button type="button" aria-label="메뉴 열기" className="inline-flex h-11 w-11 items-center justify-center text-neutral-950">
-                <Menu className="h-10 w-10" strokeWidth={2.4} />
+              <button type="button" aria-label="메뉴 열기" className="inline-flex h-12 w-12 items-center justify-center text-neutral-950">
+                <Menu className="h-[36px] w-[36px]" strokeWidth={2.6} />
               </button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[min(22rem,85vw)] p-0">
