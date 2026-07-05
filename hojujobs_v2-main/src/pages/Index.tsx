@@ -180,13 +180,37 @@ function mapHomepageJobCard(row: HomepageJobCardRow): JobCardItem {
   };
 }
 
+function companySlugFromJobUrl(jobUrl?: string | null) {
+  return jobUrl?.match(/^\/company\/([^/?#]+)/)?.[1] ?? null;
+}
+
+function multipleBranchesLabel(location: string) {
+  const parts = location.split("·").map((part) => part.trim()).filter(Boolean);
+
+  if (parts.length <= 1) return "여러 지점";
+  return `${parts.slice(0, -1).join(" · ")} · 여러 지점`;
+}
+
+function applyMultipleBranchLabels(cards: JobCardItem[], branchCounts: Record<string, number>) {
+  return cards.map((card) => {
+    const slug = companySlugFromJobUrl(card.jobUrl);
+
+    if (!slug || (branchCounts[slug] ?? 0) <= 1) return card;
+
+    return {
+      ...card,
+      location: multipleBranchesLabel(card.location),
+    };
+  });
+}
+
 const kmall09JobCard: JobCardItem = {
   id: "fallback-kmall09",
   logo: "KMALL09",
   logoUrl: "https://kmall09.com.au/cdn/shop/files/LOGO_COLOR_SETTING-01.jpg?v=1768457068&width=480",
   logoTone: "blue",
   company: "KMALL09",
-  location: "NSW · 리드컴",
+  location: "NSW · 여러 지점",
   title: "KMALL09 직원 모집",
   payType: "급여",
   pay: "면접 시 협의",
@@ -199,7 +223,7 @@ const bunsikJobCard: JobCardItem = {
   logoUrl: "https://bunsik.au/wp-content/uploads/2023/07/bunsik-logo.png",
   logoTone: "red",
   company: "Bunsik",
-  location: "NSW · 다지점",
+  location: "NSW · 여러 지점",
   title: "Bunsik 직원 모집",
   payType: "급여",
   pay: "면접 시 협의",
@@ -212,7 +236,7 @@ const sushiYuzenJobCard: JobCardItem = {
   logoUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSviGMYOpZPvAIearZo8cgzB1YLQQsIQD9cQKh9FWE1sw&s",
   logoTone: "black",
   company: "Sushi Yuzen",
-  location: "NSW · VIC · 다지점",
+  location: "NSW · VIC · 여러 지점",
   title: "SUSHI YUZEN 직원 모집",
   payType: "시급",
   pay: "$31.19 ~ $35.15 + Super",
@@ -225,7 +249,7 @@ const chickenVJobCard: JobCardItem = {
   logoUrl: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/chickenv.png",
   logoTone: "red",
   company: "Chicken V",
-  location: "NSW · 다지점",
+  location: "NSW · 여러 지점",
   title: "Chicken V 직원 모집",
   payType: "급여",
   pay: "면접 시 협의",
@@ -238,7 +262,7 @@ const parkBongsookJobCard: JobCardItem = {
   logoUrl: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/parkbongsook.png",
   logoTone: "black",
   company: "박봉숙",
-  location: "NSW · 다지점",
+  location: "NSW · 여러 지점",
   title: "박봉숙 직원 모집",
   payType: "시급",
   pay: "$26.5 ~ $29.5 + Super",
@@ -251,7 +275,7 @@ const yanggaDeliJobCard: JobCardItem = {
   logoUrl: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/yangga-deli.png",
   logoTone: "neutral",
   company: "Yangga Deli",
-  location: "NSW · 다지점",
+  location: "NSW · 여러 지점",
   title: "Yangga Deli 직원 모집",
   payType: "급여",
   pay: "면접 시 협의",
@@ -662,7 +686,29 @@ const Index = ({ cityFilter }: IndexProps) => {
         .limit(12);
 
       if (cancelled || error || !data || data.length === 0) return;
-      setHomepageJobCards(withPinnedCards(data.map(mapHomepageJobCard)));
+
+      const cards = withPinnedCards(data.map(mapHomepageJobCard));
+      const companySlugs = [...new Set(cards.map((card) => companySlugFromJobUrl(card.jobUrl)).filter(Boolean))];
+
+      if (companySlugs.length === 0) {
+        setHomepageJobCards(cards);
+        return;
+      }
+
+      const { data: branches } = await supabase
+        .from("company_branches")
+        .select("company_slug")
+        .eq("is_active", true)
+        .in("company_slug", companySlugs);
+
+      if (cancelled) return;
+
+      const branchCounts = (branches ?? []).reduce<Record<string, number>>((counts, branch) => {
+        counts[branch.company_slug] = (counts[branch.company_slug] ?? 0) + 1;
+        return counts;
+      }, {});
+
+      setHomepageJobCards(applyMultipleBranchLabels(cards, branchCounts));
     }
 
     fetchHomepageJobCards();
