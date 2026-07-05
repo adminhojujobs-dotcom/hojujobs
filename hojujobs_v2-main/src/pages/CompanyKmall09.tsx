@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ExternalLink, MapPin, Star } from "lucide-react";
+import { ArrowLeft, ExternalLink, Star } from "lucide-react";
 import { ModernHeader } from "@/components/ModernHeader";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
@@ -216,7 +216,6 @@ export default function CompanyKmall09() {
   const { slug = "kmall09" } = useParams();
   const [profile, setProfile] = useState<CompanyProfileRow>(fallbackProfile);
   const [branches, setBranches] = useState<CompanyBranchRow[]>(fallbackBranches);
-  const [selectedBranchId, setSelectedBranchId] = useState<string>(fallbackBranches[0].id);
   const [isLoadingCompany, setIsLoadingCompany] = useState(true);
 
   useEffect(() => {
@@ -245,7 +244,6 @@ export default function CompanyKmall09() {
 
       if (!branchError && branchData && branchData.length > 0) {
         setBranches(branchData);
-        setSelectedBranchId(branchData[0].id);
       }
 
       setIsLoadingCompany(false);
@@ -258,18 +256,12 @@ export default function CompanyKmall09() {
     };
   }, [slug]);
 
-  const selectedBranch = useMemo(
-    () => branches.find((branch) => branch.id === selectedBranchId) ?? branches[0],
-    [branches, selectedBranchId],
-  );
-
   const heroBadges = useMemo(
     () => ["구인", "NSW", ...branches.map((branch) => branch.branch_name), "상시모집", "풀타임 / 파트타임"],
     [branches],
   );
 
-  const branchOpenings = useMemo(() => openingsForBranch(selectedBranch), [selectedBranch]);
-  const mapQuery = encodeURIComponent(selectedBranch.map_query || selectedBranch.address);
+  const branchOpenings = useMemo(() => branches.flatMap(openingsForBranch), [branches]);
 
   useSEO({
     title: `${profile.profile_title} | 호주잡스`,
@@ -312,15 +304,6 @@ export default function CompanyKmall09() {
                   <div className="h-5 w-4/5 rounded bg-slate-100" />
                 </div>
               </div>
-            </div>
-          </section>
-
-          <section className="mt-14">
-            <div className="mb-3 h-5 w-48 rounded bg-slate-100" />
-            <div className="grid grid-cols-1 border border-slate-200 sm:grid-flow-col sm:auto-cols-fr">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div key={`kmall-branch-skeleton-${index}`} className="h-20 border-b border-slate-200 bg-white sm:border-b-0 sm:border-r last:border-r-0" />
-              ))}
             </div>
           </section>
 
@@ -393,33 +376,11 @@ export default function CompanyKmall09() {
           </div>
         </section>
 
-        {branches.length > 1 && (
-          <section className="mt-14">
-            <p className="mb-3 text-sm font-black text-slate-400">지점 선택 · {branches.length}개 매장 운영 중</p>
-            <div className="grid grid-cols-1 border border-slate-200 text-center font-black text-slate-400 sm:grid-flow-col sm:auto-cols-fr">
-              {branches.map((branch, index) => {
-                const isSelected = branch.id === selectedBranch.id;
-                return (
-                  <button
-                    key={branch.id}
-                    type="button"
-                    onClick={() => setSelectedBranchId(branch.id)}
-                    className={`flex flex-col items-center gap-1 border-slate-200 px-4 py-4 transition-colors ${index !== branches.length - 1 ? "border-b sm:border-b-0 sm:border-r" : ""} ${isSelected ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50 hover:text-slate-950"}`}
-                  >
-                    <span className="text-base sm:text-lg">{branch.branch_name}</span>
-                    {branch.branch_label && <span className="text-xs font-bold text-slate-400">{branch.branch_label}</span>}
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
         <section id="conditions" className="mt-16">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
             <h2 className="text-3xl font-black tracking-[-0.04em]">
               채용 공고
-              {selectedBranch.branch_name && <span className="ml-2 text-lg font-bold text-blue-700">{selectedBranch.branch_name}점 {selectedBranch.branch_label}</span>}
+              <span className="ml-2 text-lg font-bold text-blue-700">전체 지점</span>
             </h2>
             <p className="text-sm font-bold text-slate-400">{branchOpenings.length}개 포지션</p>
           </div>
@@ -437,7 +398,7 @@ export default function CompanyKmall09() {
             <div className="divide-y divide-slate-200">
               {branchOpenings.map((opening) => (
                 <article
-                  key={`${selectedBranch.id}-${opening.title}`}
+                  key={`${opening.suburb}-${opening.title}`}
                   className="grid gap-4 px-5 py-7 lg:grid-cols-[5rem_13rem_minmax(0,1fr)_11rem_9rem_6rem] lg:items-center lg:gap-0"
                 >
                   <div className="hidden justify-center lg:flex">
@@ -497,32 +458,6 @@ export default function CompanyKmall09() {
           )}
         </section>
 
-        <section className="mt-16">
-          <h2 className="mb-5 text-3xl font-black tracking-[-0.04em]">근무지역</h2>
-          <div className="mb-5 flex flex-wrap items-center gap-2 text-lg font-black text-slate-900">
-            <MapPin className="h-5 w-5 text-blue-700" />
-            {selectedBranch.address}
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-black text-blue-700"
-            >
-              지도 크게 보기
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          </div>
-          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-            <iframe
-              title={`${profile.name} ${selectedBranch.branch_name} map`}
-              src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
-              className="h-[420px] w-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-            <p className="p-5 text-sm font-semibold text-slate-500">지도는 선택한 지점({selectedBranch.branch_name})의 위치를 나타내며, 실제 출입구 및 매장 위치는 쇼핑센터 안내를 확인해 주세요.</p>
-          </div>
-        </section>
       </main>
     </div>
   );
