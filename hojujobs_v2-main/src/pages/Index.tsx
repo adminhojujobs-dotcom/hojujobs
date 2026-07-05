@@ -282,8 +282,21 @@ const yanggaDeliJobCard: JobCardItem = {
   jobUrl: "/company/yanggadeli",
 };
 
+const stoneageJobCard: JobCardItem = {
+  id: "fallback-stoneage",
+  logo: "STONEAGE",
+  logoUrl: "/stoneage_logo.png",
+  logoTone: "black",
+  company: "석기시대",
+  location: "NSW · 여러 지점",
+  title: "석기시대 직원 모집",
+  payType: "급여",
+  pay: "면접 시 협의",
+  jobUrl: "/company/stoneage",
+};
+
 function withPinnedCards(cards: JobCardItem[]) {
-  const pinnedCards = [kmall09JobCard, bunsikJobCard, sushiYuzenJobCard, chickenVJobCard, parkBongsookJobCard, yanggaDeliJobCard];
+  const pinnedCards = [kmall09JobCard, bunsikJobCard, sushiYuzenJobCard, chickenVJobCard, parkBongsookJobCard, yanggaDeliJobCard, stoneageJobCard];
   const mergedCards = [...cards];
 
   pinnedCards.forEach((pinnedCard) => {
@@ -312,6 +325,7 @@ const fallbackJobCards: JobCardItem[] = [
   chickenVJobCard,
   parkBongsookJobCard,
   yanggaDeliJobCard,
+  stoneageJobCard,
   {
     id: "fallback-1",
     logo: "coupang\nfulfillment services",
