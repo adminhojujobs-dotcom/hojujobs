@@ -285,7 +285,7 @@ const yanggaDeliJobCard: JobCardItem = {
 const stoneageJobCard: JobCardItem = {
   id: "fallback-stoneage",
   logo: "STONEAGE",
-  logoUrl: "/stoneage_logo.png",
+  logoUrl: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/stoneage_logo.png",
   logoTone: "black",
   company: "석기시대",
   location: "NSW · 여러 지점",

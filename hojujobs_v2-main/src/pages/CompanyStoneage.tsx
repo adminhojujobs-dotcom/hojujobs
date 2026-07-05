@@ -15,7 +15,7 @@ const fallbackProfile: CompanyProfileRow = {
   name: "석기시대",
   profile_title: "석기시대 직원 모집",
   subtitle: "STONEAGE Korean BBQ — 허스트빌 · 웨스트라이드 · 캐슬힐 프리미엄 코리안 BBQ",
-  logo_url: "/stoneage_logo.png",
+  logo_url: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/stoneage_logo.png",
   photo_url: "https://stoneagebbq.com.au/wp-content/uploads/2026/01/Generated-Image-December-29-2025-2_18AM.jpeg",
   badges: ["구인", "NSW", "여러 지점", "상시모집", "파트타임 / 풀타임"],
   about_paragraphs: [
