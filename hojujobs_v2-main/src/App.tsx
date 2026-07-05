@@ -28,6 +28,7 @@ import Flatmates from "./pages/Flatmates";
 import FlatmateDetail from "./pages/FlatmateDetail";
 import FlatmatesPost from "./pages/FlatmatesPost";
 import CompanyKmall09 from "./pages/CompanyKmall09";
+import CompanyJobDetail from "./pages/CompanyJobDetail";
 import CompanyBunsik from "./pages/CompanyBunsik";
 import CompanySushiYuzen from "./pages/CompanySushiYuzen";
 import CompanyChickenV from "./pages/CompanyChickenV";
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/adelaide" element={<Index key="SA" cityFilter="SA" />} />
               <Route path="/job/:id" element={<JobDetail />} />
               <Route path="/company/kmall09" element={<CompanyKmall09 />} />
+              <Route path="/company/:slug/opening/:openingId" element={<CompanyJobDetail />} />
               <Route path="/company/bunsik" element={<CompanyBunsik />} />
               <Route path="/company/sushiyuzen" element={<CompanySushiYuzen />} />
               <Route path="/company/chickenv" element={<CompanyChickenV />} />

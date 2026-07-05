@@ -53,6 +53,51 @@ export type Database = {
         }
         Relationships: []
       }
+      community_events: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_date_label: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          location_label: string | null
+          organizer: string
+          sort_order: number
+          source_url: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_date_label?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          location_label?: string | null
+          organizer: string
+          sort_order?: number
+          source_url: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_date_label?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          location_label?: string | null
+          organizer?: string
+          sort_order?: number
+          source_url?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_branches: {
         Row: {
           address: string
@@ -108,6 +153,75 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "company_branches_company_slug_fkey"
+            columns: ["company_slug"]
+            isOneToOne: false
+            referencedRelation: "company_profiles"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      company_job_openings: {
+        Row: {
+          area: string
+          branch_id: string | null
+          company: string
+          company_slug: string
+          created_at: string
+          hours: string
+          id: string
+          is_active: boolean
+          pay: string
+          pay_type: string
+          posted_at: string
+          sort_order: number
+          suburb: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          area: string
+          branch_id?: string | null
+          company: string
+          company_slug: string
+          created_at?: string
+          hours: string
+          id?: string
+          is_active?: boolean
+          pay: string
+          pay_type?: string
+          posted_at?: string
+          sort_order?: number
+          suburb: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          branch_id?: string | null
+          company?: string
+          company_slug?: string
+          created_at?: string
+          hours?: string
+          id?: string
+          is_active?: boolean
+          pay?: string
+          pay_type?: string
+          posted_at?: string
+          sort_order?: number
+          suburb?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_job_openings_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "company_branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_job_openings_company_slug_fkey"
             columns: ["company_slug"]
             isOneToOne: false
             referencedRelation: "company_profiles"

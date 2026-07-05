@@ -16,20 +16,20 @@ export function ModernHeader() {
 
   return (
     <header className="border-b border-neutral-100 bg-white">
-      <div className="mx-auto flex h-[76px] max-w-[1520px] items-center justify-between px-6 lg:hidden">
+      <div className="mx-auto flex h-[64px] max-w-[1220px] items-center justify-between px-5 lg:hidden">
         <Link to="/" className="inline-flex min-w-0 items-center" aria-label="Hoju Jobs home">
-          <img src={hojuJobsLogo} alt="Hoju Jobs" className="h-[46px] w-auto max-w-[220px] object-contain" />
+          <img src={hojuJobsLogo} alt="Hoju Jobs" className="h-9 w-auto max-w-[170px] object-contain" />
         </Link>
 
-        <div className="flex shrink-0 items-center gap-4">
-          <button type="button" aria-label="검색" className="inline-flex h-12 w-12 items-center justify-center text-neutral-950" onClick={() => navigate("/")}>
-            <Search className="h-[34px] w-[34px]" strokeWidth={2.6} />
+        <div className="flex shrink-0 items-center gap-3">
+          <button type="button" aria-label="검색" className="inline-flex h-9 w-9 items-center justify-center text-neutral-950" onClick={() => navigate("/")}>
+            <Search className="h-7 w-7" strokeWidth={2.3} />
           </button>
 
           <Sheet>
             <SheetTrigger asChild>
-              <button type="button" aria-label="메뉴 열기" className="inline-flex h-12 w-12 items-center justify-center text-neutral-950">
-                <Menu className="h-[36px] w-[36px]" strokeWidth={2.6} />
+              <button type="button" aria-label="메뉴 열기" className="inline-flex h-9 w-9 items-center justify-center text-neutral-950">
+                <Menu className="h-7 w-7" strokeWidth={2.3} />
               </button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[min(22rem,85vw)] p-0">
@@ -38,7 +38,7 @@ export function ModernHeader() {
                   <img src={hojuJobsLogo} alt="Hoju Jobs" className="h-8 w-auto" />
                 </SheetTitle>
               </SheetHeader>
-              <nav className="grid gap-1 px-6 py-5 text-xl font-black text-neutral-950">
+              <nav className="grid gap-1 px-6 py-5 text-lg font-black text-neutral-950">
                 {navItems.map((item) => (
                   <Link key={item.label} to={item.to} className="rounded-md py-3 transition-colors hover:text-blue-700">
                     {item.label}
@@ -61,7 +61,7 @@ export function ModernHeader() {
         </div>
       </div>
 
-      <div className="mx-auto hidden max-w-[1520px] flex-col gap-5 px-5 py-6 lg:flex lg:px-14">
+      <div className="mx-auto hidden max-w-[1220px] flex-col gap-5 px-5 py-6 lg:flex lg:px-14">
         <div className="flex items-center justify-between gap-5">
           <div className="flex flex-1 items-center gap-10">
             <Link to="/" className="inline-flex items-center" aria-label="Hoju Jobs home">
@@ -82,7 +82,7 @@ export function ModernHeader() {
         </div>
 
         <div className="flex items-center justify-between gap-5">
-          <nav className="grid flex-1 grid-cols-3 gap-2 text-base font-black text-neutral-950 sm:flex sm:items-center sm:gap-9 lg:text-xl">
+          <nav className="grid flex-1 grid-cols-3 gap-2 text-base font-black text-neutral-950 sm:flex sm:items-center sm:gap-8 lg:text-lg">
             {navItems.map((item) => (
               <Link key={item.label} to={item.to} className="whitespace-nowrap text-left transition-colors hover:text-blue-700">
                 {item.label}

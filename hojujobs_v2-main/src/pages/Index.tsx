@@ -1,14 +1,25 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
+  BadgePercent,
+  Briefcase,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  ChevronLeft,
   ChevronRight,
   ExternalLink,
-  ShieldAlert,
+  MapPin,
+  Newspaper,
+  X,
 } from "lucide-react";
 import { ModernHeader } from "@/components/ModernHeader";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { BLOG_POSTS } from "@/data/blogPosts";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 interface IndexProps {
   cityFilter?: string;
@@ -67,10 +78,14 @@ interface PromoItem {
   label: string;
   href: string;
   external?: boolean;
+  imageUrl?: string | null;
+  meta?: string;
 }
 
 interface PromoSection {
   title: string;
+  moreHref: string;
+  moreExternal?: boolean;
   preview: {
     label: string;
     title: string;
@@ -88,72 +103,39 @@ function translatedNewsUrl(url: string) {
   return `https://translate.google.com/translate?sl=auto&tl=ko&u=${encodeURIComponent(url)}`;
 }
 
-const staticPromoSections: PromoSection[] = [
+const promoSectionVisuals: Record<string, { image: string; tone: string }> = {
+  "세일과 할인": { image: "SALE", tone: "bg-cyan-50 text-cyan-700" },
+  "호주 생활 뉴스": { image: "ABC", tone: "bg-indigo-50 text-indigo-700" },
+  "커뮤니티 이벤트": { image: "JUL", tone: "bg-slate-100 text-slate-700" },
+};
+
+const mobileShortcutItems = [
   {
-    title: "채용정보",
-    preview: {
-      label: "쿠팡CFS · 인천 남동구",
-      title: "입사 인센티브 지급 물류센터 단기/장기 알바 모집",
-      meta: "월급 3,946,136원",
-      image: "CFS",
-      tone: "bg-blue-50 text-blue-700",
-      href: "/",
-    },
-    items: [
-      { label: "전국 버거킹 아르바이트 모집", href: "/" },
-      { label: "노브랜드 안양평촌점 스태프 모집", href: "/" },
-      { label: "유니클로 의왕점 오픈멤버 풀타이머 모집", href: "/" },
-    ],
+    label: "세일",
+    href: "/sales",
+    icon: BadgePercent,
+    iconClassName: "bg-cyan-50 text-cyan-600",
   },
   {
-    title: "세일과 할인",
-    preview: {
-      label: "전자제품",
-      title: "[VIC] Sigenergy 27kWh 배터리 + 10kW 인버터 특가",
-      meta: "$9,900부터",
-      image: "SALE",
-      tone: "bg-cyan-50 text-cyan-700",
-      href: "/sales",
-    },
-    items: [
-      { label: "Macpac 남성용 다운 패딩 재킷 V2 $89", href: "/sales" },
-      { label: "주말 장보기 Woolworths 반값 할인 모음", href: "/sales" },
-      { label: "시드니 CBD 점심 도시락 특가 업데이트", href: "/sales" },
-    ],
+    label: "뉴스",
+    href: "/news",
+    icon: Newspaper,
+    iconClassName: "bg-indigo-50 text-indigo-600",
   },
   {
-    title: "호주 생활 뉴스",
-    preview: {
-      label: "ABC News · 오늘",
-      title: "호주 경제당국, 지역사회 지지 속 신규 정책 검토",
-      meta: "기사 보기",
-      image: "ABC",
-      tone: "bg-indigo-50 text-indigo-700",
-      href: "/news",
-    },
-    items: [
-      { label: "세입자와 예산이 빠듯한 가구를 위한 겨울철 팁", href: "/news" },
-      { label: "방학 앞두고 도로 사망 증가에 운전자 주의 당부", href: "/news" },
-      { label: "보육 안전 단속에도 규정 위반 사례 드러나", href: "/news" },
-    ],
-  },
-  {
-    title: "커뮤니티 이벤트",
-    preview: {
-      label: "이번 주",
-      title: "시드니 워홀 네트워킹 밋업 참가자 모집",
-      meta: "무료 RSVP",
-      image: "JUL",
-      tone: "bg-slate-100 text-slate-700",
-      href: "/",
-    },
-    items: [
-      { label: "멜버른 한인 플리마켓 셀러 신청 접수", href: "/" },
-      { label: "브리즈번 커피챗: 이력서와 인터뷰 준비", href: "/" },
-      { label: "온라인 세미나: 호주 첫 월급과 세금 이해", href: "/" },
-    ],
+    label: "이벤트",
+    href: "/",
+    icon: CalendarDays,
+    iconClassName: "bg-amber-50 text-amber-500",
   },
 ];
+
+const promoSectionIcons: Record<string, typeof Briefcase> = {
+  "채용정보": Briefcase,
+  "세일과 할인": BadgePercent,
+  "호주 생활 뉴스": Newspaper,
+  "커뮤니티 이벤트": CalendarDays,
+};
 
 const logoToneClasses: Record<string, string> = {
   blue: "text-blue-600",
@@ -364,8 +346,66 @@ function PromoLink({ href, external, className, children }: { href: string; exte
   );
 }
 
+function QuickSectionsSkeleton() {
+  return (
+    <section className="mx-auto max-w-[1220px] overflow-hidden px-5 pb-16 lg:px-9">
+      <div className="md:hidden">
+        <div className="h-[190px] animate-pulse rounded-2xl bg-slate-100" />
+        <div className="mt-5 grid grid-cols-3 gap-3">
+          {mobileShortcutItems.map(({ label, href, icon: Icon, iconClassName }) => (
+            <Link key={label} to={href} className="flex flex-col items-center gap-2 text-sm font-black text-neutral-900">
+              <span className={`inline-flex h-14 w-14 items-center justify-center rounded-full ${iconClassName}`}>
+                <Icon className="h-7 w-7" strokeWidth={2.4} />
+              </span>
+              <span>{label}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className="hidden rounded-sm border border-slate-200 bg-white shadow-[0_2px_10px_rgba(15,23,42,0.05)] md:block">
+        <div className="flex items-center gap-7 border-b border-slate-200 px-6">
+          {["세일과 할인", "호주 생활 뉴스", "커뮤니티 이벤트"].map((title) => (
+            <div key={title} className="py-4">
+              <div className="h-7 w-28 animate-pulse rounded bg-slate-100" />
+            </div>
+          ))}
+        </div>
+        <div className="grid h-[268px] grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] gap-8 overflow-hidden px-6 py-7">
+          <div className="flex min-h-0 flex-col justify-between">
+            {[0, 1].map((item) => (
+              <div key={item} className="flex items-center gap-4">
+                <div className="h-[84px] w-[104px] shrink-0 animate-pulse rounded-lg bg-slate-100" />
+                <div className="min-w-0 flex-1 space-y-3">
+                  <div className="h-4 w-11/12 animate-pulse rounded bg-slate-100" />
+                  <div className="h-3 w-1/3 animate-pulse rounded bg-slate-100" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex min-h-0 flex-col divide-y divide-slate-100">
+            {[0, 1, 2, 3, 4].map((item) => (
+              <div key={item} className="flex flex-1 items-center justify-between gap-4 py-3 first:pt-0">
+                <div className="h-4 w-2/3 animate-pulse rounded bg-slate-100" />
+                <div className="h-3 w-20 animate-pulse rounded bg-slate-100" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center justify-center gap-4 border-t border-slate-200 py-4">
+          <div className="h-8 w-8 animate-pulse rounded-full bg-slate-100" />
+          <div className="h-5 w-36 animate-pulse rounded bg-slate-100" />
+          <div className="h-8 w-8 animate-pulse rounded-full bg-slate-100" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function QuickSections() {
-  const [promoSections, setPromoSections] = useState<PromoSection[]>(staticPromoSections);
+  const [promoSections, setPromoSections] = useState<PromoSection[]>([]);
+  const [isLoadingPromoSections, setIsLoadingPromoSections] = useState(true);
+  const [activeSectionIndex, setActiveSectionIndex] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -375,22 +415,29 @@ function QuickSections() {
         .from("ozbargain_deals")
         .select("rank, title, category, image_url")
         .order("rank", { ascending: true })
-        .limit(4);
+        .limit(7);
 
-      if (cancelled || error || !data || data.length === 0) return;
+      if (error || !data || data.length === 0) return null;
 
-      const [top, ...rest] = data;
-      setPromoSections((prev) =>
-        prev.map((section) =>
-          section.title === "세일과 할인"
-            ? {
-                ...section,
-                preview: { ...section.preview, label: top.category, title: top.title, meta: "딜 보기", href: `/sales/${top.rank}`, imageUrl: top.image_url },
-                items: rest.slice(0, 3).map((deal) => ({ label: deal.title, href: `/sales/${deal.rank}` })),
-              }
-            : section,
-        ),
-      );
+      const [top, second, ...rest] = data;
+      const visuals = promoSectionVisuals["세일과 할인"];
+
+      return {
+        title: "세일과 할인",
+        moreHref: "/sales",
+        preview: {
+          label: top.category,
+          title: top.title,
+          meta: "딜 보기",
+          href: `/sales/${top.rank}`,
+          imageUrl: top.image_url,
+          ...visuals,
+        },
+        items: [
+          ...(second ? [{ label: second.title, href: `/sales/${second.rank}`, imageUrl: second.image_url, meta: second.category }] : []),
+          ...rest.slice(0, 5).map((deal) => ({ label: deal.title, href: `/sales/${deal.rank}`, imageUrl: deal.image_url, meta: deal.category })),
+        ],
+      } satisfies PromoSection;
     }
 
     async function fetchNewsArticles() {
@@ -400,108 +447,393 @@ function QuickSections() {
         .eq("show_on_news_page", true)
         .order("sort_order", { ascending: true })
         .order("original_published_at", { ascending: false })
-        .limit(4);
+        .limit(7);
 
-      if (cancelled || error || !data || data.length === 0) return;
+      if (error || !data || data.length === 0) return null;
 
-      const [top, ...rest] = data;
-      setPromoSections((prev) =>
-        prev.map((section) =>
-          section.title === "호주 생활 뉴스"
-            ? {
-                ...section,
-                preview: {
-                  ...section.preview,
-                  label: `${top.source_name} · ${top.category_label_ko}`,
-                  title: top.title,
-                  meta: "기사 보기",
-                  href: translatedNewsUrl(top.source_url),
-                  external: true,
-                  imageUrl: top.image_url,
-                },
-                items: rest.slice(0, 3).map((article) => ({ label: article.title, href: translatedNewsUrl(article.source_url), external: true })),
-              }
-            : section,
-        ),
-      );
+      const [top, second, ...rest] = data;
+      const visuals = promoSectionVisuals["호주 생활 뉴스"];
+
+      return {
+        title: "호주 생활 뉴스",
+        moreHref: "/news",
+        preview: {
+          label: `${top.source_name} · ${top.category_label_ko}`,
+          title: top.title,
+          meta: "기사 보기",
+          href: translatedNewsUrl(top.source_url),
+          external: true,
+          imageUrl: top.image_url,
+          ...visuals,
+        },
+        items: [
+          ...(second
+            ? [{ label: second.title, href: translatedNewsUrl(second.source_url), external: true, imageUrl: second.image_url, meta: second.source_name }]
+            : []),
+          ...rest.slice(0, 5).map((article) => ({ label: article.title, href: translatedNewsUrl(article.source_url), external: true, imageUrl: article.image_url, meta: article.source_name })),
+        ],
+      } satisfies PromoSection;
     }
 
-    fetchSaleDeals();
-    fetchNewsArticles();
+    async function fetchCommunityEvents() {
+      const { data, error } = await supabase
+        .from("community_events")
+        .select("title, organizer, event_date_label, location_label, image_url, source_url")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .limit(7);
+
+      if (error || !data || data.length === 0) return null;
+
+      const [top, second, ...rest] = data;
+      const visuals = promoSectionVisuals["커뮤니티 이벤트"];
+
+      return {
+        title: "커뮤니티 이벤트",
+        moreHref: top.source_url,
+        moreExternal: true,
+        preview: {
+          label: top.location_label ?? top.organizer,
+          title: top.title,
+          meta: top.event_date_label ?? "자세히 보기",
+          href: top.source_url,
+          external: true,
+          imageUrl: top.image_url,
+          ...visuals,
+        },
+        items: [
+          ...(second ? [{ label: second.title, href: second.source_url, external: true, imageUrl: second.image_url, meta: second.organizer }] : []),
+          ...rest.slice(0, 5).map((event) => ({ label: event.title, href: event.source_url, external: true, imageUrl: event.image_url, meta: event.organizer })),
+        ],
+      } satisfies PromoSection;
+    }
+
+    async function fetchPromoSections() {
+      const sections = await Promise.all([fetchSaleDeals(), fetchNewsArticles(), fetchCommunityEvents()]);
+
+      if (cancelled) return;
+
+      setPromoSections(sections.filter((section): section is PromoSection => Boolean(section)));
+      setIsLoadingPromoSections(false);
+    }
+
+    fetchPromoSections();
 
     return () => {
       cancelled = true;
     };
   }, []);
 
+  const visiblePromoSections = promoSections;
+
+  useEffect(() => {
+    if (visiblePromoSections.length === 0) return;
+
+    const timer = setInterval(() => {
+      setActiveSectionIndex((prev) => (prev + 1) % visiblePromoSections.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [visiblePromoSections.length]);
+
+  useEffect(() => {
+    if (activeSectionIndex >= visiblePromoSections.length) {
+      setActiveSectionIndex(0);
+    }
+  }, [activeSectionIndex, visiblePromoSections.length]);
+
+  if (isLoadingPromoSections) {
+    return <QuickSectionsSkeleton />;
+  }
+
+  if (visiblePromoSections.length === 0) {
+    return null;
+  }
+
+  const activeSection = visiblePromoSections[activeSectionIndex] ?? visiblePromoSections[0];
+  const ActiveSectionIcon = promoSectionIcons[activeSection.title] ?? Briefcase;
+  const [firstItem, ...restItems] = activeSection.items;
+  const bigPictureItems = [
+    {
+      title: activeSection.preview.title,
+      meta: activeSection.preview.label,
+      imageUrl: activeSection.preview.imageUrl,
+      href: activeSection.preview.href,
+      external: activeSection.preview.external,
+    },
+    ...(firstItem
+      ? [
+          {
+            title: firstItem.label,
+            meta: firstItem.meta,
+            imageUrl: firstItem.imageUrl,
+            href: firstItem.href,
+            external: firstItem.external,
+          },
+        ]
+      : []),
+  ];
+  const textOnlyItems = restItems;
+
+  const mobileCtaLabels: Record<string, string> = {
+    "세일과 할인": "딜 보기",
+    "호주 생활 뉴스": "기사 보기",
+    "커뮤니티 이벤트": "자세히 보기",
+  };
+
+  const allMobileCards = visiblePromoSections.flatMap((section) => {
+    const cta = mobileCtaLabels[section.title] ?? "자세히 보기";
+
+    return [
+      {
+        categoryTitle: section.title,
+        label: section.preview.label,
+        title: section.preview.title,
+        meta: section.preview.meta,
+        imageUrl: section.preview.imageUrl,
+        image: section.preview.image,
+        tone: section.preview.tone,
+        href: section.preview.href,
+        external: section.preview.external,
+      },
+      ...section.items.slice(0, 2).map((item) => ({
+        categoryTitle: section.title,
+        label: item.meta ?? section.title,
+        title: item.label,
+        meta: cta,
+        imageUrl: item.imageUrl,
+        image: section.preview.image,
+        tone: section.preview.tone,
+        href: item.href,
+        external: item.external,
+      })),
+    ];
+  });
+
   return (
-    <section className="mx-auto max-w-[1520px] overflow-hidden px-5 pb-16 lg:px-9">
-      <div className="grid auto-rows-fr gap-6 md:grid-cols-2 xl:grid-cols-4">
-        {promoSections.map(({ title, preview, items }) => {
-          const shouldContainImage = title === "세일과 할인";
-
-          return (
-          <article key={title} className="flex min-h-[460px] w-full min-w-0 max-w-[calc(100vw-2.5rem)] flex-col rounded-sm border border-slate-200 bg-white p-5 shadow-[0_2px_10px_rgba(15,23,42,0.05)] sm:max-w-none">
-            <div className="mb-5">
-              <div className="min-w-0">
-                <h2 className="text-2xl font-black tracking-[-0.04em] text-neutral-950">{title}</h2>
-              </div>
-            </div>
-
-            <PromoLink href={preview.href} external={preview.external} className="group grid h-[290px] min-w-0 grid-rows-[112px_1fr] overflow-hidden border border-slate-200 p-4 transition-colors hover:border-blue-200">
-              <div className={`mb-4 h-28 w-full overflow-hidden rounded-lg ${preview.tone}`}>
-                {preview.imageUrl ? (
-                  <img
-                    src={preview.imageUrl}
-                    alt={preview.title}
-                    className={`h-full w-full ${shouldContainImage ? "bg-slate-50 object-contain" : "object-cover"}`}
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-xl font-black">{preview.image}</div>
-                )}
-              </div>
-              <div className="flex min-w-0 max-w-full flex-col">
-                <p className="mb-2 line-clamp-1 text-base font-black text-slate-500">{preview.label}</p>
-                <h3 className="mb-4 line-clamp-3 max-w-full break-all text-lg font-black leading-snug tracking-[-0.03em] text-slate-950 [overflow-wrap:anywhere]">
-                  {preview.title}
-                </h3>
-                <p className="mt-auto inline-flex items-center gap-2 text-base font-black text-blue-700">
-                  {preview.meta}
-                  <ExternalLink className="h-4 w-4" />
-                </p>
-              </div>
-            </PromoLink>
-
-            <div className="mt-auto min-w-0 overflow-hidden rounded-b-sm border-x border-b border-slate-200">
-              {items.map((item) => (
-                <PromoLink key={item.label} href={item.href} external={item.external} className="flex min-h-[58px] min-w-0 items-center justify-between gap-4 border-t border-slate-200 px-5 py-3 text-base font-black leading-snug text-slate-800 transition-colors hover:bg-slate-50 hover:text-blue-700">
-                  <span className="line-clamp-1">{item.label}</span>
-                  <ExternalLink className="h-4 w-4 shrink-0 text-slate-400" />
+    <section className="mx-auto max-w-[1220px] overflow-hidden px-5 pb-16 lg:px-9">
+      <div className="md:hidden">
+        <Carousel opts={{ align: "start", loop: true }}>
+          <CarouselContent className="-ml-3">
+            {allMobileCards.map((card, index) => (
+              <CarouselItem key={`${card.categoryTitle}-${index}`} className="basis-[94%] pl-3">
+                <PromoLink
+                  href={card.href}
+                  external={card.external}
+                  className={`group relative flex h-[190px] overflow-hidden rounded-2xl ${card.imageUrl ? "bg-slate-900" : card.tone}`}
+                >
+                  {card.imageUrl ? (
+                    <img src={card.imageUrl} alt={card.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-4xl font-black opacity-25">{card.image}</div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/35 to-black/75" />
+                  <div className="relative flex h-full w-full flex-col p-4 text-white">
+                    <span className="w-fit rounded-lg bg-black/35 px-2.5 py-1 text-[0.7rem] font-black backdrop-blur-sm">
+                      {card.categoryTitle}
+                    </span>
+                    <div className="mt-auto">
+                      <p className="mb-1.5 line-clamp-1 text-xs font-black text-white/85">{card.label}</p>
+                      <h3 className="line-clamp-2 text-lg font-black leading-tight tracking-[-0.04em]">
+                        {card.title}
+                      </h3>
+                      <div className="mt-2.5 flex items-center justify-between gap-4">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-black text-white">
+                          {card.meta}
+                          <ExternalLink className="h-3 w-3" />
+                        </span>
+                        <span className="rounded-full bg-black/45 px-2.5 py-1 text-[0.7rem] font-black backdrop-blur-sm">
+                          {index + 1} / {allMobileCards.length}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </PromoLink>
-              ))}
-            </div>
-          </article>
-          );
-        })}
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+
+        <div className="mt-5 grid grid-cols-3 gap-3">
+          {mobileShortcutItems.map(({ label, href, icon: Icon, iconClassName }) => (
+            <Link key={label} to={href} className="flex flex-col items-center gap-2 text-sm font-black text-neutral-900">
+              <span className={`inline-flex h-14 w-14 items-center justify-center rounded-full ${iconClassName}`}>
+                <Icon className="h-7 w-7" strokeWidth={2.4} />
+              </span>
+              <span>{label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
+
+      <div className="hidden rounded-sm border border-slate-200 bg-white shadow-[0_2px_10px_rgba(15,23,42,0.05)] md:block">
+        <div className="flex items-center gap-7 border-b border-slate-200 px-6">
+          {visiblePromoSections.map(({ title }, index) => (
+            <button
+              key={title}
+              type="button"
+              onClick={() => setActiveSectionIndex(index)}
+              className={`border-b-2 py-4 text-lg font-black tracking-[-0.03em] transition-colors ${
+                index === activeSectionIndex
+                  ? "border-blue-600 text-neutral-950"
+                  : "border-transparent text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              {title}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid h-[268px] grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] gap-8 overflow-hidden px-6 py-7">
+          <div className="flex min-h-0 flex-col justify-between">
+            {bigPictureItems.map((item, index) => (
+              <PromoLink
+                key={`${activeSection.title}-big-${index}`}
+                href={item.href}
+                external={item.external}
+                className="group flex min-w-0 items-center gap-4"
+              >
+                <div className={`h-[84px] w-[104px] shrink-0 overflow-hidden rounded-lg ${activeSection.preview.tone}`}>
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <ActiveSectionIcon className="h-7 w-7" strokeWidth={1.8} />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="line-clamp-2 text-sm font-black leading-snug tracking-[-0.02em] text-neutral-950 group-hover:text-blue-700">
+                    {item.title}
+                  </h3>
+                  {item.meta && <p className="mt-1.5 line-clamp-1 text-xs font-bold text-slate-400">{item.meta}</p>}
+                </div>
+              </PromoLink>
+            ))}
+          </div>
+
+          <div className="flex min-h-0 flex-col divide-y divide-slate-100">
+            {textOnlyItems.map((item, index) => (
+              <PromoLink
+                key={`${activeSection.title}-text-${index}`}
+                href={item.href}
+                external={item.external}
+                className="group flex min-w-0 flex-1 items-center justify-between gap-4 py-3 first:pt-0"
+              >
+                <span className="line-clamp-1 text-sm font-bold text-slate-800 group-hover:text-blue-700">{item.label}</span>
+                {item.meta && <span className="shrink-0 text-xs font-bold text-slate-400">· {item.meta}</span>}
+              </PromoLink>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center gap-4 border-t border-slate-200 py-4">
+          <button
+            type="button"
+            onClick={() => setActiveSectionIndex((activeSectionIndex - 1 + visiblePromoSections.length) % visiblePromoSections.length)}
+            className="rounded-full border border-slate-200 p-1.5 text-slate-500 transition-colors hover:bg-slate-50 hover:text-neutral-950"
+            aria-label="이전 카테고리"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <PromoLink href={activeSection.moreHref} external={activeSection.moreExternal} className="text-sm font-bold text-slate-500 hover:text-blue-700">
+            <span className="font-black text-neutral-950">{activeSection.title}</span> 더보기 {activeSectionIndex + 1}/{visiblePromoSections.length}
+          </PromoLink>
+          <button
+            type="button"
+            onClick={() => setActiveSectionIndex((activeSectionIndex + 1) % visiblePromoSections.length)}
+            className="rounded-full border border-slate-200 p-1.5 text-slate-500 transition-colors hover:bg-slate-50 hover:text-neutral-950"
+            aria-label="다음 카테고리"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MobileLocationPicker() {
+  const [selectedState, setSelectedState] = useState(locationGroups[0].state);
+  const [selectedSuburb, setSelectedSuburb] = useState("전체");
+  const activeGroup = locationGroups.find((group) => group.state === selectedState) ?? locationGroups[0];
+
+  return (
+    <section className="mx-auto max-w-[1220px] px-5 pb-6 pt-4 md:hidden">
+      <Sheet>
+        <SheetTrigger asChild>
+          <button type="button" className="inline-flex items-center gap-2 text-lg font-black text-neutral-950">
+            <MapPin className="h-6 w-6 fill-blue-600 text-blue-600" />
+            {selectedState} {selectedSuburb}
+            <ChevronDown className="h-5 w-5 text-slate-400" />
+          </button>
+        </SheetTrigger>
+        <SheetContent side="bottom" className="h-[82vh] rounded-t-2xl p-0">
+          <SheetHeader className="flex-row items-center justify-between border-b border-slate-100 px-5 py-5 text-left">
+            <SheetTitle className="text-2xl font-black tracking-[-0.04em]">지역찾기</SheetTitle>
+            <SheetTrigger asChild>
+              <button type="button" aria-label="지역찾기 닫기" className="inline-flex h-10 w-10 items-center justify-center">
+                <X className="h-7 w-7" />
+              </button>
+            </SheetTrigger>
+          </SheetHeader>
+          <div className="grid h-[calc(82vh-5rem)] grid-cols-[8.5rem_minmax(0,1fr)] overflow-hidden">
+            <nav className="overflow-y-auto border-r border-slate-100 bg-slate-50">
+              {locationGroups.map((group) => {
+                const isActive = group.state === selectedState;
+                return (
+                  <button
+                    key={group.state}
+                    type="button"
+                    onClick={() => {
+                      setSelectedState(group.state);
+                      setSelectedSuburb("전체");
+                    }}
+                    className={`flex h-16 w-full items-center px-5 text-left text-lg font-black transition-colors ${isActive ? "bg-blue-600 text-white" : "text-slate-500"}`}
+                  >
+                    {group.state}
+                  </button>
+                );
+              })}
+            </nav>
+            <div className="overflow-y-auto bg-white px-6 py-2">
+              {["전체", ...activeGroup.suburbs].map((suburb) => {
+                const isActive = suburb === selectedSuburb;
+                return (
+                  <SheetTrigger key={`${activeGroup.state}-${suburb}`} asChild>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSuburb(suburb)}
+                      className={`flex min-h-16 w-full items-center justify-between border-b border-slate-50 text-left text-lg font-black ${isActive ? "text-blue-600" : "text-slate-600"}`}
+                    >
+                      <span>{suburb}</span>
+                      {isActive && <Check className="h-6 w-6" />}
+                    </button>
+                  </SheetTrigger>
+                );
+              })}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </section>
   );
 }
 
 function LocationSection() {
   return (
-    <section className="mx-auto max-w-[1520px] px-5 pb-16 lg:px-9">
-      <h2 className="mb-6 text-2xl font-black tracking-[-0.04em] text-neutral-950 sm:text-3xl">지역별 알바</h2>
+    <section className="mx-auto hidden max-w-[1220px] px-5 pb-16 md:block lg:px-9">
+      <h2 className="mb-6 text-xl font-black tracking-[-0.04em] text-neutral-950 sm:text-2xl">지역별 알바</h2>
       <div className="grid gap-5 lg:grid-cols-2">
         {locationGroups.map(({ state, suburbs }) => (
           <div key={state} className="rounded-sm border border-slate-100 bg-white p-5 shadow-[0_2px_10px_rgba(15,23,42,0.03)]">
-            <h3 className="mb-4 text-xl font-black text-blue-700">{state}</h3>
+            <h3 className="mb-4 text-lg font-black text-blue-700">{state}</h3>
             <div className="flex flex-wrap gap-3">
               {suburbs.map((suburb) => (
                 <Link
                   key={`${state}-${suburb}`}
                   to="/"
-                  className="inline-flex h-11 items-center rounded-full bg-neutral-50 px-5 text-base font-black text-neutral-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
+                  className="inline-flex h-10 items-center rounded-full bg-neutral-50 px-4 text-sm font-black text-neutral-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
                 >
                   {suburb}
                 </Link>
@@ -519,26 +851,28 @@ function JobCard({ job }: { job: JobCardItem }) {
   const logoColorClass = logoToneClasses[job.logoTone] ?? logoToneClasses.blue;
 
   return (
-    <Link to={job.jobUrl ?? "/"} className="group flex min-h-[240px] flex-col rounded-2xl bg-white px-7 py-8 transition-transform hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
-      <div className="mb-7 flex h-12 items-start">
+    <Link to={job.jobUrl ?? "/"} className="group flex min-h-[250px] flex-col rounded-xl bg-white px-4 py-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-transform hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)] sm:min-h-[240px] sm:rounded-2xl sm:px-7 sm:py-8 sm:shadow-none">
+      <div className="mb-6 flex h-10 items-center justify-center sm:mb-7 sm:h-12 sm:items-start sm:justify-start">
         {job.logoUrl ? (
-          <img src={job.logoUrl} alt={`${job.company} logo`} className="max-h-12 max-w-[9rem] object-contain object-left" />
+          <img src={job.logoUrl} alt={`${job.company} logo`} className="max-h-10 max-w-[7rem] object-contain sm:max-h-12 sm:max-w-[9rem] sm:object-left" />
         ) : (
-          <span className={`whitespace-pre-line text-lg font-black leading-none ${logoColorClass}`}>{job.logo}</span>
+          <span className={`whitespace-pre-line text-sm font-black leading-none sm:text-base ${logoColorClass}`}>{job.logo}</span>
         )}
       </div>
-      <p className="mb-3 truncate text-base font-semibold text-slate-500">
+      <p className="mb-2 truncate text-sm font-medium text-neutral-950 sm:hidden">{job.company}</p>
+      <p className="mb-3 hidden truncate text-sm font-semibold text-slate-500 sm:block">
         {job.company} <span className="mx-2 text-slate-300">·</span> {job.location}
       </p>
-      <h3 className="line-clamp-2 min-h-[64px] text-[1.35rem] font-black leading-[1.35] tracking-[-0.04em] text-neutral-950">
+      <h3 className="line-clamp-3 min-h-[70px] text-[1rem] font-black leading-[1.35] tracking-[-0.04em] text-neutral-950 sm:line-clamp-2 sm:min-h-[58px] sm:text-[1.2rem]">
         {job.title}
       </h3>
-      <div className="mt-auto flex items-center justify-between pt-8">
-        <p className="text-base font-black">
+      <p className="mt-auto truncate pt-5 text-xs font-semibold text-slate-400 sm:hidden">{job.location}</p>
+      <div className="flex items-center justify-between pt-1 sm:mt-auto sm:pt-8">
+        <p className="truncate text-xs font-black sm:text-sm">
           <span className={mutedPay ? "text-slate-400" : job.payType === "월급" ? "text-blue-600" : "text-sky-500"}>{job.payType}</span>
           <span className="ml-1 text-slate-500">{job.pay}</span>
         </p>
-        <span className="text-2xl font-light text-slate-400 transition-colors group-hover:text-blue-600">+</span>
+        <span className="hidden text-2xl font-light text-slate-400 transition-colors group-hover:text-blue-600 sm:inline">+</span>
       </div>
     </Link>
   );
@@ -546,42 +880,95 @@ function JobCard({ job }: { job: JobCardItem }) {
 
 function JobCardSkeleton() {
   return (
-    <div className="flex min-h-[240px] flex-col rounded-2xl bg-white px-7 py-8">
-      <div className="mb-7 h-12 w-36 rounded-md bg-slate-100" />
-      <div className="mb-3 h-5 w-48 rounded bg-slate-100" />
+    <div className="flex min-h-[250px] flex-col rounded-xl bg-white px-4 py-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] sm:min-h-[240px] sm:rounded-2xl sm:px-7 sm:py-8 sm:shadow-none">
+      <div className="mx-auto mb-6 h-10 w-28 rounded-md bg-slate-100 sm:mx-0 sm:mb-7 sm:h-12 sm:w-36" />
+      <div className="mb-2 h-4 w-full rounded bg-slate-100 sm:mb-3 sm:h-5 sm:w-48" />
       <div className="space-y-3">
-        <div className="h-6 w-full rounded bg-slate-100" />
-        <div className="h-6 w-4/5 rounded bg-slate-100" />
+        <div className="h-5 w-full rounded bg-slate-100 sm:h-6" />
+        <div className="h-5 w-4/5 rounded bg-slate-100 sm:h-6" />
       </div>
-      <div className="mt-auto h-5 w-40 rounded bg-slate-100" />
+      <div className="mt-auto h-4 w-28 rounded bg-slate-100 sm:h-5 sm:w-40" />
     </div>
   );
 }
 
 function FeaturedJobs({ jobs, isLoading }: { jobs: JobCardItem[]; isLoading: boolean }) {
   return (
-    <section className="bg-neutral-50 py-16 sm:py-20">
-      <div className="mx-auto max-w-[1520px] px-5 lg:px-9">
-        <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
+    <section className="bg-neutral-50 py-12 sm:py-20">
+      <div className="mx-auto max-w-[1220px] px-5 lg:px-9">
+        <div className="mb-8 flex items-center justify-between gap-4 sm:mb-10">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-black tracking-[-0.045em] text-neutral-950 sm:text-3xl">지금 가장 주목받는 알바</h2>
-            <span className="inline-flex h-6 items-center rounded-md border border-slate-200 bg-white px-2 text-xs font-black text-slate-300">AD</span>
+            <h2 className="text-xl font-black tracking-[-0.045em] text-neutral-950 sm:text-2xl">
+              <span className="sm:hidden">적극🔥 채용 중인 공고</span>
+              <span className="hidden sm:inline">지금 가장 주목받는 알바</span>
+            </h2>
           </div>
-          <div className="flex items-center gap-3">
-            <Link to="/" className="inline-flex h-10 items-center gap-1 rounded-full bg-white px-4 text-sm font-black text-slate-500 transition-colors hover:text-slate-900">
-              상품안내
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-            <Link to="/post-job" className="inline-flex h-10 items-center gap-1 rounded-full bg-white px-4 text-sm font-black text-slate-500 transition-colors hover:text-slate-900">
-              신청하기
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
+          <p className="text-sm font-bold text-slate-500 sm:hidden">1 / {isLoading ? 8 : Math.max(jobs.length, 1)}</p>
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:gap-6 xl:grid-cols-4">
           {isLoading
-            ? Array.from({ length: 12 }).map((_, index) => <JobCardSkeleton key={`job-card-skeleton-${index}`} />)
+            ? Array.from({ length: 8 }).map((_, index) => <JobCardSkeleton key={`job-card-skeleton-${index}`} />)
             : jobs.map((job) => <JobCard key={job.id} job={job} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const GUIDES_PAGE_SIZE = 8;
+
+function WorkingHolidayGuides() {
+  const [guidesPage, setGuidesPage] = useState(0);
+  const totalGuidesPages = Math.ceil(BLOG_POSTS.length / GUIDES_PAGE_SIZE);
+  const pagedGuidePosts = BLOG_POSTS.slice(
+    guidesPage * GUIDES_PAGE_SIZE,
+    guidesPage * GUIDES_PAGE_SIZE + GUIDES_PAGE_SIZE,
+  );
+
+  return (
+    <section className="border-t border-slate-100 bg-white py-12 sm:py-14">
+      <div className="mx-auto max-w-[1220px] px-5 lg:px-9">
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <h2 className="text-lg font-black tracking-[-0.04em] text-neutral-950 sm:text-xl">워홀러에게 필요한 추천 콘텐츠</h2>
+          {totalGuidesPages > 1 && (
+            <div className="hidden items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-400 sm:flex">
+              <button
+                type="button"
+                onClick={() => setGuidesPage((prev) => (prev - 1 + totalGuidesPages) % totalGuidesPages)}
+                aria-label="이전 콘텐츠"
+                className="rounded p-0.5 hover:bg-slate-50 hover:text-slate-700"
+              >
+                <ChevronRight className="h-4 w-4 rotate-180" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setGuidesPage((prev) => (prev + 1) % totalGuidesPages)}
+                aria-label="다음 콘텐츠"
+                className="rounded p-0.5 hover:bg-slate-50 hover:text-slate-700"
+              >
+                <ChevronRight className="h-4 w-4 text-slate-700" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="-mx-5 flex gap-4 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
+          {pagedGuidePosts.map((post) => (
+            <Link
+              key={post.slug}
+              to={`/blog/${post.slug}`}
+              className="group w-[78vw] shrink-0 sm:w-auto"
+            >
+              <div className="aspect-[16/9] overflow-hidden rounded-lg bg-white">
+                <img src={post.imageSrc} alt={post.imageAlt} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
+              </div>
+              <div className="pt-3">
+                <h3 className="line-clamp-2 text-base font-black leading-snug tracking-[-0.035em] text-neutral-950">
+                  {post.title}
+                </h3>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </section>
@@ -676,15 +1063,11 @@ const Index = ({ cityFilter }: IndexProps) => {
     <div className="min-h-screen overflow-x-hidden bg-white text-neutral-950">
       <ModernHeader />
       <main>
+        <MobileLocationPicker />
         <QuickSections />
         <LocationSection />
         <FeaturedJobs jobs={homepageJobCards} isLoading={isLoadingHomepageJobCards} />
-        <section className="bg-neutral-50 pb-16">
-          <div className="mx-auto flex max-w-[1520px] items-center justify-center gap-3 px-5 text-sm font-semibold text-slate-500 lg:px-9">
-            <ShieldAlert className="h-4 w-4 text-blue-600" />
-            안전한 채용정보를 위해 의심 공고는 고객센터로 알려주세요.
-          </div>
-        </section>
+        <WorkingHolidayGuides />
       </main>
     </div>
   );

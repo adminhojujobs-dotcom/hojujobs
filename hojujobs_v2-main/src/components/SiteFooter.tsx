@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-border/50 bg-muted/20">
+    <footer className="mt-auto border-t border-border/50 bg-white">
       <div className="mx-auto max-w-6xl px-4 py-6 text-[11px] text-muted-foreground/70">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-3">
           <Link to="/about" className="hover:text-muted-foreground transition-colors">소개</Link>
