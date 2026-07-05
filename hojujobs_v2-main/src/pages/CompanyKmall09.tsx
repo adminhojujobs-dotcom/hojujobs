@@ -270,9 +270,6 @@ export default function CompanyKmall09() {
 
   const branchOpenings = useMemo(() => openingsForBranch(selectedBranch), [selectedBranch]);
   const mapQuery = encodeURIComponent(selectedBranch.map_query || selectedBranch.address);
-  const contactPhone = selectedBranch.phone ?? profile.phone;
-  const contactPhoneHref = selectedBranch.phone_href ?? profile.phone_href;
-  const contactEmail = selectedBranch.email ?? profile.email;
 
   useSEO({
     title: `${profile.profile_title} | 호주잡스`,
@@ -304,7 +301,7 @@ export default function CompanyKmall09() {
             </div>
           </section>
 
-          <section className="mt-14 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <section className="mt-14">
             <div>
               <div className="mb-6 h-9 w-40 rounded bg-slate-100" />
               <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
@@ -316,14 +313,6 @@ export default function CompanyKmall09() {
                 </div>
               </div>
             </div>
-            <aside className="h-fit rounded-lg border border-slate-200 bg-white p-6">
-              <div className="mb-5 h-8 w-28 rounded bg-slate-100" />
-              <div className="space-y-4">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={`kmall-contact-skeleton-${index}`} className="h-20 rounded-md bg-slate-50" />
-                ))}
-              </div>
-            </aside>
           </section>
 
           <section className="mt-14">
@@ -388,7 +377,7 @@ export default function CompanyKmall09() {
           </div>
         </section>
 
-        <section id="company" className="mt-14 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <section id="company" className="mt-14">
           <div>
             <h2 className="mb-6 text-3xl font-black tracking-[-0.04em]">회사 소개</h2>
             <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
@@ -402,45 +391,6 @@ export default function CompanyKmall09() {
               </div>
             </div>
           </div>
-
-          <aside className="h-fit rounded-lg border border-slate-200 bg-white p-6">
-            <h2 className="mb-5 text-2xl font-black tracking-[-0.04em]">
-              연락처
-              {selectedBranch.branch_name && <span className="ml-2 text-sm font-bold text-blue-700">{selectedBranch.branch_name}점</span>}
-            </h2>
-            <div className="space-y-4 text-sm font-semibold text-slate-700">
-              {contactPhone && (
-                <a href={contactPhoneHref ? `tel:${contactPhoneHref}` : undefined} className="block rounded-md bg-slate-50 p-4 transition-colors hover:bg-blue-50 hover:text-blue-700">
-                  <span>
-                    <span className="block text-slate-400">전화번호</span>
-                    {contactPhone}
-                  </span>
-                </a>
-              )}
-              {contactEmail && (
-                <a href={`mailto:${contactEmail}`} className="block rounded-md bg-slate-50 p-4 transition-colors hover:bg-blue-50 hover:text-blue-700">
-                  <span>
-                    <span className="block text-slate-400">지원 이메일</span>
-                    {contactEmail}
-                  </span>
-                </a>
-              )}
-              {profile.instagram_url && (
-                <a href={profile.instagram_url} target="_blank" rel="noreferrer" className="block rounded-md bg-slate-50 p-4 transition-colors hover:bg-blue-50 hover:text-blue-700">
-                  <span>
-                    <span className="block text-slate-400">Instagram</span>
-                    {profile.instagram_handle ?? profile.instagram_url}
-                  </span>
-                </a>
-              )}
-              <div className="block rounded-md bg-slate-50 p-4">
-                <span>
-                  <span className="block text-slate-400">주소</span>
-                  {selectedBranch.address}
-                </span>
-              </div>
-            </div>
-          </aside>
         </section>
 
         {branches.length > 1 && (
