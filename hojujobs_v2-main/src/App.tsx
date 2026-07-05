@@ -34,6 +34,7 @@ import CompanyChickenV from "./pages/CompanyChickenV";
 import CompanyParkBongsook from "./pages/CompanyParkBongsook";
 import CompanyYanggaDeli from "./pages/CompanyYanggaDeli";
 import CompanyStoneage from "./pages/CompanyStoneage";
+import CompanyDkHairStudio from "./pages/CompanyDkHairStudio";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="/company/parkbongsook" element={<CompanyParkBongsook />} />
               <Route path="/company/yanggadeli" element={<CompanyYanggaDeli />} />
               <Route path="/company/stoneage" element={<CompanyStoneage />} />
+              <Route path="/company/dkhairstudio" element={<CompanyDkHairStudio />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/post-job" element={<PostJob />} />
               <Route path="/my-posts" element={<MyPosts />} />

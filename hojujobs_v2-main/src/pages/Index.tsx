@@ -295,8 +295,21 @@ const stoneageJobCard: JobCardItem = {
   jobUrl: "/company/stoneage",
 };
 
+const dkHairStudioJobCard: JobCardItem = {
+  id: "fallback-dkhairstudio",
+  logo: "DK Hair Studio",
+  logoUrl: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/dk-hairstudio.jpg",
+  logoTone: "black",
+  company: "DK Hair Studio",
+  location: "NSW · 여러 지점",
+  title: "DK Hair Studio 직원 모집",
+  payType: "급여",
+  pay: "면접 시 협의",
+  jobUrl: "/company/dkhairstudio",
+};
+
 function withPinnedCards(cards: JobCardItem[]) {
-  const pinnedCards = [kmall09JobCard, bunsikJobCard, sushiYuzenJobCard, chickenVJobCard, parkBongsookJobCard, yanggaDeliJobCard, stoneageJobCard];
+  const pinnedCards = [kmall09JobCard, bunsikJobCard, sushiYuzenJobCard, chickenVJobCard, parkBongsookJobCard, yanggaDeliJobCard, stoneageJobCard, dkHairStudioJobCard];
   const mergedCards = [...cards];
 
   pinnedCards.forEach((pinnedCard) => {
@@ -326,6 +339,7 @@ const fallbackJobCards: JobCardItem[] = [
   parkBongsookJobCard,
   yanggaDeliJobCard,
   stoneageJobCard,
+  dkHairStudioJobCard,
   {
     id: "fallback-1",
     logo: "coupang\nfulfillment services",
