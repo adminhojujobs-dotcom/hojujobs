@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ExternalLink, MapPin } from "lucide-react";
+import { ArrowLeft, ExternalLink, MapPin, Star } from "lucide-react";
 import { ModernHeader } from "@/components/ModernHeader";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,16 @@ import type { Database, Json } from "@/integrations/supabase/types";
 type CompanyProfileRow = Database["public"]["Tables"]["company_profiles"]["Row"];
 type CompanyBranchRow = Database["public"]["Tables"]["company_branches"]["Row"];
 type DetailRow = [string, string, string?];
+type BranchJobOpening = {
+  area: string;
+  suburb: string;
+  title: string;
+  company: string;
+  pay: string;
+  payType: string;
+  hours: string;
+  postedAt: string;
+};
 
 const fallbackProfile: CompanyProfileRow = {
   id: "fallback-kmall09",
@@ -168,6 +178,40 @@ function detailRowsFromJson(value: Json): DetailRow[] {
   });
 }
 
+function openingsForBranch(branch: CompanyBranchRow): BranchJobOpening[] {
+  const company = `KMALL09 ${branch.branch_label ?? ""} ${branch.branch_name}점`.trim();
+
+  switch (branch.branch_name) {
+    case "이스트우드":
+      return [
+        { area: "NSW", suburb: "Eastwood", title: "KMALL09 이스트우드점 상품 진열 및 재고관리 직원 모집", company, pay: "면접 시 협의", payType: "급여", hours: "풀타임/파트타임", postedAt: "상시" },
+        { area: "NSW", suburb: "Eastwood", title: "KMALL09 이스트우드점 캐셔 및 고객응대 직원 모집", company, pay: "면접 시 협의", payType: "급여", hours: "시간협의", postedAt: "상시" },
+        { area: "NSW", suburb: "Eastwood", title: "KMALL09 이스트우드점 어드민/매장 운영 지원 모집", company, pay: "면접 시 협의", payType: "급여", hours: "시간협의", postedAt: "상시" },
+      ];
+    case "리드컴":
+      return [
+        { area: "NSW", suburb: "Lidcombe", title: "KMALL09 리드컴 2호점 진열파트 직원 모집", company, pay: "면접 시 협의", payType: "급여", hours: "풀타임/오전 파트타임", postedAt: "상시" },
+        { area: "NSW", suburb: "Lidcombe", title: "KMALL09 리드컴 2호점 어드민 직원 모집", company, pay: "면접 시 협의", payType: "급여", hours: "시간협의", postedAt: "상시" },
+        { area: "NSW", suburb: "Lidcombe", title: "KMALL09 리드컴 2호점 캐셔 및 고객응대 직원 모집", company, pay: "면접 시 협의", payType: "급여", hours: "시간협의", postedAt: "상시" },
+      ];
+    case "뱅크스타운":
+      return [
+        { area: "NSW", suburb: "Bankstown", title: "KMALL09 뱅크스타운점 캐셔 직원 모집", company, pay: "면접 시 협의", payType: "급여", hours: "풀타임/파트타임", postedAt: "상시" },
+        { area: "NSW", suburb: "Bankstown", title: "KMALL09 뱅크스타운점 입고·진열·리빙섹션 직원 모집", company, pay: "면접 시 협의", payType: "급여", hours: "주말 포함 협의", postedAt: "상시" },
+      ];
+    case "시드니 시티":
+      return [
+        { area: "NSW", suburb: "Sydney CBD", title: "KMALL09 시드니 시티점 매니저 후보 모집", company, pay: "면접 시 협의", payType: "급여", hours: "풀타임", postedAt: "오픈예정" },
+        { area: "NSW", suburb: "Sydney CBD", title: "KMALL09 시드니 시티점 진열파트 직원 모집", company, pay: "면접 시 협의", payType: "급여", hours: "풀타임/파트타임", postedAt: "오픈예정" },
+        { area: "NSW", suburb: "Sydney CBD", title: "KMALL09 시드니 시티점 어드민 및 캐셔 직원 모집", company, pay: "면접 시 협의", payType: "급여", hours: "시간협의", postedAt: "오픈예정" },
+      ];
+    default:
+      return [
+        { area: "NSW", suburb: branch.branch_name, title: `KMALL09 ${branch.branch_name}점 직원 모집`, company, pay: "면접 시 협의", payType: "급여", hours: "시간협의", postedAt: "상시" },
+      ];
+  }
+}
+
 export default function CompanyKmall09() {
   const { slug = "kmall09" } = useParams();
   const [profile, setProfile] = useState<CompanyProfileRow>(fallbackProfile);
@@ -220,8 +264,7 @@ export default function CompanyKmall09() {
     [branches],
   );
 
-  const conditionRows = useMemo(() => detailRowsFromJson(selectedBranch.condition_rows), [selectedBranch]);
-  const recruitmentRows = useMemo(() => detailRowsFromJson(selectedBranch.recruitment_rows), [selectedBranch]);
+  const branchOpenings = useMemo(() => openingsForBranch(selectedBranch), [selectedBranch]);
   const mapQuery = encodeURIComponent(selectedBranch.map_query || selectedBranch.address);
   const contactPhone = selectedBranch.phone ?? profile.phone;
   const contactPhoneHref = selectedBranch.phone_href ?? profile.phone_href;
@@ -347,47 +390,85 @@ export default function CompanyKmall09() {
         )}
 
         <section id="conditions" className="mt-16">
-          <h2 className="mb-6 text-3xl font-black tracking-[-0.04em]">
-            근무조건
-            {selectedBranch.branch_name && <span className="ml-2 text-lg font-bold text-blue-700">{selectedBranch.branch_name}점 {selectedBranch.branch_label}</span>}
-          </h2>
-          <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-10">
-            <div className="grid gap-x-12 gap-y-7 lg:grid-cols-2">
-              {conditionRows.map(([label, value, note]) => (
-                <div key={label} className="grid gap-2 sm:grid-cols-[7rem_minmax(0,1fr)]">
-                  <dt className="text-base font-black text-slate-400">{label}</dt>
-                  <dd>
-                    <p className="text-lg font-black text-slate-950">{value}</p>
-                    {note && <p className="mt-1 text-sm font-semibold text-slate-500">{note}</p>}
-                  </dd>
-                </div>
-              ))}
-            </div>
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+            <h2 className="text-3xl font-black tracking-[-0.04em]">
+              채용 공고
+              {selectedBranch.branch_name && <span className="ml-2 text-lg font-bold text-blue-700">{selectedBranch.branch_name}점 {selectedBranch.branch_label}</span>}
+            </h2>
+            <p className="text-sm font-bold text-slate-400">{branchOpenings.length}개 포지션</p>
           </div>
-        </section>
 
-        <section id="details" className="mt-16">
-          <h2 className="mb-6 text-3xl font-black tracking-[-0.04em]">모집조건</h2>
-          <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-10">
-            <div className="grid gap-x-12 gap-y-7 lg:grid-cols-2">
-              {recruitmentRows.map(([label, value]) => (
-                <div key={label} className="grid gap-2 sm:grid-cols-[7rem_minmax(0,1fr)]">
-                  <dt className="text-base font-black text-slate-400">{label}</dt>
-                  <dd className="text-lg font-black leading-8 text-slate-950">{value}</dd>
-                </div>
+          <div className="overflow-hidden border-y border-t-neutral-950 border-b-slate-200 bg-white">
+            <div className="hidden grid-cols-[5rem_13rem_minmax(0,1fr)_11rem_9rem_6rem] items-center border-b border-slate-200 px-5 py-5 text-center text-lg font-black text-neutral-950 lg:grid">
+              <div />
+              <div>지역</div>
+              <div>모집제목/기업명</div>
+              <div>급여(원)</div>
+              <div>근무시간</div>
+              <div>등록일</div>
+            </div>
+
+            <div className="divide-y divide-slate-200">
+              {branchOpenings.map((opening) => (
+                <article
+                  key={`${selectedBranch.id}-${opening.title}`}
+                  className="grid gap-4 px-5 py-7 lg:grid-cols-[5rem_13rem_minmax(0,1fr)_11rem_9rem_6rem] lg:items-center lg:gap-0"
+                >
+                  <div className="hidden justify-center lg:flex">
+                    <Star className="h-6 w-6 text-slate-300" strokeWidth={1.8} />
+                  </div>
+
+                  <div className="grid grid-cols-[5rem_minmax(0,1fr)] gap-3 lg:block lg:text-center">
+                    <span className="text-sm font-black text-slate-400 lg:hidden">지역</span>
+                    <div className="text-base font-black leading-7 text-neutral-900">
+                      <p>{opening.area}</p>
+                      <p>{opening.suburb}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-[5rem_minmax(0,1fr)] gap-3 lg:block">
+                    <span className="text-sm font-black text-slate-400 lg:hidden">모집제목</span>
+                    <div>
+                      <Link to="/" className="group inline-flex max-w-full items-center gap-2 text-xl font-black leading-snug tracking-[-0.03em] text-neutral-950 hover:text-blue-700">
+                        <span className="line-clamp-2">{opening.title}</span>
+                        <ExternalLink className="h-4 w-4 shrink-0 text-slate-300 group-hover:text-blue-500" />
+                      </Link>
+                      <p className="mt-2 text-base font-black text-slate-400">{opening.company}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-[5rem_minmax(0,1fr)] gap-3 lg:block lg:text-center">
+                    <span className="text-sm font-black text-slate-400 lg:hidden">급여</span>
+                    <div className="flex flex-wrap items-center gap-2 lg:justify-center">
+                      <span className="text-lg font-black text-neutral-950">{opening.pay}</span>
+                      <span className="rounded-full border border-blue-600 px-2.5 py-1 text-xs font-black text-blue-700">{opening.payType}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-[5rem_minmax(0,1fr)] gap-3 lg:block lg:text-center">
+                    <span className="text-sm font-black text-slate-400 lg:hidden">근무시간</span>
+                    <p className="text-base font-black text-neutral-950">{opening.hours}</p>
+                  </div>
+
+                  <div className="grid grid-cols-[5rem_minmax(0,1fr)] gap-3 lg:block lg:text-center">
+                    <span className="text-sm font-black text-slate-400 lg:hidden">등록일</span>
+                    <p className="text-lg font-black text-blue-600">{opening.postedAt}</p>
+                  </div>
+                </article>
               ))}
             </div>
-            {profile.skill_tags.length > 0 && (
-              <div className="mt-8 border-t border-slate-200 pt-7">
-                <p className="mb-4 text-base font-black text-blue-700">이런 스킬이 있으면 좋아요!</p>
-                <div className="flex flex-wrap gap-2">
-                  {profile.skill_tags.map((tag) => (
-                    <span key={tag} className="rounded-md bg-blue-50 px-4 py-2 text-sm font-black text-blue-700">{tag}</span>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
+
+          {profile.skill_tags.length > 0 && (
+            <div className="mt-8 rounded-lg border border-slate-200 bg-white p-6">
+              <p className="mb-4 text-base font-black text-blue-700">이런 스킬이 있으면 좋아요!</p>
+              <div className="flex flex-wrap gap-2">
+                {profile.skill_tags.map((tag) => (
+                  <span key={tag} className="rounded-md bg-blue-50 px-4 py-2 text-sm font-black text-blue-700">{tag}</span>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="mt-16">
