@@ -1,13 +1,10 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
-  BadgePercent,
   Briefcase,
-  CalendarDays,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
-  Newspaper,
 } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +13,7 @@ import { BLOG_POSTS } from "@/data/blogPosts";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { UserJobsTable } from "@/components/UserJobsTable";
 import { USER_JOB_SELECT, type UserJobRow } from "@/lib/userJobs";
+import { EventsCalendarIcon, NewsIcon, SalesTagIcon } from "@/components/icons/PromoIcons";
 
 interface IndexProps {
   cityFilter?: string;
@@ -98,28 +96,25 @@ const mobileShortcutItems = [
   {
     label: "세일",
     href: "/sales",
-    icon: BadgePercent,
-    iconClassName: "bg-cyan-50 text-cyan-600",
+    icon: SalesTagIcon,
   },
   {
     label: "뉴스",
     href: "/news",
-    icon: Newspaper,
-    iconClassName: "bg-indigo-50 text-indigo-600",
+    icon: NewsIcon,
   },
   {
     label: "이벤트",
     href: "/events",
-    icon: CalendarDays,
-    iconClassName: "bg-amber-50 text-amber-500",
+    icon: EventsCalendarIcon,
   },
 ];
 
-const promoSectionIcons: Record<string, typeof Briefcase> = {
+const promoSectionIcons: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   "채용정보": Briefcase,
-  "세일과 할인": BadgePercent,
-  "호주 생활 뉴스": Newspaper,
-  "커뮤니티 이벤트": CalendarDays,
+  "세일과 할인": SalesTagIcon,
+  "호주 생활 뉴스": NewsIcon,
+  "커뮤니티 이벤트": EventsCalendarIcon,
 };
 
 const logoToneClasses: Record<string, string> = {
@@ -333,15 +328,13 @@ function PromoLink({ href, external, className, children }: { href: string; exte
 
 function QuickSectionsSkeleton() {
   return (
-    <section className="mx-auto max-w-[1220px] overflow-hidden px-5 pb-16 lg:px-9">
+    <section className="mx-auto max-w-[1220px] overflow-hidden px-5 pb-10 sm:pb-12 lg:px-9">
       <div className="md:hidden">
         <div className="h-[190px] animate-pulse rounded-2xl bg-slate-100" />
         <div className="mt-5 grid grid-cols-3 gap-3">
-          {mobileShortcutItems.map(({ label, href, icon: Icon, iconClassName }) => (
-            <Link key={label} to={href} className="flex flex-col items-center gap-2 text-sm font-black text-neutral-900">
-              <span className={`inline-flex h-14 w-14 items-center justify-center rounded-full ${iconClassName}`}>
-                <Icon className="h-7 w-7" strokeWidth={2.4} />
-              </span>
+          {mobileShortcutItems.map(({ label, href, icon: Icon }) => (
+            <Link key={label} to={href} className="flex flex-col items-center gap-1.5 text-sm font-black text-neutral-900">
+              <Icon className="h-9 w-9" strokeWidth={1.75} />
               <span>{label}</span>
             </Link>
           ))}
@@ -596,7 +589,7 @@ function QuickSections() {
   });
 
   return (
-    <section className="mx-auto max-w-[1220px] overflow-hidden px-5 pb-16 lg:px-9">
+    <section className="mx-auto max-w-[1220px] overflow-hidden px-5 pb-10 sm:pb-12 lg:px-9">
       <div className="md:hidden">
         <Carousel opts={{ align: "start", loop: true }}>
           <CarouselContent className="-ml-3">
@@ -619,7 +612,7 @@ function QuickSections() {
                     </span>
                     <div className="mt-auto">
                       <p className="mb-1.5 line-clamp-1 text-xs font-black text-white/85">{card.label}</p>
-                      <h3 className="line-clamp-2 text-lg font-black leading-tight tracking-[-0.04em]">
+                      <h3 className="line-clamp-2 text-base font-black leading-tight tracking-[-0.04em]">
                         {card.title}
                       </h3>
                       <div className="mt-2.5 flex items-center justify-between gap-4">
@@ -640,11 +633,9 @@ function QuickSections() {
         </Carousel>
 
         <div className="mt-5 grid grid-cols-3 gap-3">
-          {mobileShortcutItems.map(({ label, href, icon: Icon, iconClassName }) => (
-            <Link key={label} to={href} className="flex flex-col items-center gap-2 text-sm font-black text-neutral-900">
-              <span className={`inline-flex h-14 w-14 items-center justify-center rounded-full ${iconClassName}`}>
-                <Icon className="h-7 w-7" strokeWidth={2.4} />
-              </span>
+          {mobileShortcutItems.map(({ label, href, icon: Icon }) => (
+            <Link key={label} to={href} className="flex flex-col items-center gap-1.5 text-sm font-black text-neutral-900">
+              <Icon className="h-9 w-9" strokeWidth={1.75} />
               <span>{label}</span>
             </Link>
           ))}
@@ -712,22 +703,22 @@ function QuickSections() {
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-4 border-t border-slate-200 py-4">
+        <div className="grid grid-cols-[2.25rem_13rem_2.25rem] items-center justify-center gap-4 border-t border-slate-200 py-4">
           <button
             type="button"
             onClick={() => setActiveSectionIndex((activeSectionIndex - 1 + visiblePromoSections.length) % visiblePromoSections.length)}
-            className="rounded-full border border-slate-200 p-1.5 text-slate-500 transition-colors hover:bg-slate-50 hover:text-neutral-950"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50 hover:text-neutral-950"
             aria-label="이전 카테고리"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <PromoLink href={activeSection.moreHref} external={activeSection.moreExternal} className="text-sm font-bold text-slate-500 hover:text-blue-700">
+          <PromoLink href={activeSection.moreHref} external={activeSection.moreExternal} className="truncate text-center text-sm font-bold text-slate-500 hover:text-blue-700">
             <span className="font-black text-neutral-950">{activeSection.title}</span> 더보기 {activeSectionIndex + 1}/{visiblePromoSections.length}
           </PromoLink>
           <button
             type="button"
             onClick={() => setActiveSectionIndex((activeSectionIndex + 1) % visiblePromoSections.length)}
-            className="rounded-full border border-slate-200 p-1.5 text-slate-500 transition-colors hover:bg-slate-50 hover:text-neutral-950"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50 hover:text-neutral-950"
             aria-label="다음 카테고리"
           >
             <ChevronRight className="h-4 w-4" />
@@ -744,23 +735,21 @@ function JobCard({ job }: { job: JobCardItem }) {
 
   return (
     <Link to={job.jobUrl ?? "/"} className="group flex min-h-[250px] flex-col rounded-xl bg-white px-4 py-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-transform hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)] sm:min-h-[240px] sm:rounded-2xl sm:px-7 sm:py-8 sm:shadow-none">
-      <div className="mb-6 flex h-10 items-center justify-center sm:mb-7 sm:h-12 sm:items-start sm:justify-start">
+      <div className="mb-6 flex h-10 items-start justify-start sm:mb-7 sm:h-12">
         {job.logoUrl ? (
-          <img src={job.logoUrl} alt={`${job.company} logo`} className="max-h-10 max-w-[7rem] object-contain sm:max-h-12 sm:max-w-[9rem] sm:object-left" />
+          <img src={job.logoUrl} alt={`${job.company} logo`} className="max-h-10 max-w-[7rem] object-contain object-left sm:max-h-12 sm:max-w-[9rem]" />
         ) : (
           <span className={`whitespace-pre-line text-sm font-black leading-none sm:text-base ${logoColorClass}`}>{job.logo}</span>
         )}
       </div>
-      <p className="mb-2 truncate text-sm font-medium text-neutral-950 sm:hidden">{job.company}</p>
-      <p className="mb-3 hidden truncate text-sm font-semibold text-slate-500 sm:block">
-        {job.company} <span className="mx-2 text-slate-300">·</span> {job.location}
+      <p className="mb-3 truncate text-[0.7rem] font-semibold text-slate-500 sm:text-xs">
+        {job.company} <span className="mx-0.5 text-slate-300">·</span> {job.location}
       </p>
-      <h3 className="line-clamp-3 min-h-[70px] text-[1rem] font-black leading-[1.35] tracking-[-0.04em] text-neutral-950 sm:line-clamp-2 sm:min-h-[58px] sm:text-[1.2rem]">
+      <h3 className="line-clamp-3 min-h-[64px] text-[0.92rem] font-black leading-[1.35] tracking-[-0.04em] text-neutral-950 sm:line-clamp-2 sm:min-h-[58px] sm:text-[1.2rem]">
         {job.title}
       </h3>
-      <p className="mt-auto truncate pt-5 text-xs font-semibold text-slate-400 sm:hidden">{job.location}</p>
-      <div className="flex items-center justify-between pt-1 sm:mt-auto sm:pt-8">
-        <p className="truncate text-xs font-black sm:text-sm">
+      <div className="mt-auto flex items-center justify-between pt-8">
+        <p className="truncate text-[0.72rem] font-black sm:text-sm">
           <span className={mutedPay ? "text-slate-400" : job.payType === "월급" ? "text-blue-600" : "text-sky-500"}>{job.payType}</span>
           <span className="ml-1 text-slate-500">{job.pay}</span>
         </p>
@@ -773,7 +762,7 @@ function JobCard({ job }: { job: JobCardItem }) {
 function JobCardSkeleton() {
   return (
     <div className="flex min-h-[250px] flex-col rounded-xl bg-white px-4 py-5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] sm:min-h-[240px] sm:rounded-2xl sm:px-7 sm:py-8 sm:shadow-none">
-      <div className="mx-auto mb-6 h-10 w-28 rounded-md bg-slate-100 sm:mx-0 sm:mb-7 sm:h-12 sm:w-36" />
+      <div className="mb-6 h-10 w-28 rounded-md bg-slate-100 sm:mb-7 sm:h-12 sm:w-36" />
       <div className="mb-2 h-4 w-full rounded bg-slate-100 sm:mb-3 sm:h-5 sm:w-48" />
       <div className="space-y-3">
         <div className="h-5 w-full rounded bg-slate-100 sm:h-6" />
@@ -828,24 +817,21 @@ function UserUploadedJobs() {
   }, []);
 
   return (
-    <section className="mx-auto max-w-[1220px] px-5 pb-12 lg:px-9">
+    <section className="mx-auto max-w-[1220px] px-5 py-12 sm:py-14 lg:px-9">
       <div className="mb-6 flex items-center justify-between gap-4">
-        <h2 className="text-xl font-black tracking-[-0.045em] text-neutral-950 sm:text-2xl">사용자 업로드 공고</h2>
+        <h2 className="text-xl font-black tracking-[-0.045em] text-neutral-950 sm:text-2xl">방금 등록된 공고</h2>
         <Link
           to="/jobs"
-          aria-label="더 많은 사용자 업로드 공고 보기"
+          aria-label="더 많은 방금 등록된 공고 보기"
           className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-500 transition-colors hover:border-blue-200 hover:text-blue-700 sm:px-4 sm:py-2 sm:text-sm"
         >
-          <span className="hidden sm:inline">더보기</span>
-          <span className="sm:hidden">
-            {Math.min(jobs.length, HOMEPAGE_USER_JOBS_LIMIT)} / {totalCount || jobs.length}
-          </span>
+          <span>더보기</span>
           <ChevronRight className="h-4 w-4" />
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <UserJobsTable jobs={jobs} loading={isLoading} error={error} showContact={false} plainTitle />
+      <div>
+        <UserJobsTable jobs={jobs} loading={isLoading} error={error} showContact={false} plainTitle variant="albamon" />
       </div>
     </section>
   );
@@ -853,7 +839,7 @@ function UserUploadedJobs() {
 
 function FeaturedJobs({ jobs, isLoading }: { jobs: JobCardItem[]; isLoading: boolean }) {
   return (
-    <section className="bg-neutral-50 py-12 sm:py-20">
+    <section className="bg-neutral-50 py-12 sm:py-14">
       <div className="mx-auto max-w-[1220px] px-5 lg:px-9">
         <div className="mb-8 flex items-center justify-between gap-4 sm:mb-10">
           <div className="flex items-center gap-3">
@@ -867,8 +853,7 @@ function FeaturedJobs({ jobs, isLoading }: { jobs: JobCardItem[]; isLoading: boo
             aria-label="더 많은 채용정보 보기"
             className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-500 transition-colors hover:border-blue-200 hover:text-blue-700 sm:px-4 sm:py-2 sm:text-sm"
           >
-            <span className="hidden sm:inline">더보기</span>
-            <span className="sm:hidden">1 / {isLoading ? 8 : Math.max(jobs.length, 1)}</span>
+            <span>더보기</span>
             <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
@@ -897,17 +882,18 @@ function WorkingHolidayGuides() {
             aria-label="더 많은 추천 콘텐츠 보기"
             className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-500 transition-colors hover:border-blue-200 hover:text-blue-700 sm:px-4 sm:py-2 sm:text-sm"
           >
-            <span className="hidden sm:inline">더보기</span>
-            <span className="sm:hidden">
-              {GUIDES_PREVIEW_COUNT} / {BLOG_POSTS.length}
-            </span>
+            <span>더보기</span>
             <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-          {guidePosts.map((post) => (
-            <Link key={post.slug} to={`/blog/${post.slug}`} className="group min-w-0">
+          {guidePosts.map((post, index) => (
+            <Link
+              key={post.slug}
+              to={`/blog/${post.slug}`}
+              className={`group min-w-0 ${index >= 2 ? "hidden sm:block" : ""}`}
+            >
               <div className="aspect-[16/9] overflow-hidden rounded-lg bg-white">
                 <img src={post.imageSrc} alt={post.imageAlt} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
               </div>
@@ -1012,8 +998,8 @@ const Index = ({ cityFilter }: IndexProps) => {
     <div className="min-h-screen overflow-x-hidden bg-white text-neutral-950">
       <main className="pt-8 md:pt-10">
         <QuickSections />
-        <UserUploadedJobs />
         <FeaturedJobs jobs={homepageJobCards} isLoading={isLoadingHomepageJobCards} />
+        <UserUploadedJobs />
         <WorkingHolidayGuides />
       </main>
     </div>

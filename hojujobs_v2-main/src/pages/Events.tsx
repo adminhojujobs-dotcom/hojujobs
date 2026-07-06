@@ -1,44 +1,27 @@
-import { useMemo, useState } from "react";
-import { CalendarDays } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { CalendarDays, ExternalLink, MapPin, Users } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
-import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
-type EventCity = "sydney" | "melbourne" | "other";
-type CityFilter = "all" | EventCity;
+type CommunityEvent = {
+  id: string;
+  title: string;
+  organizer: string;
+  description: string | null;
+  event_date_label: string | null;
+  location_label: string | null;
+  image_url: string | null;
+  source_url: string;
+};
 
-const sampleEvents = [
-  {
-    title: "시드니 한인 커뮤니티 밋업",
-    date: "2026년 7월 12일",
-    location: "시드니 CBD",
-    city: "sydney" as const,
-    summary: "호주 생활 정보, 구직 팁, 네트워킹을 함께 나누는 오프라인 모임입니다.",
-  },
-  {
-    title: "멜버른 워홀 준비 세미나",
-    date: "2026년 7월 20일",
-    location: "멜버른",
-    city: "melbourne" as const,
-    summary: "비자, 숙소, 알바 구하는 방법을 한국어로 안내하는 무료 세미나입니다.",
-  },
-  {
-    title: "브리즈번 한인 축제",
-    date: "2026년 8월 3일",
-    location: "브리즈번",
-    city: "other" as const,
-    summary: "음식, 공연, 부스가 함께하는 지역 커뮤니티 축제입니다.",
-  },
-];
-
-const cityFilters: Array<{ value: CityFilter; label: string }> = [
-  { value: "all", label: "전체" },
-  { value: "sydney", label: "시드니" },
-  { value: "melbourne", label: "멜버른" },
-  { value: "other", label: "기타" },
-];
+const COMMUNITY_EVENT_SELECT =
+  "id, title, organizer, description, event_date_label, location_label, image_url, source_url";
 
 export default function Events() {
-  const [cityFilter, setCityFilter] = useState<CityFilter>("all");
+  const [events, setEvents] = useState<CommunityEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useSEO({
     title: "이벤트 | Hoju Jobs",
@@ -48,58 +31,116 @@ export default function Events() {
     ogLocale: "ko_KR",
   });
 
-  const filteredEvents = useMemo(() => {
-    if (cityFilter === "all") return sampleEvents;
-    return sampleEvents.filter((event) => event.city === cityFilter);
-  }, [cityFilter]);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchEvents() {
+      setIsLoading(true);
+      setError(null);
+
+      const { data, error: fetchError } = await supabase
+        .from("community_events")
+        .select(COMMUNITY_EVENT_SELECT)
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false });
+
+      if (cancelled) return;
+
+      if (fetchError) {
+        console.error("events fetch error:", fetchError);
+        setEvents([]);
+        setError("이벤트 정보를 불러오지 못했습니다.");
+      } else {
+        setEvents((data ?? []) as CommunityEvent[]);
+      }
+
+      setIsLoading(false);
+    }
+
+    fetchEvents();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
-    <div className="flex min-h-0 w-full flex-1 flex-col bg-[#f7f8fb]">
-      <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
-        <h1 className="mb-6 text-2xl font-black tracking-[-0.04em] text-neutral-950 sm:text-3xl">이벤트</h1>
+    <div className="flex min-h-0 w-full flex-1 flex-col bg-white">
+      <main className="mx-auto w-full max-w-[1220px] px-5 py-10 sm:py-12 lg:px-9">
+        <h1 className="mb-8 text-xl font-black tracking-[-0.045em] text-neutral-950 sm:text-2xl">이벤트</h1>
 
-        <div className="mb-6 flex flex-wrap gap-2">
-          {cityFilters.map((filter) => {
-            const isActive = cityFilter === filter.value;
-            return (
-              <button
-                key={filter.value}
-                type="button"
-                onClick={() => setCityFilter(filter.value)}
-                className={cn(
-                  "inline-flex h-9 items-center rounded-full border px-4 text-sm font-black transition-colors",
-                  isActive
-                    ? "border-blue-600 bg-blue-600 text-white"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700",
-                )}
-              >
-                {filter.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {filteredEvents.length === 0 ? (
+        {isLoading ? (
           <p className="rounded-lg border border-slate-200 bg-white py-12 text-center text-sm font-semibold text-slate-500">
-            해당 지역의 이벤트가 없습니다.
+            이벤트 정보를 불러오는 중...
+          </p>
+        ) : error ? (
+          <p className="rounded-lg border border-slate-200 bg-white py-12 text-center text-sm font-semibold text-slate-500">
+            {error}
+          </p>
+        ) : events.length === 0 ? (
+          <p className="rounded-lg border border-slate-200 bg-white py-12 text-center text-sm font-semibold text-slate-500">
+            현재 등록된 이벤트가 없습니다.
           </p>
         ) : (
-          <div className="grid gap-4">
-            {filteredEvents.map((event) => (
-              <article key={event.title} className="rounded-lg border border-slate-200 bg-white p-5 sm:p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                    <CalendarDays className="h-5 w-5" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {events.map((event) => (
+              <Link
+                key={event.id}
+                to={event.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white transition-colors hover:border-blue-200 hover:bg-slate-50/40"
+              >
+                {event.image_url ? (
+                  <div className="aspect-[16/9] overflow-hidden bg-slate-100">
+                    <img
+                      src={event.image_url}
+                      alt={event.title}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                    />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-lg font-black text-slate-950 sm:text-xl">{event.title}</h2>
-                    <p className="mt-1 text-sm font-semibold text-slate-500">
-                      {event.date} · {event.location}
+                ) : (
+                  <div className="flex aspect-[16/9] items-center justify-center bg-blue-50 text-blue-600">
+                    <CalendarDays className="h-9 w-9" />
+                  </div>
+                )}
+
+                <div className="p-4 sm:p-5">
+                  <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-black text-slate-500">
+                    {event.event_date_label && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-blue-700">
+                        <CalendarDays className="h-3 w-3" />
+                        {event.event_date_label}
+                      </span>
+                    )}
+                    <span className="inline-flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      {event.organizer}
+                    </span>
+                  </div>
+
+                  <h2 className="line-clamp-2 text-lg font-black leading-snug tracking-[-0.04em] text-neutral-950 group-hover:text-blue-700">
+                    {event.title}
+                  </h2>
+
+                  {event.location_label && (
+                    <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-slate-500">
+                      <MapPin className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{event.location_label}</span>
                     </p>
-                    <p className="mt-3 text-sm leading-relaxed text-slate-700 sm:text-base">{event.summary}</p>
-                  </div>
+                  )}
+
+                  {event.description && (
+                    <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">{event.description}</p>
+                  )}
+
+                  <span className="mt-5 inline-flex items-center gap-1 text-sm font-black text-blue-600">
+                    자세히 보기
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </span>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         )}

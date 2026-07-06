@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, Menu, Shield } from "lucide-react";
 import hojuJobsLogo from "@/assets/hoju-jobs-logo.png";
@@ -15,7 +16,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "채용정보", to: "/", children: [{ label: "회사 디렉토리", to: "/directory" }, { label: "사용자 업로드 공고", to: "/jobs" }] },
+  { label: "채용정보", to: "/", children: [{ label: "회사 업소록", to: "/directory" }, { label: "모든 공고", to: "/jobs" }] },
   { label: "온세일", to: "/sales" },
   { label: "뉴스", to: "/news" },
   { label: "이벤트", to: "/events" },
@@ -33,6 +34,8 @@ export function ModernHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAdmin } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState<string | null>(null);
 
   const navLinkClass = (to: string) =>
     cn(
@@ -78,17 +81,38 @@ export function ModernHeader() {
 
   const mobileActionButtons = user ? (
     <>
-      <button type="button" onClick={() => navigate("/profile")} className={mobileSecondaryButtonClass}>
+      <button
+        type="button"
+        onClick={() => {
+          setMobileMenuOpen(false);
+          navigate("/profile");
+        }}
+        className={mobileSecondaryButtonClass}
+      >
         내 프로필
       </button>
       {isAdmin && (
-        <button type="button" onClick={() => navigate("/admin")} className={mobileSecondaryButtonClass}>
+        <button
+          type="button"
+          onClick={() => {
+            setMobileMenuOpen(false);
+            navigate("/admin");
+          }}
+          className={mobileSecondaryButtonClass}
+        >
           관리
         </button>
       )}
     </>
   ) : (
-    <button type="button" onClick={() => navigate("/auth")} className="h-12 rounded-md bg-blue-600 px-5 text-base font-black text-white">
+    <button
+      type="button"
+      onClick={() => {
+        setMobileMenuOpen(false);
+        navigate("/auth");
+      }}
+      className="h-12 rounded-md bg-blue-600 px-5 text-base font-black text-white"
+    >
       로그인
     </button>
   );
@@ -101,7 +125,7 @@ export function ModernHeader() {
         </Link>
 
         <div className="flex shrink-0 items-center">
-          <Sheet>
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <button type="button" aria-label="메뉴 열기" className="inline-flex h-9 w-9 items-center justify-center text-neutral-950">
                 <Menu className="h-7 w-7" strokeWidth={2.3} />
@@ -116,13 +140,13 @@ export function ModernHeader() {
               <nav className="grid gap-1 px-6 py-5 text-lg font-black text-neutral-950">
                 {navItems.map((item) => (
                   <div key={item.label}>
-                    <Link to={item.to} className={mobileNavLinkClass(item.to)}>
+                    <Link to={item.to} onClick={() => setMobileMenuOpen(false)} className={mobileNavLinkClass(item.to)}>
                       {item.label}
                     </Link>
                     {item.children && (
                       <div className="ml-3 grid border-l border-slate-100 pl-4 text-base text-slate-500">
                         {item.children.map((child) => (
-                          <Link key={child.label} to={child.to} className={mobileNavLinkClass(child.to)}>
+                          <Link key={child.label} to={child.to} onClick={() => setMobileMenuOpen(false)} className={mobileNavLinkClass(child.to)}>
                             {child.label}
                           </Link>
                         ))}
@@ -137,25 +161,35 @@ export function ModernHeader() {
         </div>
       </div>
 
-      <div className="mx-auto hidden max-w-[1220px] items-center justify-between gap-5 px-5 py-6 lg:flex lg:px-14">
+      <div className="relative mx-auto hidden max-w-[1220px] items-center justify-between gap-5 px-5 py-6 lg:flex lg:px-14">
         <Link to="/" className="inline-flex shrink-0 items-center" aria-label="Hoju Jobs home">
           <img src={hojuJobsLogo} alt="Hoju Jobs" className="h-8 w-auto sm:h-10" />
         </Link>
 
-        <nav className="grid flex-1 grid-cols-3 gap-2 px-6 text-base font-black text-neutral-950 sm:flex sm:items-center sm:justify-center sm:gap-8 lg:text-lg">
+        <nav className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-8 text-base font-black text-neutral-950 lg:text-lg">
             {navItems.map((item) => (
-              <div key={item.label} className="group relative">
-                <Link to={item.to} className={cn(navLinkClass(item.to), item.children && "inline-flex items-center gap-1.5")}>
+              <div
+                key={item.label}
+                className="relative"
+                onMouseEnter={() => setDesktopMenuOpen(item.label)}
+                onMouseLeave={() => setDesktopMenuOpen(null)}
+              >
+                <Link
+                  to={item.to}
+                  onClick={() => setDesktopMenuOpen(null)}
+                  className={cn(navLinkClass(item.to), item.children && "inline-flex items-center gap-1.5")}
+                >
                   {item.label}
-                  {item.children && <ChevronDown className="h-4 w-4 text-slate-400 transition-transform group-hover:rotate-180" />}
+                  {item.children && <ChevronDown className={cn("h-4 w-4 text-slate-400 transition-transform", desktopMenuOpen === item.label && "rotate-180")} />}
                 </Link>
-                {item.children && (
-                  <div className="invisible absolute left-0 top-full z-20 w-48 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                {item.children && desktopMenuOpen === item.label && (
+                  <div className="absolute left-0 top-full z-20 w-48 pt-3 opacity-100 transition">
                     <div className="rounded-2xl border border-slate-100 bg-white p-2 shadow-[0_12px_30px_rgba(15,23,42,0.12)]">
                       {item.children.map((child) => (
                         <Link
                           key={child.label}
                           to={child.to}
+                          onClick={() => setDesktopMenuOpen(null)}
                           className={cn(
                             "block rounded-xl px-4 py-3 text-sm font-black text-slate-600 transition-colors hover:bg-blue-50 hover:text-blue-700",
                             isNavActive(location.pathname, child.to) && "bg-blue-50 text-blue-700",

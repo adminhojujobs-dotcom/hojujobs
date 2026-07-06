@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, ExternalLink, RotateCcw, Tags, Ticket, Trash2 } from "lucide-react";
+import { ChevronDown, RotateCcw, Tags, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -126,7 +126,7 @@ function highlightPrices(value: string) {
       parts.push(value.slice(lastIndex, matchIndex));
     }
     parts.push(
-      <span key={`${match[0]}-${matchIndex}`} className="font-bold text-emerald-700">
+      <span key={`${match[0]}-${matchIndex}`} className="font-bold text-blue-700">
         {match[0]}
       </span>
     );
@@ -255,212 +255,170 @@ export default function Sales() {
   };
 
   return (
-    <div className="flex w-full min-h-0 flex-1 flex-col bg-[#f7f8fb]">
-      <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
-        <h1 className="mb-6 text-2xl font-black tracking-[-0.04em] text-neutral-950 sm:text-3xl">온세일</h1>
+    <div className="flex min-h-0 w-full flex-1 flex-col bg-white">
+      <main className="mx-auto w-full max-w-[1220px] px-5 py-10 sm:py-12 lg:px-9">
+        <h1 className="mb-8 text-xl font-black tracking-[-0.045em] text-neutral-950 sm:text-2xl">온세일</h1>
 
-        <div className="grid gap-3 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-5">
-          <aside className="space-y-2 lg:space-y-4">
-            <button
-              onClick={() => setSelectedProductTypes([])}
-              className={cn(
-                "hidden h-5 items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground lg:flex",
-                selectedProductTypes.length === 0 && "invisible pointer-events-none"
+        <div className="mb-8 flex flex-wrap items-center gap-2">
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger className={cn(
+              "flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-neutral-900 outline-none transition-colors hover:border-slate-300",
+              selectedProductTypes.length > 0 && "border-blue-300 bg-blue-50 text-blue-700"
+            )}>
+              <span>상품 종류</span>
+              {selectedProductTypes.length > 0 && (
+                <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#ff4b2f] px-1 text-[0.65rem] font-black text-white">
+                  {selectedProductTypes.length}
+                </span>
               )}
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              필터 초기화
-            </button>
-
-            <div>
-              <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-foreground lg:mb-3">
-                <Tags className="h-4 w-4 text-accent" />
-                상품 종류
-              </h3>
-              <div className="lg:hidden">
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger className={cn(
-                    "flex h-10 w-full items-center justify-between rounded-md border px-3 text-sm outline-none transition-colors",
-                    selectedProductTypes.length > 0
-                      ? "border-primary/50 bg-primary/5 text-primary"
-                      : "border-input bg-muted/40 text-muted-foreground"
-                  )}>
-                    <span className="flex min-w-0 items-center gap-2">
-                      <Tags className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">{productFilterLabel}</span>
-                    </span>
-                    <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-[calc(100vw-2rem)] max-w-sm">
-                    <DropdownMenuItem
-                      onSelect={() => {
-                        setSelectedProductTypes([]);
-                        trackEvent("sales_filter_changed", { metadata: { action: "clear", surface: "mobile" } });
-                      }}
-                      className={cn("justify-between", selectedProductTypes.length === 0 && "font-semibold text-primary")}
-                    >
-                      <span>전체 상품</span>
-                      <span className="text-xs tabular-nums text-muted-foreground/70">{deals.length}</span>
-                    </DropdownMenuItem>
-                    {productTypes.map((productType) => (
-                      <DropdownMenuCheckboxItem
-                        key={productType}
-                        checked={selectedProductTypes.includes(productType)}
-                        onSelect={(event) => event.preventDefault()}
-                        onCheckedChange={() => toggleProductType(productType)}
-                        className="justify-between"
-                      >
-                        <span className="truncate">{productType}</span>
-                        <span className="ml-3 text-xs tabular-nums text-muted-foreground/70">{productTypeCounts[productType] || 0}</span>
-                      </DropdownMenuCheckboxItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <div className="hidden space-y-0.5 lg:block">
-                <SalesFilterItem
-                  label="전체 상품"
-                  count={deals.length}
-                  active={selectedProductTypes.length === 0}
-                  onClick={() => {
-                    setSelectedProductTypes([]);
-                    trackEvent("sales_filter_changed", { metadata: { action: "clear", surface: "desktop" } });
-                  }}
-                />
-                {productTypes.map((productType) => (
-                  <SalesFilterItem
-                    key={productType}
-                    label={productType}
-                    count={productTypeCounts[productType] || 0}
-                    active={selectedProductTypes.includes(productType)}
-                    onClick={() => toggleProductType(productType)}
-                  />
-                ))}
-              </div>
-            </div>
-          </aside>
-
-          <section className="mx-auto w-full max-w-3xl space-y-2.5 lg:max-w-none">
-            {loadingDeals ? (
-              <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
-                딜 정보를 불러오는 중...
-              </div>
-            ) : dealsError ? (
-              <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
-                {dealsError}
-              </div>
-            ) : deals.length === 0 ? (
-              <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
-                현재 등록된 딜이 없습니다.
-              </div>
-            ) : filteredDeals.length === 0 ? (
-              <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
-                선택한 상품 종류에 해당하는 딜이 없습니다.
-              </div>
-            ) : filteredDeals.map((deal) => (
-              <article key={deal.rank} className="relative w-full max-w-full overflow-hidden rounded-md border bg-card transition-shadow hover:shadow-sm">
-                <Link
-                  to={`/sales/${deal.rank}`}
-                  onClick={() => {
-                    trackEvent("sale_card_clicked", {
-                      listing_type: "sale",
-                      listing_id: deal.rank,
-                      metadata: { title: deal.title, category: deal.category },
-                    });
-                    sessionStorage.setItem(SALES_SCROLL_KEY, String(window.scrollY));
-                  }}
-                  className={cn(
-                    "grid w-full min-w-0 gap-0",
-                    deal.imageUrl ? "grid-cols-[5rem_minmax(0,1fr)] sm:grid-cols-[7rem_minmax(0,1fr)]" : "grid-cols-1"
-                  )}
+              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[calc(100vw-2.5rem)] max-w-sm">
+              <DropdownMenuItem
+                onSelect={() => {
+                  setSelectedProductTypes([]);
+                  trackEvent("sales_filter_changed", { metadata: { action: "clear", surface: "sales_filter_bar" } });
+                }}
+                className={cn("justify-between", selectedProductTypes.length === 0 && "font-bold text-blue-700")}
+              >
+                <span>전체 상품</span>
+                <span className="text-xs tabular-nums text-slate-400">{deals.length}</span>
+              </DropdownMenuItem>
+              {productTypes.map((productType) => (
+                <DropdownMenuCheckboxItem
+                  key={productType}
+                  checked={selectedProductTypes.includes(productType)}
+                  onSelect={(event) => event.preventDefault()}
+                  onCheckedChange={() => toggleProductType(productType)}
+                  className="justify-between"
                 >
-                  {deal.imageUrl && (
-                    <div className="flex w-20 shrink-0 items-center justify-center bg-white p-1.5 sm:w-28 sm:p-2">
-                      <img
-                        src={deal.imageUrl}
-                        alt={deal.title}
-                        className="max-h-20 w-full rounded object-contain sm:max-h-24"
-                        onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
-                      />
-                    </div>
-                  )}
-                  <div className={cn("min-w-0 flex-1 p-2.5 sm:p-3", isAdmin && "pr-16 sm:pr-20")}>
-                    <div className="mb-1 flex min-w-0 items-center gap-1.5 overflow-hidden">
-                      <span className="max-w-[8.5rem] truncate rounded-md bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary sm:max-w-[12rem]">{deal.category}</span>
-                      <span className="shrink-0 truncate text-xs text-muted-foreground">{formatUploadedAt(deal.uploadedAt)}</span>
-                    </div>
+                  <span className="truncate">{productType}</span>
+                  <span className="ml-3 text-xs tabular-nums text-slate-400">{productTypeCounts[productType] || 0}</span>
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-                    <h2 className="line-clamp-2 max-w-full overflow-hidden break-words text-sm font-bold leading-snug text-foreground sm:text-base">{highlightPrices(deal.title)}</h2>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedProductTypes([]);
+              trackEvent("sales_filter_changed", { metadata: { action: "clear", surface: "sales_filter_bar" } });
+            }}
+            className={cn(
+              "inline-flex items-center gap-1 text-xs font-bold text-slate-500 transition-colors hover:text-neutral-950",
+              selectedProductTypes.length === 0 && "pointer-events-none opacity-40"
+            )}
+          >
+            필터 초기화
+            <RotateCcw className="h-3.5 w-3.5" />
+          </button>
+        </div>
 
-                    {deal.teaserDescription && (
-                      <p className="mt-1.5 line-clamp-2 max-w-full overflow-hidden break-words text-xs leading-relaxed text-muted-foreground">
-                        {highlightPrices(cleanTeaserText(deal.teaserDescription))}
-                      </p>
-                    )}
-
-                    {deal.promoCodes.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {deal.promoCodes.map((promoCode) => (
-                          <span key={promoCode} className="inline-flex items-center gap-1 rounded-md border border-dashed border-primary/40 bg-primary/5 px-2 py-0.5 text-xs font-bold text-primary">
-                            <Ticket className="h-3 w-3" />
-                            {promoCode}
-                          </span>
-                        ))}
+        <section className="w-full border-t border-neutral-950">
+          {loadingDeals ? (
+            <div className="border-b border-slate-200 px-4 py-14 text-center text-sm font-semibold text-slate-500">
+              딜 정보를 불러오는 중...
+            </div>
+          ) : dealsError ? (
+            <div className="border-b border-slate-200 px-4 py-14 text-center text-sm font-semibold text-slate-500">
+              {dealsError}
+            </div>
+          ) : deals.length === 0 ? (
+            <div className="border-b border-slate-200 px-4 py-14 text-center text-sm font-semibold text-slate-500">
+              현재 등록된 딜이 없습니다.
+            </div>
+          ) : filteredDeals.length === 0 ? (
+            <div className="border-b border-slate-200 px-4 py-14 text-center text-sm font-semibold text-slate-500">
+              선택한 상품 종류에 해당하는 딜이 없습니다.
+            </div>
+          ) : filteredDeals.map((deal) => (
+            <article key={deal.rank} className="relative border-b border-slate-200">
+              <Link
+                to={`/sales/${deal.rank}`}
+                onClick={() => {
+                  trackEvent("sale_card_clicked", {
+                    listing_type: "sale",
+                    listing_id: deal.rank,
+                    metadata: { title: deal.title, category: deal.category },
+                  });
+                  sessionStorage.setItem(SALES_SCROLL_KEY, String(window.scrollY));
+                }}
+                className="block min-h-[5.5rem] py-3 transition-colors hover:bg-slate-50 sm:min-h-[8.25rem] sm:py-5 md:px-0"
+              >
+                <div className={cn("min-w-0 md:px-5", isAdmin && "pr-20")}>
+                  <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                    {deal.imageUrl && (
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center bg-white sm:h-24 sm:w-24">
+                        <img
+                          src={deal.imageUrl}
+                          alt={deal.title}
+                          className="max-h-16 w-full rounded object-contain sm:max-h-24"
+                          onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = "none"; }}
+                        />
                       </div>
                     )}
+                    <div className="min-w-0">
+                      <div className="mb-1 flex flex-wrap items-center gap-1.5 sm:mb-2 sm:gap-2">
+                        <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[0.65rem] font-black text-blue-700 sm:px-2.5 sm:py-1 sm:text-xs">
+                          {deal.category}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-500 sm:text-sm">{formatUploadedAt(deal.uploadedAt)}</span>
+                      </div>
+
+                      <h2 className="line-clamp-2 text-sm font-black leading-snug tracking-[-0.025em] text-neutral-950 sm:text-lg">
+                        {highlightPrices(deal.title)}
+                      </h2>
+                      {deal.teaserDescription && (
+                        <p className="mt-1 line-clamp-2 text-xs font-semibold leading-relaxed text-slate-500 sm:mt-2 sm:text-base">
+                          {highlightPrices(cleanTeaserText(deal.teaserDescription))}
+                        </p>
+                      )}
+
+                      {deal.promoCodes.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {deal.promoCodes.slice(0, 2).map((promoCode) => (
+                            <span key={promoCode} className="inline-flex items-center rounded-md border border-dashed border-blue-300 bg-blue-50 px-3 py-1.5 text-sm font-black text-blue-700">
+                              {promoCode}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </Link>
-                {isAdmin && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="absolute right-2 top-2 h-7 gap-1 border-destructive/30 bg-white/95 px-2 text-[11px] text-destructive shadow-sm hover:bg-destructive/10 hover:text-destructive"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        삭제
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>딜을 삭제하시겠습니까?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          "{deal.title}" 딜이 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>취소</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => void handleDeleteDeal(deal)}>삭제</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-                {deal.externalUrl && (
-                  <div className="flex justify-end border-t bg-muted/20 px-2.5 py-2 sm:px-3">
-                    <Button asChild size="sm" className="h-8 gap-1.5 px-3 text-xs">
-                      <a
-                        href={deal.externalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => {
-                          trackEvent("deal_outbound_clicked", {
-                            listing_type: "sale",
-                            listing_id: deal.rank,
-                            metadata: { title: deal.title, category: deal.category, url: deal.externalUrl, surface: "sales_list" },
-                          });
-                        }}
-                      >
-                        딜 보러가기
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
+                </div>
+
+              </Link>
+
+              {isAdmin && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="absolute right-2 top-2 z-10 h-7 gap-1 border-destructive/30 bg-white/95 px-2 text-[11px] text-destructive shadow-sm hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      삭제
                     </Button>
-                  </div>
-                )}
-              </article>
-            ))}
-          </section>
-        </div>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>딜을 삭제하시겠습니까?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        "{deal.title}" 딜이 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>취소</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => void handleDeleteDeal(deal)}>삭제</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </article>
+          ))}
+        </section>
       </main>
     </div>
   );
@@ -476,14 +434,14 @@ function SalesFilterItem({ label, count, active, onClick }: {
     <button
       onClick={onClick}
       className={cn(
-        "inline-flex h-8 w-full min-w-0 items-center justify-between gap-1.5 rounded-lg px-3 text-xs transition-colors lg:h-9 lg:text-sm",
+        "inline-flex h-9 w-full min-w-0 items-center justify-between gap-2 rounded-full px-3 text-xs font-bold transition-colors lg:h-10 lg:text-sm",
         active
-          ? "bg-primary/10 font-semibold text-primary"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          ? "bg-blue-50 text-blue-700"
+          : "text-slate-500 hover:bg-slate-50 hover:text-neutral-950"
       )}
     >
       <span className="truncate">{label}</span>
-      <span className={cn("text-[11px] tabular-nums", active ? "text-primary" : "text-muted-foreground/60")}>{count}</span>
+      <span className={cn("text-[11px] tabular-nums", active ? "text-blue-600" : "text-slate-400")}>{count}</span>
     </button>
   );
 }

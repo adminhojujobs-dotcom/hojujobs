@@ -232,40 +232,40 @@ export default function JobDetail() {
   const locations = job.location || [];
 
   return (
-    <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
-      <div className="w-full min-w-0 max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <div className="flex min-h-0 w-full flex-1 flex-col bg-white">
+      <main className="mx-auto w-full max-w-[1220px] px-5 py-8 sm:py-12 lg:px-9">
         <div className="mb-6">
-          <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/")} className="flex items-center gap-1.5 text-xs font-bold text-slate-500 transition-colors hover:text-neutral-950">
             <ArrowLeft className="h-4 w-4" />
             목록으로 돌아가기
           </button>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-6 mb-6">
+        <section className="border-y border-neutral-950 py-8">
           {isAdmin && job.user_id && (
-            <span className="mb-3 inline-flex items-center gap-1 rounded border border-sky-200 bg-sky-50 px-2 py-1 text-xs font-bold text-sky-700">
+            <span className="mb-3 inline-flex items-center gap-1 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-black text-blue-700">
               <UserCheck className="h-3.5 w-3.5" />
               유저 업로드
             </span>
           )}
-          <h1 className="text-2xl font-bold text-foreground mb-3">{job.title}</h1>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
-            {locations.length > 0 && <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-accent" />{locations.join(", ")}</span>}
-            {job.industry && <span className="flex items-center gap-1.5"><Briefcase className="h-4 w-4 text-muted-foreground" />{job.industry}</span>}
+          <h1 className="max-w-4xl text-xl font-black leading-tight tracking-[-0.04em] text-neutral-950 sm:text-2xl">{job.title}</h1>
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm font-bold text-slate-600">
+            {locations.length > 0 && <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-slate-400" />{locations.join(", ")}</span>}
+            {job.industry && <span className="flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5 text-slate-400" />{job.industry}</span>}
           </div>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-semibold text-slate-500">
             <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" />등록일: {formatDate(job.uploaded_at)}</span>
             <span className="flex items-center gap-1.5"><Eye className="h-3.5 w-3.5" />조회 {viewCount}회</span>
           </div>
-        </div>
+        </section>
 
         <ListingRevealProvider listingType="job" listingId={job.id}>
           {job.description && (
             <DescriptionRevealSection
               description={job.description}
-              className="bg-card border border-border rounded-xl p-6 mb-6"
-              headingClassName="text-lg font-bold text-foreground mb-4"
-              bodyClassName="text-sm text-foreground/80 leading-relaxed break-words [overflow-wrap:anywhere]"
+              className="border-b border-slate-200 py-6"
+              headingClassName="mb-4 text-base font-black tracking-[-0.03em] text-neutral-950"
+              bodyClassName="text-sm font-semibold leading-relaxed text-slate-700 break-words [overflow-wrap:anywhere]"
             />
           )}
 
@@ -273,13 +273,16 @@ export default function JobDetail() {
             phone={job.contact}
             email={job.email && job.email !== "정보없음" ? job.email : null}
             kakaoid={job.kakaoid}
+            className="mb-0 rounded-none border-0 border-b border-slate-200 bg-white px-0 py-6"
+            headingClassName="mb-4 text-base font-black tracking-[-0.03em] text-neutral-950"
+            contentClassName="rounded-none"
           />
         </ListingRevealProvider>
 
         {locations.length > 0 && (
-          <div className="bg-card border border-border rounded-xl overflow-hidden mb-6">
-            <h2 className="text-lg font-bold text-foreground px-6 pt-6 pb-3 flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-accent" />
+          <section className="border-b border-slate-200 py-6">
+            <h2 className="mb-4 flex items-center gap-2 text-base font-black tracking-[-0.03em] text-neutral-950">
+              <MapPin className="h-4 w-4 text-blue-600" />
               위치
             </h2>
             {locations.map((loc) => {
@@ -289,7 +292,7 @@ export default function JobDetail() {
               const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=15&output=embed`;
 
               return (
-                <div key={loc} className="px-6 pb-4">
+                <div key={loc}>
                   <a
                     href={mapsUrl}
                     target="_blank"
@@ -311,13 +314,13 @@ export default function JobDetail() {
                     <div className="rounded-lg overflow-hidden border border-border relative">
                       <iframe
                         src={embedUrl}
-                        className="w-full h-48 pointer-events-none"
+                        className="h-64 w-full pointer-events-none sm:h-80"
                         loading="lazy"
                         referrerPolicy="no-referrer-when-downgrade"
                         title={`${loc} 지도`}
                       />
                       <div className="absolute inset-0 bg-transparent group-hover:bg-black/5 transition-colors flex items-end justify-end p-3">
-                        <span className="flex items-center gap-1.5 text-xs font-medium bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-border text-foreground">
+                        <span className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-xs font-black text-neutral-950 shadow-sm backdrop-blur-sm">
                           <ExternalLink className="h-3 w-3" />
                           {loc}  Google Maps에서 보기
                         </span>
@@ -327,9 +330,9 @@ export default function JobDetail() {
                 </div>
               );
             })}
-          </div>
+          </section>
         )}
-      </div>
+      </main>
     </div>
   );
 }

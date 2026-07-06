@@ -27,6 +27,7 @@ interface UserJobsTableProps {
   onSort?: (key: UserJobSortKey) => void;
   showContact?: boolean;
   plainTitle?: boolean;
+  variant?: "default" | "albamon";
 }
 
 function SortableHead({
@@ -74,13 +75,119 @@ export function UserJobsTable({
   onSort,
   showContact = true,
   plainTitle = false,
+  variant = "default",
 }: UserJobsTableProps) {
   const navigate = useNavigate();
-  const columnCount = showContact ? 4 : 3;
+  const isAlbamon = variant === "albamon";
+  const columnCount = isAlbamon ? 5 : showContact ? 4 : 3;
 
   const openJob = (id: number) => {
     navigate(`/job/${id}`);
   };
+
+  if (isAlbamon) {
+    return (
+      <>
+      <div className="sm:hidden">
+        {loading ? (
+          <div className="border-b border-slate-200 py-12 text-center text-sm font-semibold text-slate-500">불러오는 중...</div>
+        ) : error ? (
+          <div className="border-b border-slate-200 py-12 text-center text-sm font-semibold text-slate-500">{error}</div>
+        ) : jobs.length === 0 ? (
+          <div className="border-b border-slate-200 py-12 text-center text-sm font-semibold text-slate-500">{emptyMessage}</div>
+        ) : (
+          <div className="divide-y divide-slate-200">
+            {jobs.map((job) => {
+              const location = formatUserJobLocation(job);
+              const hasLocation = location !== "-";
+
+              return (
+              <button
+                key={job.id}
+                type="button"
+                aria-label={`${job.title ?? "공고"} 상세 보기`}
+                className="flex w-full flex-col gap-1 px-4 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none"
+                onClick={() => openJob(job.id)}
+              >
+                <span className={cn("truncate text-xs font-bold text-neutral-500", !hasLocation && "invisible")}>
+                  {hasLocation ? location : "-"}
+                </span>
+
+                <h3 className="line-clamp-2 text-sm font-black leading-snug text-neutral-950">{job.title || "-"}</h3>
+
+                <div className="mt-0.5 flex items-center justify-between gap-3 border-t border-slate-100 pt-2">
+                  <span className="truncate text-xs font-bold text-slate-500">{job.industry || "-"}</span>
+                  <span className="shrink-0 rounded-full border border-slate-200 px-3 py-1 text-xs font-black text-neutral-900">
+                    자세히 보기
+                  </span>
+                </div>
+              </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <Table className="hidden min-w-[860px] text-[15px] sm:table">
+        <TableHeader>
+          <TableRow className="border-b border-t border-neutral-900 hover:bg-transparent">
+            <TableHead className="h-14 w-[62%] px-5 text-left text-base font-black text-neutral-950">공고</TableHead>
+            <TableHead className="h-14 w-[20%] px-5 text-left text-base font-black text-neutral-950">지역</TableHead>
+            <TableHead className="h-14 w-[18%] px-5 text-left text-base font-black text-neutral-950">업종</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {loading ? (
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={columnCount} className="py-14 text-center text-sm font-semibold text-slate-500">
+                불러오는 중...
+              </TableCell>
+            </TableRow>
+          ) : error ? (
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={columnCount} className="py-14 text-center text-sm font-semibold text-slate-500">
+                {error}
+              </TableCell>
+            </TableRow>
+          ) : jobs.length === 0 ? (
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={columnCount} className="py-14 text-center text-sm font-semibold text-slate-500">
+                {emptyMessage}
+              </TableCell>
+            </TableRow>
+          ) : (
+            jobs.map((job) => (
+              <TableRow
+                key={job.id}
+                tabIndex={0}
+                role="link"
+                aria-label={`${job.title ?? "공고"} 상세 보기`}
+                className="h-12 cursor-pointer border-b border-slate-200 transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none"
+                onClick={() => openJob(job.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openJob(job.id);
+                  }
+                }}
+              >
+                <TableCell className="max-w-[34rem] truncate px-5 text-base font-bold text-neutral-950">
+                  {job.title || "-"}
+                </TableCell>
+                <TableCell className="max-w-[18rem] truncate px-5 text-base font-semibold text-neutral-600">
+                  {formatUserJobLocation(job)}
+                </TableCell>
+                <TableCell className="max-w-[14rem] truncate px-5 text-base font-semibold text-neutral-600">
+                  {job.industry || "-"}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+      </>
+    );
+  }
 
   return (
     <Table>

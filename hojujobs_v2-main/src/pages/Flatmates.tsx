@@ -249,135 +249,85 @@ export default function Flatmates() {
   };
 
   return (
-    <div className="flex w-full min-h-0 flex-1 flex-col bg-[#f7f8fb]">
+    <div className="flex w-full min-h-0 flex-1 flex-col bg-white">
+      <main className="mx-auto w-full max-w-[1220px] px-5 py-8 sm:py-12">
+        <h1 className="mb-1 text-xl font-black tracking-[-0.045em] text-neutral-950 sm:text-2xl">플렛메이트</h1>
+        <p className="mb-6 text-sm font-semibold text-slate-500">호주 한인 쉐어하우스 · 독방 · 룸쉐어 정보</p>
 
-      <main className="mx-auto w-full max-w-6xl px-4 pt-4 pb-8">
-        <div className="grid gap-5 lg:grid-cols-[200px_minmax(0,1fr)]">
-          <aside className="space-y-3">
-            <div className={cn("flex justify-end", hasFilters ? "h-5" : "h-0 lg:h-5")}>
-              <button
-                type="button"
-                onClick={resetFilters}
-                className={cn(
-                  "flex items-center gap-1 text-xs font-bold text-slate-400 hover:text-slate-700 transition-colors",
-                  !hasFilters && "invisible pointer-events-none"
-                )}
-              >
-                <RotateCcw className="h-3 w-3" />
-                초기화
-              </button>
-            </div>
+        <div className="mb-8 flex flex-wrap items-center gap-2">
+          <div className="relative w-full sm:w-56">
+            <Search className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Input
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              placeholder="지역, 건물, 조건"
+              className="h-9 rounded-full border-slate-200 pl-9 text-sm"
+            />
+          </div>
 
-            <div className="space-y-3">
-              <label className="block">
-                <span className="mb-1 block text-xs font-bold text-slate-700">검색</span>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-	                  <Input
-	                    value={keyword}
-	                    onChange={(event) => setKeyword(event.target.value)}
-	                    placeholder="지역, 건물, 조건"
-	                    className="h-8 pl-8 text-[12px] font-medium placeholder:!text-[12px] placeholder:font-medium placeholder:text-slate-500 sm:h-10 sm:text-sm"
-	                  />
-                </div>
-              </label>
+          <SuburbDropdown
+            suburbs={suburbs}
+            suburbCounts={suburbCounts}
+            selectedSuburbs={selectedSuburbs}
+            onChange={setSelectedSuburbs}
+          />
 
-              <div>
-                <span className="mb-1 block text-xs font-bold text-slate-700">지역</span>
-                <SuburbDropdown
-                  suburbs={suburbs}
-                  suburbCounts={suburbCounts}
-                  selectedSuburbs={selectedSuburbs}
-                  onChange={setSelectedSuburbs}
-                />
-              </div>
+          <RentDropdown
+            value={minRent}
+            placeholder="최소 렌트"
+            excludeZero
+            onChange={(nextValue) => {
+              if (nextValue && maxRent && Number(nextValue) > Number(maxRent)) setMaxRent(nextValue);
+              setMinRent(nextValue);
+            }}
+          />
 
-              <div>
-                <span className="mb-1 block text-xs font-bold text-slate-700">렌트</span>
-                <div className="grid grid-cols-2 gap-1.5">
-                  <div>
-                    <span className="mb-0.5 block text-[10px] font-bold text-slate-500">최소</span>
-                    <RentDropdown
-                      value={minRent}
-                      placeholder="$0"
-                      onChange={(nextValue) => {
-                        if (nextValue && maxRent && Number(nextValue) > Number(maxRent)) setMaxRent(nextValue);
-                        setMinRent(nextValue);
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <span className="mb-0.5 block text-[10px] font-bold text-slate-500">최대</span>
-                    <RentDropdown
-                      value={maxRent}
-                      placeholder="전체"
-                      onChange={(nextValue) => {
-                        if (nextValue && minRent && Number(nextValue) < Number(minRent)) setMinRent(nextValue);
-                        setMaxRent(nextValue);
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
+          <RentDropdown
+            value={maxRent}
+            placeholder="최대 렌트"
+            onChange={(nextValue) => {
+              if (nextValue && minRent && Number(nextValue) < Number(minRent)) setMinRent(nextValue);
+              setMaxRent(nextValue);
+            }}
+          />
 
-              <FilterGroup
-                label="독방"
-                options={booleanOptions}
-                value={privateRoom}
-                onChange={setPrivateRoom}
-                yesLabel="독방"
-                noLabel="쉐어룸"
-              />
+          <FilterGroup
+            options={booleanOptions}
+            value={privateRoom}
+            onChange={setPrivateRoom}
+            yesLabel="독방"
+            noLabel="쉐어룸"
+          />
 
-              <div>
-                <span className="mb-1 block text-xs font-bold text-slate-700">성별 조건</span>
-                <div className="grid grid-cols-3 gap-1">
-                  {genderOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => setGender(option.value)}
-                      className={cn(
-                        "h-8 rounded-md border px-1 text-xs font-bold transition-colors",
-                        gender === option.value
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                      )}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+          <PillToggleGroup
+            options={genderOptions}
+            value={gender}
+            onChange={setGender}
+          />
 
-              <div>
-                <span className="mb-1 block text-xs font-bold text-slate-700">개인 화장실</span>
-                <div className="grid grid-cols-2 gap-1">
-                  {(["all", "yes"] as BooleanFilter[]).map((val) => (
-                    <button
-                      key={val}
-                      type="button"
-                      onClick={() => setPrivateBathroom(val)}
-                      className={cn(
-                        "h-8 rounded-md border px-2 text-xs font-bold transition-colors",
-                        privateBathroom === val
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                      )}
-                    >
-                      {val === "all" ? "전체" : "개인 화장실"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </aside>
+          <PillToggleGroup
+            options={[
+              { value: "all", label: "전체" },
+              { value: "yes", label: "개인 화장실" },
+            ]}
+            value={privateBathroom}
+            onChange={(value) => setPrivateBathroom(value as BooleanFilter)}
+          />
 
-          <section className="min-w-0">
-            <div className="mb-3 hidden lg:block">
-              <h1 className="text-xl font-extrabold tracking-normal text-foreground sm:text-2xl">플렛메이트</h1>
-              <p className="mt-1 text-sm text-muted-foreground">호주 한인 쉐어하우스 · 독방 · 룸쉐어 정보</p>
-            </div>
+          <button
+            type="button"
+            onClick={resetFilters}
+            className={cn(
+              "inline-flex items-center gap-1 text-xs font-bold text-slate-500 transition-colors hover:text-neutral-950",
+              !hasFilters && "pointer-events-none opacity-40"
+            )}
+          >
+            필터 초기화
+            <RotateCcw className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        <section className="min-w-0">
             {loading ? (
               <div className="rounded-lg border bg-white px-4 py-16 text-center text-sm text-muted-foreground">불러오는 중...</div>
             ) : error ? (
@@ -445,9 +395,36 @@ export default function Flatmates() {
                 </div>
               </>
             )}
-          </section>
-        </div>
+        </section>
       </main>
+    </div>
+  );
+}
+
+function PillToggleGroup<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: Array<{ value: T; label: string }>;
+  value: T;
+  onChange: (value: T) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1">
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          onClick={() => onChange(option.value)}
+          className={cn(
+            "rounded-full px-3 py-1 text-xs font-bold transition-colors",
+            value === option.value ? "bg-neutral-950 text-white" : "text-slate-600 hover:bg-slate-50"
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -455,16 +432,18 @@ export default function Flatmates() {
 function RentDropdown({
   value,
   placeholder,
+  excludeZero = false,
   onChange,
 }: {
   value: string;
   placeholder: string;
+  excludeZero?: boolean;
   onChange: (value: string) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const label = value ? `$${value}` : placeholder;
-  const rentOptions = placeholder === "$0" ? RENT_OPTIONS.filter((rent) => rent !== 0) : RENT_OPTIONS;
+  const rentOptions = excludeZero ? RENT_OPTIONS.filter((rent) => rent !== 0) : RENT_OPTIONS;
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -480,20 +459,21 @@ function RentDropdown({
   };
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative shrink-0">
       <button
         type="button"
         onClick={() => setIsOpen((o) => !o)}
-        className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 text-[12px] not-italic leading-none ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-10 sm:px-3 sm:text-sm"
+        className={cn(
+          "flex h-9 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-neutral-900 outline-none transition-colors hover:border-slate-300",
+          value && "border-blue-300 bg-blue-50 text-blue-700"
+        )}
       >
-        <span className={cn("truncate not-italic leading-none", value ? "font-semibold text-slate-950" : "font-medium text-slate-500")}>
-          {label}
-        </span>
-        <ChevronDown className={cn("h-4 w-4 shrink-0 text-slate-500 transition-transform", isOpen && "rotate-180")} />
+        <span className="truncate">{label}</span>
+        <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform", isOpen && "rotate-180")} />
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border bg-white shadow-lg">
+        <div className="absolute left-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-md border bg-white shadow-lg">
           <ul className="max-h-52 overflow-y-auto py-1">
             <li>
               <button
@@ -504,7 +484,7 @@ function RentDropdown({
                   !value ? "text-primary" : "text-slate-800"
                 )}
               >
-                {placeholder}
+                전체
                 {!value && <Check className="h-3 w-3" />}
               </button>
             </li>
@@ -535,14 +515,12 @@ function RentDropdown({
 }
 
 function FilterGroup({
-  label,
   options,
   value,
   onChange,
   yesLabel,
   noLabel,
 }: {
-  label: string;
   options: Array<{ value: BooleanFilter; label: string }>;
   value: BooleanFilter;
   onChange: (value: BooleanFilter) => void;
@@ -550,28 +528,23 @@ function FilterGroup({
   noLabel: string;
 }) {
   return (
-    <div>
-      <span className="mb-1 block text-xs font-bold text-slate-700">{label}</span>
-      <div className="grid grid-cols-3 gap-1">
-        {options.map((option) => {
-          const labelText = option.value === "yes" ? yesLabel : option.value === "no" ? noLabel : option.label;
-          return (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => onChange(option.value)}
-              className={cn(
-                "h-8 rounded-md border px-1 text-xs font-bold transition-colors",
-                value === option.value
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-              )}
-            >
-              {labelText}
-            </button>
-          );
-        })}
-      </div>
+    <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1">
+      {options.map((option) => {
+        const labelText = option.value === "yes" ? yesLabel : option.value === "no" ? noLabel : option.label;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onChange(option.value)}
+            className={cn(
+              "rounded-full px-3 py-1 text-xs font-bold transition-colors",
+              value === option.value ? "bg-neutral-950 text-white" : "text-slate-600 hover:bg-slate-50"
+            )}
+          >
+            {labelText}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -613,20 +586,21 @@ function SuburbDropdown({
   const label = selectedSuburbs.length === 0 ? "전체 지역" : `${selectedSuburbs.length}개 선택`;
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative shrink-0">
       <button
         type="button"
         onClick={() => setIsOpen((o) => !o)}
-        className="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 text-[12px] not-italic leading-none ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-10 sm:px-3 sm:text-sm"
+        className={cn(
+          "flex h-9 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-neutral-900 outline-none transition-colors hover:border-slate-300",
+          selectedSuburbs.length > 0 && "border-blue-300 bg-blue-50 text-blue-700"
+        )}
       >
-        <span className={cn("truncate not-italic leading-none", selectedSuburbs.length === 0 ? "font-medium text-slate-500" : "font-semibold text-slate-950")}>
-          {label}
-        </span>
-        <ChevronDown className={cn("h-4 w-4 shrink-0 text-slate-400 transition-transform", isOpen && "rotate-180")} />
+        <span className="truncate">{label}</span>
+        <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform", isOpen && "rotate-180")} />
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-md border bg-white shadow-lg">
+        <div className="absolute left-0 top-full z-50 mt-1 w-64 overflow-hidden rounded-md border bg-white shadow-lg">
           <div className="border-b p-2">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />

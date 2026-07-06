@@ -143,7 +143,7 @@ export default function CompanyJobDetail() {
   if (isLoading) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">
-        <main className="mx-auto w-full max-w-3xl px-5 py-8 sm:py-12">
+        <main className="mx-auto w-full max-w-[1220px] px-5 py-8 sm:py-12 lg:px-9">
           <div className="mb-6 h-5 w-24 rounded bg-slate-100" />
           <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-10">
             <div className="h-9 w-3/4 rounded bg-slate-100" />
@@ -157,7 +157,7 @@ export default function CompanyJobDetail() {
   if (!opening) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">
-        <main className="mx-auto w-full max-w-3xl px-5 py-16 text-center">
+        <main className="mx-auto w-full max-w-[1220px] px-5 py-16 text-center lg:px-9">
           <p className="text-base font-bold text-slate-500">해당 공고를 찾을 수 없습니다.</p>
           <Link to={`/company/${slug}`} className="mt-4 inline-block text-sm font-black text-blue-700 hover:underline">
             기업 채용정보로 돌아가기
@@ -169,25 +169,25 @@ export default function CompanyJobDetail() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">
-      <main className="mx-auto w-full max-w-3xl px-5 py-8 sm:py-12">
-        <Link to={`/company/${slug}`} className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-950">
+      <main className="mx-auto w-full max-w-[1220px] px-5 py-8 sm:py-12 lg:px-9">
+        <Link to={`/company/${slug}`} className="mb-6 inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 transition-colors hover:text-neutral-950">
           <ArrowLeft className="h-4 w-4" />
           {profile?.name ?? opening.company} 채용정보
         </Link>
 
-        <section className="rounded-lg border border-slate-200 bg-white p-6 sm:p-10">
+        <section className="border-y border-neutral-950 py-8">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">{opening.posted_at}</span>
+                <span className="inline-block rounded-md bg-blue-50 px-2.5 py-1 text-xs font-black text-blue-700">{opening.posted_at}</span>
                 {opening.quick_apply && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-700">
                     <Zap className="h-3 w-3" />
                     빠른 지원
                   </span>
                 )}
               </div>
-              <h1 className="mt-4 max-w-xl text-2xl font-black leading-tight tracking-[-0.04em] text-neutral-950 sm:text-3xl">
+              <h1 className="mt-4 max-w-4xl text-3xl font-black leading-tight tracking-[-0.045em] text-neutral-950 sm:text-4xl">
                 {opening.title}
               </h1>
               <p className="mt-3 text-base font-bold text-slate-500">{opening.company}</p>
@@ -197,24 +197,24 @@ export default function CompanyJobDetail() {
             )}
           </div>
 
-          <div className="mt-7 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-6">
-            <span className="text-lg font-black text-neutral-950">{opening.pay}</span>
-            <span className="rounded-full border border-blue-600 px-2.5 py-1 text-xs font-black text-blue-700">{opening.pay_type}</span>
-            <span className="ml-2 text-sm font-bold text-slate-400">·</span>
+          <div className="mt-7 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-6">
+            <span className="text-xl font-black text-neutral-950">{opening.pay}</span>
+            <span className="rounded-md bg-blue-50 px-2.5 py-1 text-xs font-black text-blue-700">{opening.pay_type}</span>
+            <span className="ml-2 text-sm font-bold text-slate-300">·</span>
             <span className="text-sm font-bold text-slate-600">{opening.hours}</span>
-            <span className="text-sm font-bold text-slate-400">·</span>
+            <span className="text-sm font-bold text-slate-300">·</span>
             <span className="text-sm font-bold text-slate-600">{opening.area} {opening.suburb}</span>
           </div>
 
           {(opening.quick_apply || contactPhone || contactEmail) && (
-            <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-100 pt-6">
+            <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-200 pt-6">
               {opening.quick_apply && (
                 hasApplied ? (
-                  <Button disabled className="rounded-full px-5">
+                  <Button disabled className="rounded-md px-5">
                     지원 완료
                   </Button>
                 ) : (
-                  <Button className="rounded-full bg-blue-600 px-5 hover:bg-blue-700" onClick={() => setApplyOpen(true)}>
+                  <Button className="rounded-md bg-blue-600 px-5 hover:bg-blue-700" onClick={() => setApplyOpen(true)}>
                     지원하기
                   </Button>
                 )
@@ -222,7 +222,7 @@ export default function CompanyJobDetail() {
               {contactPhone && (
                 <a
                   href={contactPhoneHref ? `tel:${contactPhoneHref}` : undefined}
-                  className="rounded-full bg-blue-600 px-5 py-2.5 text-sm font-black text-white transition-colors hover:bg-blue-700"
+                  className="rounded-md bg-blue-600 px-5 py-2.5 text-sm font-black text-white transition-colors hover:bg-blue-700"
                 >
                   전화 지원 {contactPhone}
                 </a>
@@ -230,7 +230,7 @@ export default function CompanyJobDetail() {
               {contactEmail && (
                 <a
                   href={`mailto:${contactEmail}`}
-                  className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-black text-neutral-900 transition-colors hover:bg-slate-50"
+                  className="rounded-md border border-slate-300 px-5 py-2.5 text-sm font-black text-neutral-900 transition-colors hover:bg-slate-50"
                 >
                   이메일 지원
                 </a>
@@ -240,50 +240,50 @@ export default function CompanyJobDetail() {
         </section>
 
         {conditionRows.length > 0 && (
-          <section className="mt-8 border-t border-slate-200 pt-6">
-            <h2 className="mb-5 text-xl font-bold text-neutral-900">근무조건</h2>
-            <div className="space-y-4">
+          <section className="border-b border-slate-200 py-8">
+            <h2 className="mb-5 text-xl font-black tracking-[-0.035em] text-neutral-950">근무조건</h2>
+            <dl className="divide-y divide-slate-100">
               {conditionRows.map(([label, value, note]) => (
-                <div key={label} className="grid grid-cols-[4.25rem_minmax(0,1fr)] gap-x-2">
-                  <dt className="text-sm font-normal text-slate-500">{label}</dt>
+                <div key={label} className="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-4 py-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
+                  <dt className="text-sm font-bold text-slate-500">{label}</dt>
                   <dd>
-                    <p className="text-sm font-medium text-neutral-900">{value}</p>
-                    {note && <p className="mt-2 text-xs font-normal text-slate-400">{note}</p>}
+                    <p className="text-sm font-bold text-neutral-950 sm:text-base">{value}</p>
+                    {note && <p className="mt-1.5 text-xs font-semibold text-slate-400">{note}</p>}
                   </dd>
                 </div>
               ))}
-            </div>
+            </dl>
           </section>
         )}
 
         {recruitmentRows.length > 0 && (
-          <section className="mt-8 border-t border-slate-200 pt-6">
-            <h2 className="mb-5 text-xl font-bold text-neutral-900">모집조건</h2>
-            <div className="space-y-4">
+          <section className="border-b border-slate-200 py-8">
+            <h2 className="mb-5 text-xl font-black tracking-[-0.035em] text-neutral-950">모집조건</h2>
+            <dl className="divide-y divide-slate-100">
               {recruitmentRows.map(([label, value]) => (
-                <div key={label} className="grid grid-cols-[4.25rem_minmax(0,1fr)] gap-x-2">
-                  <dt className="text-sm font-normal text-slate-500">{label}</dt>
-                  <dd className="text-sm font-medium leading-5 text-neutral-900">{value}</dd>
+                <div key={label} className="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-4 py-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
+                  <dt className="text-sm font-bold text-slate-500">{label}</dt>
+                  <dd className="text-sm font-bold leading-6 text-neutral-950 sm:text-base">{value}</dd>
                 </div>
               ))}
-            </div>
+            </dl>
           </section>
         )}
 
         {skillTags.length > 0 && (
-          <section className="mt-8 border-t border-slate-200 pt-6">
-            <p className="mb-3 text-sm font-bold text-blue-700">이런 스킬이 있으면 좋아요!</p>
+          <section className="border-b border-slate-200 py-8">
+            <p className="mb-4 text-sm font-black text-blue-700">이런 스킬이 있으면 좋아요!</p>
             <div className="flex flex-wrap gap-2">
               {skillTags.map((tag) => (
-                <span key={tag} className="rounded-md bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700">{tag}</span>
+                <span key={tag} className="rounded-md bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-700">{tag}</span>
               ))}
             </div>
           </section>
         )}
 
         {address && (
-          <section className="mt-10">
-            <h2 className="mb-4 text-xl font-black tracking-[-0.04em]">근무지역</h2>
+          <section className="border-b border-slate-200 py-8">
+            <h2 className="mb-4 text-xl font-black tracking-[-0.035em] text-neutral-950">근무지역</h2>
             <div className="mb-4 flex flex-wrap items-center gap-2 text-base font-black text-slate-900">
               <MapPin className="h-4 w-4 text-blue-700" />
               {address}

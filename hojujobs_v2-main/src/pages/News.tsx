@@ -133,17 +133,17 @@ export default function News() {
   });
 
   return (
-    <div className="flex w-full min-h-0 flex-1 flex-col bg-[#f7f8fb]">
-      <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
-        <h1 className="mb-6 text-2xl font-black tracking-[-0.04em] text-neutral-950 sm:text-3xl">뉴스</h1>
+    <div className="flex min-h-0 w-full flex-1 flex-col bg-white">
+      <main className="mx-auto w-full max-w-[1220px] px-5 py-10 sm:py-12 lg:px-9">
+        <h1 className="mb-8 text-xl font-black tracking-[-0.045em] text-neutral-950 sm:text-2xl">뉴스</h1>
 
         {!isLoading && !errorMessage && topics.length > 0 && (
-          <nav className="mb-6 flex flex-wrap gap-2 border-b border-slate-200 pb-4" aria-label="뉴스 주제">
+          <nav className="mb-8 flex flex-wrap gap-2" aria-label="뉴스 주제">
             {topics.map((topic) => (
               <a
                 key={topic.key}
                 href={`#${topic.key.toLowerCase()}`}
-                className="inline-flex h-9 items-center rounded-full border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                className="inline-flex h-10 items-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-black text-neutral-950 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
               >
                 {topic.labelKo}
               </a>
@@ -167,14 +167,11 @@ export default function News() {
           <div className="space-y-12">
             {topics.map((topic) => (
               <section key={topic.key} id={topic.key.toLowerCase()} className="scroll-mt-24">
-                <div className="mb-5 border-b border-slate-200 pb-4">
-                  <h2 className="text-xl font-black tracking-[-0.04em] text-neutral-950 sm:text-2xl">{topic.labelKo}</h2>
-                  {topic.summary && (
-                    <p className="mt-2 w-full text-sm leading-relaxed text-slate-600 sm:text-base">{topic.summary}</p>
-                  )}
+                <div className="border-b border-neutral-950 pb-4">
+                  <h2 className="text-2xl font-black tracking-[-0.045em] text-neutral-950 sm:text-3xl">{topic.labelKo}</h2>
                 </div>
 
-                <div className="grid gap-4">
+                <div>
                   {topic.stories.map((story) => (
                     <a
                       key={story.id}
@@ -192,28 +189,36 @@ export default function News() {
                           },
                         });
                       }}
-                      className="group flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_2px_10px_rgba(15,23,42,0.04)] transition-colors hover:border-blue-200 hover:bg-slate-50/80 hover:shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
+                      className="group grid gap-4 border-b border-slate-200 py-6 transition-colors hover:bg-slate-50 sm:grid-cols-[18rem_minmax(0,1fr)] sm:gap-7 sm:py-8"
                     >
                       {story.imageUrl && (
-                        <img
-                          src={story.imageUrl}
-                          alt=""
-                          className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-[1.01]"
-                          loading="lazy"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                        />
-                      )}
-                      <div className="flex flex-1 flex-col p-4 sm:p-5">
-                        <div className="mb-3 flex items-center justify-between gap-3">
-                          <span className="rounded-md bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-600">{story.meta}</span>
-                          <span className="text-right text-[11px] font-medium text-slate-400">{story.publishedAt}</span>
+                        <div className="aspect-[16/10] overflow-hidden bg-slate-100 sm:aspect-[16/9]">
+                          <img
+                            src={story.imageUrl}
+                            alt=""
+                            className="h-full w-full scale-150 object-cover transition-transform duration-300 group-hover:scale-[1.55]"
+                            loading="lazy"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                          />
                         </div>
-                        <h3 className="text-base font-semibold leading-snug text-slate-950 transition-colors group-hover:text-blue-700 sm:text-lg">
+                      )}
+                      <div className={story.imageUrl ? "min-w-0" : "min-w-0 sm:col-span-2"}>
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                          {story.meta && (
+                            <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                              {story.meta}
+                            </span>
+                          )}
+                          <span className="text-sm font-bold text-slate-500">{story.source}</span>
+                        </div>
+                        <h3 className="line-clamp-2 text-xl font-black leading-snug tracking-[-0.035em] text-neutral-950 transition-colors group-hover:text-blue-700 sm:text-2xl">
                           {story.title}
                         </h3>
-                        <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{story.summaryKo}</p>
-                        <p className="mt-3 text-[11px] font-semibold text-slate-400">
-                          {story.source} · {domainFromUrl(story.sourceUrl)}
+                        <p className="mt-3 line-clamp-2 text-base font-semibold leading-relaxed text-slate-500 sm:text-lg">
+                          {story.summaryKo}
+                        </p>
+                        <p className="mt-3 text-sm font-semibold text-slate-500">
+                          {story.publishedAt || domainFromUrl(story.sourceUrl)}
                         </p>
                       </div>
                     </a>

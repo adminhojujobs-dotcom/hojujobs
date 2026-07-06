@@ -9,6 +9,9 @@ type ContactRevealSectionProps = {
   phone?: string | null;
   email?: string | null;
   kakaoid?: string | null;
+  className?: string;
+  headingClassName?: string;
+  contentClassName?: string;
 };
 
 function trackContactType(
@@ -155,7 +158,7 @@ function RevealOverlay() {
   );
 }
 
-export function ContactRevealSection({ phone, email, kakaoid }: ContactRevealSectionProps) {
+export function ContactRevealSection({ phone, email, kakaoid, className, headingClassName, contentClassName }: ContactRevealSectionProps) {
   const { revealed, interactiveProps, listingType, listingId } = useListingReveal();
 
   const hasContact = !!(phone || email || kakaoid);
@@ -166,11 +169,12 @@ export function ContactRevealSection({ phone, email, kakaoid }: ContactRevealSec
       {...interactiveProps}
       className={cn(
         "bg-card border border-border rounded-xl p-6 mb-6",
+        className,
         interactiveProps.className,
       )}
     >
-      <h2 className="text-lg font-bold text-foreground mb-4">연락처</h2>
-      <div className={cn("relative rounded-lg", !revealed && "min-h-[7.5rem] py-2")}>
+      <h2 className={cn("text-lg font-bold text-foreground mb-4", headingClassName)}>연락처</h2>
+      <div className={cn("relative rounded-lg", !revealed && "min-h-[7.5rem] py-2", contentClassName)}>
         <ContactDetails
           phone={phone}
           email={email}

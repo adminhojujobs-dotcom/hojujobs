@@ -211,30 +211,30 @@ export default function CompanyParkBongsook() {
               {jobOpenings.map((opening) => (
                 <article
                   key={`${opening.suburb}-${opening.title}`}
-                  className="px-5 py-6 lg:grid lg:grid-cols-[10rem_minmax(0,1fr)_11rem_9rem] lg:items-center lg:gap-0 lg:py-7"
+                  className="px-5 py-4 lg:grid lg:grid-cols-[10rem_minmax(0,1fr)_11rem_9rem] lg:items-center lg:gap-0 lg:py-7"
                 >
-                  <div className="flex flex-col gap-2 lg:hidden">
+                  <div className="flex flex-col gap-1.5 lg:hidden">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-black text-slate-500">{opening.company}</p>
+                      <p className="text-xs font-black text-slate-500">{opening.company}</p>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-blue-600">{opening.postedAt}</span>
-                        <Heart className="h-5 w-5 text-slate-300" strokeWidth={1.8} />
+                        <span className="text-xs font-bold text-blue-600">{opening.postedAt}</span>
+                        <Heart className="h-4 w-4 text-slate-300" strokeWidth={1.8} />
                       </div>
                     </div>
 
-                    <Link to={`/company/${profile.slug}/opening/${opening.id}`} className="text-lg font-black leading-snug tracking-[-0.03em] text-neutral-950">
+                    <Link to={`/company/${profile.slug}/opening/${opening.id}`} className="text-base font-black leading-snug tracking-[-0.03em] text-neutral-950">
                       {opening.title}
                     </Link>
 
-                    <p className="text-sm font-bold text-slate-400">{opening.hours}</p>
+                    <p className="text-xs font-bold text-slate-400">{opening.hours}</p>
 
-                    <div className="mt-2 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
-                      <p className="text-sm font-bold text-slate-500">
+                    <div className="mt-1.5 flex items-center justify-between gap-3 border-t border-slate-100 pt-2">
+                      <p className="text-xs font-bold text-slate-500">
                         {opening.area} {opening.suburb} · <span className="text-neutral-900">{opening.pay}</span>
                       </p>
                       <Link
                         to={`/company/${profile.slug}/opening/${opening.id}`}
-                        className="shrink-0 rounded-full border border-slate-200 px-4 py-2 text-sm font-black text-neutral-900"
+                        className="shrink-0 rounded-full border border-slate-200 px-3.5 py-1.5 text-xs font-black text-neutral-900"
                       >
                         지원하기
                       </Link>
