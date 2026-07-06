@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ExternalLink, MapPin } from "lucide-react";
+import { ArrowLeft, ExternalLink, MapPin, Zap } from "lucide-react";
+import { QuickApplyDialog } from "@/components/QuickApplyDialog";
+import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import type { Database, Json } from "@/integrations/supabase/types";
 
 type CompanyProfileRow = Database["public"]["Tables"]["company_profiles"]["Row"];
@@ -23,10 +26,13 @@ function detailRowsFromJson(value: Json): DetailRow[] {
 
 export default function CompanyJobDetail() {
   const { slug = "", openingId = "" } = useParams();
+  const { user } = useAuth();
   const [opening, setOpening] = useState<CompanyJobOpeningRow | null>(null);
   const [profile, setProfile] = useState<CompanyProfileRow | null>(null);
   const [branch, setBranch] = useState<CompanyBranchRow | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [applyOpen, setApplyOpen] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,6 +88,21 @@ export default function CompanyJobDetail() {
       cancelled = true;
     };
   }, [slug, openingId]);
+
+  useEffect(() => {
+    if (!user || !opening?.quick_apply) {
+      setHasApplied(false);
+      return;
+    }
+
+    supabase
+      .from("company_job_applications")
+      .select("id")
+      .eq("opening_id", opening.id)
+      .eq("applicant_user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setHasApplied(Boolean(data)));
+  }, [user, opening]);
 
   const conditionRows = useMemo(
     () => {
@@ -157,7 +178,15 @@ export default function CompanyJobDetail() {
         <section className="rounded-lg border border-slate-200 bg-white p-6 sm:p-10">
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div>
-              <span className="inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">{opening.posted_at}</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">{opening.posted_at}</span>
+                {opening.quick_apply && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
+                    <Zap className="h-3 w-3" />
+                    빠른 지원
+                  </span>
+                )}
+              </div>
               <h1 className="mt-4 max-w-xl text-2xl font-black leading-tight tracking-[-0.04em] text-neutral-950 sm:text-3xl">
                 {opening.title}
               </h1>
@@ -177,8 +206,19 @@ export default function CompanyJobDetail() {
             <span className="text-sm font-bold text-slate-600">{opening.area} {opening.suburb}</span>
           </div>
 
-          {(contactPhone || contactEmail) && (
+          {(opening.quick_apply || contactPhone || contactEmail) && (
             <div className="mt-6 flex flex-wrap gap-3 border-t border-slate-100 pt-6">
+              {opening.quick_apply && (
+                hasApplied ? (
+                  <Button disabled className="rounded-full px-5">
+                    지원 완료
+                  </Button>
+                ) : (
+                  <Button className="rounded-full bg-blue-600 px-5 hover:bg-blue-700" onClick={() => setApplyOpen(true)}>
+                    지원하기
+                  </Button>
+                )
+              )}
               {contactPhone && (
                 <a
                   href={contactPhoneHref ? `tel:${contactPhoneHref}` : undefined}
@@ -269,6 +309,17 @@ export default function CompanyJobDetail() {
           </section>
         )}
       </main>
+
+      {opening.quick_apply && (
+        <QuickApplyDialog
+          companySlug={slug}
+          openingId={opening.id}
+          openingTitle={opening.title}
+          open={applyOpen}
+          onOpenChange={setApplyOpen}
+          onApplied={() => setHasApplied(true)}
+        />
+      )}
     </div>
   );
 }

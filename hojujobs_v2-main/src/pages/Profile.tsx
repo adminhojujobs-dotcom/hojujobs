@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { LogOut, Plus, Trash2 } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { LogOut, Plus, Trash2, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDevPreviewAuth } from "@/components/DevPreviewAuth";
 import { useSEO } from "@/hooks/useSEO";
@@ -13,14 +13,19 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  buildCompanyOpeningInsert,
+  MANAGED_COMPANY_OPENING_SELECT,
+  openingPublicPath,
+  type ManagedCompanyOpening,
+} from "@/lib/companyJobOpenings";
+import {
   branchOptionLabel,
-  type BusinessJobListing,
   type CompanyBranchOption,
   VISA_TYPE_OPTIONS,
 } from "@/lib/userProfile";
 import { toast } from "sonner";
 
-type BusinessJobWithBranch = BusinessJobListing & {
+type ManagedOpeningWithBranch = ManagedCompanyOpening & {
   branch?: CompanyBranchOption | null;
 };
 
@@ -44,7 +49,7 @@ export default function Profile() {
     job_email_opt_in: false,
   });
 
-  const [businessJobs, setBusinessJobs] = useState<BusinessJobWithBranch[]>([]);
+  const [managedOpenings, setManagedOpenings] = useState<ManagedOpeningWithBranch[]>([]);
   const [jobsLoading, setJobsLoading] = useState(false);
   const [jobForm, setJobForm] = useState({
     branchId: "",
@@ -52,6 +57,7 @@ export default function Profile() {
     title: "",
     salary: "",
     details: "",
+    quickApply: false,
   });
   const [selectedBranch, setSelectedBranch] = useState<CompanyBranchOption | null>(null);
   const [postingJob, setPostingJob] = useState(false);
@@ -84,16 +90,18 @@ export default function Profile() {
 
   useEffect(() => {
     if (preview?.isBusiness) {
-      setBusinessJobs([
+      setManagedOpenings([
         {
-          id: "preview-job-1",
-          user_id: user?.id ?? "preview",
-          branch_id: "preview-branch",
+          id: "preview-opening-1",
           company_slug: "kmall09",
+          branch_id: "preview-branch",
           title: "카페 홀 서빙 스태프",
-          salary: "시급 $26",
-          details: "주말 근무 가능자 우대. 한국어/영어 가능.",
+          pay: "시급 $26",
+          hours: "시간협의",
+          quick_apply: true,
           is_active: true,
+          posted_by_user_id: user?.id ?? "preview",
+          detail_intro: "주말 근무 가능자 우대. 한국어/영어 가능.",
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           branch: {
@@ -114,28 +122,28 @@ export default function Profile() {
 
     let cancelled = false;
 
-    async function fetchBusinessJobs() {
+    async function fetchManagedOpenings() {
       setJobsLoading(true);
       const { data, error } = await supabase
-        .from("business_job_listings")
-        .select("id, user_id, branch_id, company_slug, title, salary, details, is_active, created_at, updated_at")
-        .eq("user_id", user.id)
+        .from("company_job_openings")
+        .select(MANAGED_COMPANY_OPENING_SELECT)
+        .eq("posted_by_user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (cancelled) return;
 
       if (error) {
         toast.error("등록한 공고를 불러오지 못했습니다.");
-        setBusinessJobs([]);
+        setManagedOpenings([]);
         setJobsLoading(false);
         return;
       }
 
-      const listings = (data ?? []) as BusinessJobListing[];
-      const branchIds = [...new Set(listings.map((job) => job.branch_id))];
+      const listings = (data ?? []) as ManagedCompanyOpening[];
+      const branchIds = [...new Set(listings.map((job) => job.branch_id).filter(Boolean))] as string[];
 
       if (branchIds.length === 0) {
-        setBusinessJobs(listings.map((job) => ({ ...job, branch: null })));
+        setManagedOpenings(listings.map((job) => ({ ...job, branch: null })));
         setJobsLoading(false);
         return;
       }
@@ -166,16 +174,16 @@ export default function Profile() {
         ]),
       );
 
-      setBusinessJobs(
+      setManagedOpenings(
         listings.map((job) => ({
           ...job,
-          branch: branchById.get(job.branch_id) ?? null,
+          branch: job.branch_id ? branchById.get(job.branch_id) ?? null : null,
         })),
       );
       setJobsLoading(false);
     }
 
-    fetchBusinessJobs();
+    fetchManagedOpenings();
     return () => {
       cancelled = true;
     };
@@ -233,16 +241,18 @@ export default function Profile() {
 
     setPostingJob(true);
     const { data, error } = await supabase
-      .from("business_job_listings")
-      .insert({
-        user_id: user.id,
-        branch_id: selectedBranch.id,
-        company_slug: selectedBranch.company_slug,
-        title: jobForm.title.trim(),
-        salary: jobForm.salary.trim() || null,
-        details: jobForm.details.trim() || null,
-      })
-      .select("id, user_id, branch_id, company_slug, title, salary, details, is_active, created_at, updated_at")
+      .from("company_job_openings")
+      .insert(
+        buildCompanyOpeningInsert({
+          userId: user.id,
+          branch: selectedBranch,
+          title: jobForm.title,
+          salary: jobForm.salary,
+          details: jobForm.details,
+          quickApply: jobForm.quickApply,
+        }),
+      )
+      .select(MANAGED_COMPANY_OPENING_SELECT)
       .single();
 
     if (error || !data) {
@@ -251,25 +261,25 @@ export default function Profile() {
       return;
     }
 
-    setBusinessJobs((current) => [{ ...(data as BusinessJobListing), branch: selectedBranch }, ...current]);
-    setJobForm({ branchId: "", companySlug: "", title: "", salary: "", details: "" });
+    setManagedOpenings((current) => [{ ...(data as ManagedCompanyOpening), branch: selectedBranch }, ...current]);
+    setJobForm({ branchId: "", companySlug: "", title: "", salary: "", details: "", quickApply: false });
     setSelectedBranch(null);
     toast.success("채용 공고가 등록되었습니다.");
     setPostingJob(false);
   };
 
-  const deleteBusinessJob = async (jobId: string) => {
+  const deleteManagedOpening = async (openingId: string) => {
     if (preview) {
       toast.message("미리보기 모드입니다.");
       return;
     }
     if (!confirm("이 공고를 삭제하시겠습니까?")) return;
-    const { error } = await supabase.from("business_job_listings").delete().eq("id", jobId);
+    const { error } = await supabase.from("company_job_openings").delete().eq("id", openingId);
     if (error) {
       toast.error("공고 삭제에 실패했습니다.");
       return;
     }
-    setBusinessJobs((current) => current.filter((job) => job.id !== jobId));
+    setManagedOpenings((current) => current.filter((job) => job.id !== openingId));
     toast.success("공고가 삭제되었습니다.");
   };
 
@@ -396,6 +406,21 @@ export default function Profile() {
                 <Label htmlFor="job-details">상세 내용</Label>
                 <Textarea id="job-details" rows={5} value={jobForm.details} onChange={(e) => setJobForm((prev) => ({ ...prev, details: e.target.value }))} />
               </div>
+              <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4">
+                <Checkbox
+                  id="job-quick-apply"
+                  checked={jobForm.quickApply}
+                  onCheckedChange={(checked) => setJobForm((prev) => ({ ...prev, quickApply: checked === true }))}
+                />
+                <div>
+                  <Label htmlFor="job-quick-apply" className="text-sm font-semibold">
+                    빠른 지원 활성화
+                  </Label>
+                  <p className="mt-1 text-sm text-slate-500">
+                    활성화하면 구직자가 프로필 이력서로 바로 지원할 수 있습니다.
+                  </p>
+                </div>
+              </div>
               <div className="flex justify-end">
                 <Button type="submit" disabled={postingJob}>
                   {postingJob ? "등록 중..." : "공고 등록"}
@@ -407,27 +432,42 @@ export default function Profile() {
               <h2 className="mb-4 text-lg font-black text-neutral-950">등록한 채용 공고</h2>
               {jobsLoading ? (
                 <p className="text-sm text-muted-foreground">불러오는 중...</p>
-              ) : businessJobs.length === 0 ? (
+              ) : managedOpenings.length === 0 ? (
                 <p className="rounded-xl border border-dashed bg-slate-50 py-10 text-center text-sm text-muted-foreground">
                   등록한 공고가 없습니다.
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {businessJobs.map((job) => (
-                    <div key={job.id} className="rounded-xl border border-slate-100 px-4 py-4">
+                  {managedOpenings.map((opening) => (
+                    <div key={opening.id} className="rounded-xl border border-slate-100 px-4 py-4">
                       <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate font-bold text-neutral-950">{job.title}</p>
+                        <Link to={`/my-jobs/${opening.id}`} className="min-w-0 flex-1 hover:opacity-80">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="truncate font-bold text-neutral-950">{opening.title}</p>
+                            {opening.quick_apply && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700">
+                                <Zap className="h-3 w-3" />
+                                빠른 지원
+                              </span>
+                            )}
+                          </div>
                           <p className="mt-1 text-sm text-slate-500">
-                            {job.branch ? branchOptionLabel(job.branch) : job.company_slug}
+                            {opening.branch ? branchOptionLabel(opening.branch) : opening.company_slug}
                           </p>
-                          {job.salary && <p className="mt-1 text-sm font-semibold text-blue-700">{job.salary}</p>}
-                          {job.details && <p className="mt-2 line-clamp-3 text-sm text-slate-600">{job.details}</p>}
-                        </div>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => void deleteBusinessJob(job.id)}>
+                          {opening.pay && <p className="mt-1 text-sm font-semibold text-blue-700">{opening.pay}</p>}
+                          {opening.detail_intro && <p className="mt-2 line-clamp-3 text-sm text-slate-600">{opening.detail_intro}</p>}
+                          <p className="mt-2 text-xs font-semibold text-blue-700">지원자 보기 →</p>
+                        </Link>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => void deleteManagedOpening(opening.id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
+                      <Link
+                        to={openingPublicPath(opening.company_slug, opening.id)}
+                        className="mt-3 inline-block text-xs font-semibold text-slate-500 hover:text-blue-700"
+                      >
+                        공개 페이지 보기
+                      </Link>
                     </div>
                   ))}
                 </div>

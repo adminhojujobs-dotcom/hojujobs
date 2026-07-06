@@ -53,6 +53,38 @@ export type Database = {
         }
         Relationships: []
       }
+      business_job_applications: {
+        Row: {
+          applicant_user_id: string
+          created_at: string
+          cv_snapshot: Json
+          id: string
+          job_listing_id: string
+        }
+        Insert: {
+          applicant_user_id: string
+          created_at?: string
+          cv_snapshot: Json
+          id?: string
+          job_listing_id: string
+        }
+        Update: {
+          applicant_user_id?: string
+          created_at?: string
+          cv_snapshot?: Json
+          id?: string
+          job_listing_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_job_applications_job_listing_id_fkey"
+            columns: ["job_listing_id"]
+            isOneToOne: false
+            referencedRelation: "business_job_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_job_listings: {
         Row: {
           branch_id: string
@@ -61,6 +93,7 @@ export type Database = {
           details: string | null
           id: string
           is_active: boolean
+          quick_apply: boolean
           salary: string | null
           title: string
           updated_at: string
@@ -73,6 +106,7 @@ export type Database = {
           details?: string | null
           id?: string
           is_active?: boolean
+          quick_apply?: boolean
           salary?: string | null
           title: string
           updated_at?: string
@@ -85,6 +119,7 @@ export type Database = {
           details?: string | null
           id?: string
           is_active?: boolean
+          quick_apply?: boolean
           salary?: string | null
           title?: string
           updated_at?: string
@@ -207,6 +242,38 @@ export type Database = {
           },
         ]
       }
+      company_job_applications: {
+        Row: {
+          applicant_user_id: string
+          created_at: string
+          cv_snapshot: Json
+          id: string
+          opening_id: string
+        }
+        Insert: {
+          applicant_user_id: string
+          created_at?: string
+          cv_snapshot: Json
+          id?: string
+          opening_id: string
+        }
+        Update: {
+          applicant_user_id?: string
+          created_at?: string
+          cv_snapshot?: Json
+          id?: string
+          opening_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_job_applications_opening_id_fkey"
+            columns: ["opening_id"]
+            isOneToOne: false
+            referencedRelation: "company_job_openings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_job_openings: {
         Row: {
           apply_email: string | null
@@ -224,6 +291,8 @@ export type Database = {
           pay: string
           pay_type: string
           posted_at: string
+          posted_by_user_id: string | null
+          quick_apply: boolean
           recruitment_rows: Json
           skill_tags: string[]
           sort_order: number
@@ -247,6 +316,8 @@ export type Database = {
           pay: string
           pay_type?: string
           posted_at?: string
+          posted_by_user_id?: string | null
+          quick_apply?: boolean
           recruitment_rows?: Json
           skill_tags?: string[]
           sort_order?: number
@@ -270,6 +341,8 @@ export type Database = {
           pay?: string
           pay_type?: string
           posted_at?: string
+          posted_by_user_id?: string | null
+          quick_apply?: boolean
           recruitment_rows?: Json
           skill_tags?: string[]
           sort_order?: number

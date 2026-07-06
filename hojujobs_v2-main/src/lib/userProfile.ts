@@ -17,19 +17,6 @@ export interface UserProfile {
   updated_at: string;
 }
 
-export interface BusinessJobListing {
-  id: string;
-  user_id: string;
-  branch_id: string;
-  company_slug: string;
-  title: string;
-  salary: string | null;
-  details: string | null;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface CompanyBranchOption {
   id: string;
   company_slug: string;
@@ -54,4 +41,15 @@ export const VISA_TYPE_OPTIONS = [
 export function branchOptionLabel(branch: CompanyBranchOption) {
   const location = branch.branch_label || branch.branch_name;
   return `${branch.company_name} · ${location}`;
+}
+
+export function isCvComplete(profile: Pick<UserProfile, "full_name" | "contact_number" | "email" | "visa_type" | "introduction"> | null) {
+  if (!profile) return false;
+  return Boolean(
+    profile.full_name?.trim() &&
+      profile.contact_number?.trim() &&
+      profile.email?.trim() &&
+      profile.visa_type?.trim() &&
+      profile.introduction?.trim(),
+  );
 }
