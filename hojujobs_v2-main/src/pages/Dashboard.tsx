@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
-import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/trackEvent";
 import { ExternalLink, ArrowRight } from "lucide-react";
@@ -356,7 +355,6 @@ export default function Dashboard() {
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
-      <Header />
       <div className="max-w-4xl mx-auto px-4 pt-4 pb-8 w-full space-y-5">
 
         {/* Exchange rate + Flights */}

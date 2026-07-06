@@ -1,166 +1,134 @@
-import { useState, useEffect, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Header } from "@/components/Header";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useDevPreviewAuth } from "@/components/DevPreviewAuth";
+import { useSEO } from "@/hooks/useSEO";
+import { supabase } from "@/integrations/supabase/client";
+import { BranchSearchSelect } from "@/components/BranchSearchSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LocationPicker } from "@/components/LocationPicker";
+import type { CompanyBranchOption } from "@/lib/userProfile";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
-import { useSEO } from "@/hooks/useSEO";
-import { clearListingCaches } from "@/lib/listingCache";
-import { trackEvent } from "@/lib/trackEvent";
 
 export default function PostJob() {
-  useSEO({ title: "공고 등록 | Hoju Jobs", description: "Hoju Jobs 공고 등록", noindex: true });
-  const { user } = useAuth();
+  useSEO({ title: "채용 공고 등록 | Hoju Jobs", description: "사업자 채용 공고 등록", noindex: true });
+
   const navigate = useNavigate();
-  useEffect(() => {
-    trackEvent("job_post_started");
-  }, []);
-  const [loading, setLoading] = useState(false);
+  const preview = useDevPreviewAuth();
+  const { user, loading, needsOnboarding, isBusiness } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState<CompanyBranchOption | null>(null);
   const [form, setForm] = useState({
+    branchId: "",
     title: "",
-    industry: "",
-    customIndustry: "",
-    contact: "",
-    email: "",
-    kakaoid: "",
-    google_search: "",
-    description: "",
+    salary: "",
+    details: "",
   });
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const [existingJobs, setExistingJobs] = useState<{ location: string[]; industry: string }[]>([]);
 
   useEffect(() => {
-    async function fetchOptions() {
-      const { data } = await supabase.from("jobs").select("location, industry");
-      if (data) setExistingJobs(data);
+    if (preview) return;
+    if (!loading && !user) {
+      navigate("/auth?next=/post-job", { replace: true });
+      return;
     }
-    fetchOptions();
-  }, []);
+    if (!loading && user && needsOnboarding) {
+      navigate("/onboarding", { replace: true });
+      return;
+    }
+    if (!loading && user && !needsOnboarding && !isBusiness) {
+      navigate("/profile", { replace: true });
+    }
+  }, [preview, loading, user, needsOnboarding, isBusiness, navigate]);
 
-  const locations = useMemo(() => [...new Set(existingJobs.flatMap((j) => j.location ?? []))].sort(), [existingJobs]);
-  const industries = useMemo(() => [...new Set(existingJobs.map((j) => j.industry).filter(Boolean))].sort() as string[], [existingJobs]);
-
-  const updateField = (field: string, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const finalIndustry = form.industry === "__custom" ? form.customIndustry : form.industry;
-
-    if (selectedLocations.length === 0 || !finalIndustry) {
-      toast.error("지역과 업종을 선택해주세요.");
-      setLoading(false);
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (preview) {
+      toast.message("미리보기 모드입니다. 실제 저장은 로그인 후 가능합니다.");
+      return;
+    }
+    if (!user || !selectedBranch || !form.title.trim()) {
+      toast.error("지점과 공고명을 입력해주세요.");
       return;
     }
 
-    const { error } = await supabase.from("jobs").insert({
-      title: form.title,
-      location: selectedLocations,
-      industry: finalIndustry,
-      contact: form.contact || null,
-      email: form.email || null,
-      kakaoid: form.kakaoid || null,
-      google_search: form.google_search || null,
-      description: form.description || null,
-      user_id: user?.id ?? null,
+    setSubmitting(true);
+    const { error } = await supabase.from("business_job_listings").insert({
+      user_id: user.id,
+      branch_id: selectedBranch.id,
+      company_slug: selectedBranch.company_slug,
+      title: form.title.trim(),
+      salary: form.salary.trim() || null,
+      details: form.details.trim() || null,
     });
 
     if (error) {
-      toast.error("공고 등록 실패: " + error.message);
-    } else {
-      toast.success("공고가 등록되었습니다!");
-      clearListingCaches();
-      trackEvent("job_post_submitted", {
-        listing_type: "job",
-        metadata: { suburb: selectedLocations.join(", "), category: finalIndustry },
-      });
-      navigate("/my-posts");
+      toast.error("공고 등록에 실패했습니다.");
+      setSubmitting(false);
+      return;
     }
-    setLoading(false);
+
+    toast.success("채용 공고가 등록되었습니다.");
+    navigate("/profile");
+    setSubmitting(false);
   };
 
-  return (
-    <div className="flex w-full min-h-0 flex-1 flex-col">
-      <Header />
-      <div className="w-full max-w-6xl mx-auto px-4 py-8">
-        <div className="mb-8 max-w-3xl mx-auto">
-          <Link to="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            홈으로
-          </Link>
-        </div>
-
-        <h2 className="text-2xl font-bold text-foreground mb-8 max-w-3xl mx-auto">새 공고 등록</h2>
-
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div className="space-y-2">
-              <Label>제목 *</Label>
-              <Input value={form.title} onChange={(e) => updateField("title", e.target.value)} required placeholder="예: 주방 보조" />
-            </div>
-            <div className="space-y-2">
-              <Label>지역 *</Label>
-              <LocationPicker
-                availableLocations={locations}
-                selectedLocations={selectedLocations}
-                onLocationsChange={setSelectedLocations}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>업종 *</Label>
-              <Select value={form.industry} onValueChange={(v) => updateField("industry", v)}>
-                <SelectTrigger><SelectValue placeholder="업종 선택" /></SelectTrigger>
-                <SelectContent>
-                  {industries.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
-                  <SelectItem value="__custom">직접 입력</SelectItem>
-                </SelectContent>
-              </Select>
-              {form.industry === "__custom" && (
-                <Input value={form.customIndustry} onChange={(e) => updateField("customIndustry", e.target.value)} placeholder="예: 요식업" className="mt-2" />
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label>연락처</Label>
-              <Input value={form.contact} onChange={(e) => updateField("contact", e.target.value)} placeholder="예: 0412 345 678" />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>이메일</Label>
-            <Input type="email" value={form.email} onChange={(e) => updateField("email", e.target.value)} placeholder="예: jobs@example.com" />
-          </div>
-
-          <div className="space-y-2">
-            <Label>카카오톡 ID</Label>
-            <Input value={form.kakaoid} onChange={(e) => updateField("kakaoid", e.target.value)} placeholder="예: kakao123" />
-          </div>
-
-          <div className="space-y-2">
-            <Label>구글 지도 검색어</Label>
-            <Input value={form.google_search} onChange={(e) => updateField("google_search", e.target.value)} placeholder="예: 이스트우드 카페, Eastwood NSW" />
-            <p className="text-xs text-muted-foreground">공고 상세페이지에 지도가 자동으로 표시됩니다</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label>상세 내용</Label>
-            <Textarea value={form.description} onChange={(e) => updateField("description", e.target.value)} placeholder="상세한 공고 내용을 입력해주세요" rows={6} />
-          </div>
-
-          <Button type="submit" className="w-full mt-2" size="lg" disabled={loading}>
-            {loading ? "등록 중..." : "공고 등록하기"}
-          </Button>
-        </form>
+  if (!preview && (loading || !user || !isBusiness)) {
+    return (
+      <div className="flex min-h-0 w-full flex-1 items-center justify-center px-4 py-16 text-sm text-muted-foreground">
+        불러오는 중...
       </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-0 w-full flex-1 flex-col bg-[#f7f8fb]">
+      <main className="mx-auto w-full max-w-2xl px-4 py-8 sm:py-10">
+        <Link to="/profile" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" />
+          프로필로 돌아가기
+        </Link>
+
+        <h1 className="mb-6 text-2xl font-black tracking-[-0.04em] text-neutral-950 sm:text-3xl">채용 공고 등록</h1>
+
+        {preview && (
+          <p className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+            미리보기 모드 — UI만 확인할 수 있습니다.
+          </p>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="space-y-2">
+            <Label>사업체 지점 *</Label>
+            <BranchSearchSelect
+              value={form.branchId}
+              onChange={(branchId, branch) => {
+                setForm((prev) => ({ ...prev, branchId }));
+                setSelectedBranch(branch);
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="title">공고명 *</Label>
+            <Input id="title" value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="salary">급여</Label>
+            <Input id="salary" value={form.salary} onChange={(e) => setForm((prev) => ({ ...prev, salary: e.target.value }))} placeholder="예: 시급 $25" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="details">상세 내용</Label>
+            <Textarea id="details" rows={6} value={form.details} onChange={(e) => setForm((prev) => ({ ...prev, details: e.target.value }))} />
+          </div>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={submitting}>
+              {submitting ? "등록 중..." : "공고 등록"}
+            </Button>
+          </div>
+        </form>
+      </main>
     </div>
   );
 }

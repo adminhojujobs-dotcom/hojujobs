@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import hojuJobsLogo from "@/assets/hoju-jobs-logo.png";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -230,10 +229,7 @@ export default function Admin() {
   return (
     <div className="flex w-full min-w-0 min-h-0 flex-1 flex-col overflow-x-hidden bg-background">
       <div className="mx-auto w-full max-w-5xl px-4 py-8">
-        <div className="mb-6 space-y-4">
-          <Link to="/">
-            <img src={hojuJobsLogo} alt="Hoju Jobs" className="h-8 hover:opacity-80 transition-opacity" />
-          </Link>
+        <div className="mb-6">
           <Link to="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
             홈으로

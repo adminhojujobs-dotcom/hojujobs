@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bath, BedSingle, Check, ChevronDown, ChevronLeft, ChevronRight, MapPin, RotateCcw, Search, ShieldCheck, UserCheck, X } from "lucide-react";
-import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -251,7 +250,6 @@ export default function Flatmates() {
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-[#f7f8fb]">
-      <Header />
 
       <main className="mx-auto w-full max-w-6xl px-4 pt-4 pb-8">
         <div className="grid gap-5 lg:grid-cols-[200px_minmax(0,1fr)]">

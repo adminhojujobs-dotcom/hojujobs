@@ -4,22 +4,18 @@ import {
   BadgePercent,
   Briefcase,
   CalendarDays,
-  Check,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
-  MapPin,
   Newspaper,
-  X,
 } from "lucide-react";
-import { ModernHeader } from "@/components/ModernHeader";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { BLOG_POSTS } from "@/data/blogPosts";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { UserJobsTable } from "@/components/UserJobsTable";
+import { USER_JOB_SELECT, type UserJobRow } from "@/lib/userJobs";
 
 interface IndexProps {
   cityFilter?: string;
@@ -62,17 +58,6 @@ const routeMeta: Record<string, { title: string; description: string; canonical:
     canonical: "https://hojujobs.com/adelaide",
   },
 };
-
-const locationGroups = [
-  {
-    state: "NSW",
-    suburbs: ["스트라스필드", "리드컴", "이스트우드", "에핑", "채스우드", "로즈", "캠시", "버우드", "파라마타"],
-  },
-  {
-    state: "VIC",
-    suburbs: ["멜버른 CBD", "클레이튼", "박스힐", "글렌웨이버리", "카네기", "오클리", "돈카스터", "버우드", "사우스뱅크"],
-  },
-];
 
 interface PromoItem {
   label: string;
@@ -124,7 +109,7 @@ const mobileShortcutItems = [
   },
   {
     label: "이벤트",
-    href: "/",
+    href: "/events",
     icon: CalendarDays,
     iconClassName: "bg-amber-50 text-amber-500",
   },
@@ -753,99 +738,6 @@ function QuickSections() {
   );
 }
 
-function MobileLocationPicker() {
-  const [selectedState, setSelectedState] = useState(locationGroups[0].state);
-  const [selectedSuburb, setSelectedSuburb] = useState("전체");
-  const activeGroup = locationGroups.find((group) => group.state === selectedState) ?? locationGroups[0];
-
-  return (
-    <section className="mx-auto max-w-[1220px] px-5 pb-6 pt-4 md:hidden">
-      <Sheet>
-        <SheetTrigger asChild>
-          <button type="button" className="inline-flex items-center gap-2 text-lg font-black text-neutral-950">
-            <MapPin className="h-6 w-6 fill-blue-600 text-blue-600" />
-            {selectedState} {selectedSuburb}
-            <ChevronDown className="h-5 w-5 text-slate-400" />
-          </button>
-        </SheetTrigger>
-        <SheetContent side="bottom" className="h-[82vh] rounded-t-2xl p-0">
-          <SheetHeader className="flex-row items-center justify-between border-b border-slate-100 px-5 py-5 text-left">
-            <SheetTitle className="text-2xl font-black tracking-[-0.04em]">지역찾기</SheetTitle>
-            <SheetTrigger asChild>
-              <button type="button" aria-label="지역찾기 닫기" className="inline-flex h-10 w-10 items-center justify-center">
-                <X className="h-7 w-7" />
-              </button>
-            </SheetTrigger>
-          </SheetHeader>
-          <div className="grid h-[calc(82vh-5rem)] grid-cols-[8.5rem_minmax(0,1fr)] overflow-hidden">
-            <nav className="overflow-y-auto border-r border-slate-100 bg-slate-50">
-              {locationGroups.map((group) => {
-                const isActive = group.state === selectedState;
-                return (
-                  <button
-                    key={group.state}
-                    type="button"
-                    onClick={() => {
-                      setSelectedState(group.state);
-                      setSelectedSuburb("전체");
-                    }}
-                    className={`flex h-16 w-full items-center px-5 text-left text-lg font-black transition-colors ${isActive ? "bg-blue-600 text-white" : "text-slate-500"}`}
-                  >
-                    {group.state}
-                  </button>
-                );
-              })}
-            </nav>
-            <div className="overflow-y-auto bg-white px-6 py-2">
-              {["전체", ...activeGroup.suburbs].map((suburb) => {
-                const isActive = suburb === selectedSuburb;
-                return (
-                  <SheetTrigger key={`${activeGroup.state}-${suburb}`} asChild>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedSuburb(suburb)}
-                      className={`flex min-h-16 w-full items-center justify-between border-b border-slate-50 text-left text-lg font-black ${isActive ? "text-blue-600" : "text-slate-600"}`}
-                    >
-                      <span>{suburb}</span>
-                      {isActive && <Check className="h-6 w-6" />}
-                    </button>
-                  </SheetTrigger>
-                );
-              })}
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </section>
-  );
-}
-
-function LocationSection() {
-  return (
-    <section className="mx-auto hidden max-w-[1220px] px-5 pb-16 md:block lg:px-9">
-      <h2 className="mb-6 text-xl font-black tracking-[-0.04em] text-neutral-950 sm:text-2xl">지역별 알바</h2>
-      <div className="grid gap-5 lg:grid-cols-2">
-        {locationGroups.map(({ state, suburbs }) => (
-          <div key={state} className="rounded-sm border border-slate-100 bg-white p-5 shadow-[0_2px_10px_rgba(15,23,42,0.03)]">
-            <h3 className="mb-4 text-lg font-black text-blue-700">{state}</h3>
-            <div className="flex flex-wrap gap-3">
-              {suburbs.map((suburb) => (
-                <Link
-                  key={`${state}-${suburb}`}
-                  to="/"
-                  className="inline-flex h-10 items-center rounded-full bg-neutral-50 px-4 text-sm font-black text-neutral-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
-                >
-                  {suburb}
-                </Link>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function JobCard({ job }: { job: JobCardItem }) {
   const mutedPay = job.payType === "￦";
   const logoColorClass = logoToneClasses[job.logoTone] ?? logoToneClasses.blue;
@@ -892,6 +784,73 @@ function JobCardSkeleton() {
   );
 }
 
+const HOMEPAGE_USER_JOBS_LIMIT = 10;
+
+function UserUploadedJobs() {
+  const [jobs, setJobs] = useState<UserJobRow[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchUserJobs() {
+      setIsLoading(true);
+      setError(null);
+
+      const { data, error: fetchError, count } = await supabase
+        .from("jobs")
+        .select(USER_JOB_SELECT, { count: "exact" })
+        .order("uploaded_at", { ascending: false })
+        .limit(HOMEPAGE_USER_JOBS_LIMIT);
+
+      if (cancelled) return;
+
+      if (fetchError) {
+        console.error("homepage jobs fetch error:", fetchError);
+        setError("공고를 불러오지 못했습니다.");
+        setJobs([]);
+        setTotalCount(0);
+      } else {
+        setJobs((data ?? []) as UserJobRow[]);
+        setTotalCount(count ?? data?.length ?? 0);
+      }
+
+      setIsLoading(false);
+    }
+
+    fetchUserJobs();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <section className="mx-auto max-w-[1220px] px-5 pb-12 lg:px-9">
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <h2 className="text-xl font-black tracking-[-0.045em] text-neutral-950 sm:text-2xl">사용자 업로드 공고</h2>
+        <Link
+          to="/jobs"
+          aria-label="더 많은 사용자 업로드 공고 보기"
+          className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-500 transition-colors hover:border-blue-200 hover:text-blue-700 sm:px-4 sm:py-2 sm:text-sm"
+        >
+          <span className="hidden sm:inline">더보기</span>
+          <span className="sm:hidden">
+            {Math.min(jobs.length, HOMEPAGE_USER_JOBS_LIMIT)} / {totalCount || jobs.length}
+          </span>
+          <ChevronRight className="h-4 w-4" />
+        </Link>
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <UserJobsTable jobs={jobs} loading={isLoading} error={error} showContact={false} plainTitle />
+      </div>
+    </section>
+  );
+}
+
 function FeaturedJobs({ jobs, isLoading }: { jobs: JobCardItem[]; isLoading: boolean }) {
   return (
     <section className="bg-neutral-50 py-12 sm:py-20">
@@ -903,7 +862,15 @@ function FeaturedJobs({ jobs, isLoading }: { jobs: JobCardItem[]; isLoading: boo
               <span className="hidden sm:inline">지금 가장 주목받는 알바</span>
             </h2>
           </div>
-          <p className="text-sm font-bold text-slate-500 sm:hidden">1 / {isLoading ? 8 : Math.max(jobs.length, 1)}</p>
+          <Link
+            to="/directory"
+            aria-label="더 많은 채용정보 보기"
+            className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-500 transition-colors hover:border-blue-200 hover:text-blue-700 sm:px-4 sm:py-2 sm:text-sm"
+          >
+            <span className="hidden sm:inline">더보기</span>
+            <span className="sm:hidden">1 / {isLoading ? 8 : Math.max(jobs.length, 1)}</span>
+            <ChevronRight className="h-4 w-4" />
+          </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 sm:gap-6 xl:grid-cols-4">
           {isLoading
@@ -915,55 +882,37 @@ function FeaturedJobs({ jobs, isLoading }: { jobs: JobCardItem[]; isLoading: boo
   );
 }
 
-const GUIDES_PAGE_SIZE = 8;
+const GUIDES_PREVIEW_COUNT = 4;
 
 function WorkingHolidayGuides() {
-  const [guidesPage, setGuidesPage] = useState(0);
-  const totalGuidesPages = Math.ceil(BLOG_POSTS.length / GUIDES_PAGE_SIZE);
-  const pagedGuidePosts = BLOG_POSTS.slice(
-    guidesPage * GUIDES_PAGE_SIZE,
-    guidesPage * GUIDES_PAGE_SIZE + GUIDES_PAGE_SIZE,
-  );
+  const guidePosts = BLOG_POSTS.slice(0, GUIDES_PREVIEW_COUNT);
 
   return (
     <section className="border-t border-slate-100 bg-white py-12 sm:py-14">
       <div className="mx-auto max-w-[1220px] px-5 lg:px-9">
-        <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="mb-6 flex items-center justify-between gap-4 sm:mb-8">
           <h2 className="text-lg font-black tracking-[-0.04em] text-neutral-950 sm:text-xl">워홀러에게 필요한 추천 콘텐츠</h2>
-          {totalGuidesPages > 1 && (
-            <div className="hidden items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-400 sm:flex">
-              <button
-                type="button"
-                onClick={() => setGuidesPage((prev) => (prev - 1 + totalGuidesPages) % totalGuidesPages)}
-                aria-label="이전 콘텐츠"
-                className="rounded p-0.5 hover:bg-slate-50 hover:text-slate-700"
-              >
-                <ChevronRight className="h-4 w-4 rotate-180" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setGuidesPage((prev) => (prev + 1) % totalGuidesPages)}
-                aria-label="다음 콘텐츠"
-                className="rounded p-0.5 hover:bg-slate-50 hover:text-slate-700"
-              >
-                <ChevronRight className="h-4 w-4 text-slate-700" />
-              </button>
-            </div>
-          )}
+          <Link
+            to="/blog"
+            aria-label="더 많은 추천 콘텐츠 보기"
+            className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-500 transition-colors hover:border-blue-200 hover:text-blue-700 sm:px-4 sm:py-2 sm:text-sm"
+          >
+            <span className="hidden sm:inline">더보기</span>
+            <span className="sm:hidden">
+              {GUIDES_PREVIEW_COUNT} / {BLOG_POSTS.length}
+            </span>
+            <ChevronRight className="h-4 w-4" />
+          </Link>
         </div>
 
-        <div className="-mx-5 flex gap-4 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
-          {pagedGuidePosts.map((post) => (
-            <Link
-              key={post.slug}
-              to={`/blog/${post.slug}`}
-              className="group w-[78vw] shrink-0 sm:w-auto"
-            >
+        <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+          {guidePosts.map((post) => (
+            <Link key={post.slug} to={`/blog/${post.slug}`} className="group min-w-0">
               <div className="aspect-[16/9] overflow-hidden rounded-lg bg-white">
                 <img src={post.imageSrc} alt={post.imageAlt} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
               </div>
               <div className="pt-3">
-                <h3 className="line-clamp-2 text-base font-black leading-snug tracking-[-0.035em] text-neutral-950">
+                <h3 className="line-clamp-2 text-base font-semibold leading-snug tracking-[-0.035em] text-neutral-950">
                   {post.title}
                 </h3>
               </div>
@@ -1061,11 +1010,9 @@ const Index = ({ cityFilter }: IndexProps) => {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-white text-neutral-950">
-      <ModernHeader />
-      <main>
-        <MobileLocationPicker />
+      <main className="pt-8 md:pt-10">
         <QuickSections />
-        <LocationSection />
+        <UserUploadedJobs />
         <FeaturedJobs jobs={homepageJobCards} isLoading={isLoadingHomepageJobCards} />
         <WorkingHolidayGuides />
       </main>

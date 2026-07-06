@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Heart } from "lucide-react";
-import { ModernHeader } from "@/components/ModernHeader";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
@@ -136,7 +135,6 @@ export default function CompanyDkHairStudio() {
   if (isLoadingCompany) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">
-        <ModernHeader />
         <main className="mx-auto w-full max-w-[1220px] px-5 py-8 sm:py-12">
           <div className="mb-6 h-5 w-24 rounded bg-slate-100" />
           <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
@@ -172,7 +170,6 @@ export default function CompanyDkHairStudio() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">
-      <ModernHeader />
       <main className="mx-auto w-full max-w-[1220px] px-5 py-8 sm:py-12">
         <Link to="/" className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-950">
           <ArrowLeft className="h-4 w-4" />

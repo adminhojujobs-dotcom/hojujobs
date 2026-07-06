@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ExternalLink, MapPin } from "lucide-react";
-import { ModernHeader } from "@/components/ModernHeader";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database, Json } from "@/integrations/supabase/types";
@@ -123,7 +122,6 @@ export default function CompanyJobDetail() {
   if (isLoading) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">
-        <ModernHeader />
         <main className="mx-auto w-full max-w-3xl px-5 py-8 sm:py-12">
           <div className="mb-6 h-5 w-24 rounded bg-slate-100" />
           <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-10">
@@ -138,7 +136,6 @@ export default function CompanyJobDetail() {
   if (!opening) {
     return (
       <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">
-        <ModernHeader />
         <main className="mx-auto w-full max-w-3xl px-5 py-16 text-center">
           <p className="text-base font-bold text-slate-500">해당 공고를 찾을 수 없습니다.</p>
           <Link to={`/company/${slug}`} className="mt-4 inline-block text-sm font-black text-blue-700 hover:underline">
@@ -151,7 +148,6 @@ export default function CompanyJobDetail() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">
-      <ModernHeader />
       <main className="mx-auto w-full max-w-3xl px-5 py-8 sm:py-12">
         <Link to={`/company/${slug}`} className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-950">
           <ArrowLeft className="h-4 w-4" />

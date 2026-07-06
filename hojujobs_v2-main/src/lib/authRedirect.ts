@@ -23,6 +23,7 @@ export function getSafeNextPath(searchParams: URLSearchParams): string | null {
   }
 }
 
-export function getPostAuthDestination(searchParams: URLSearchParams): string {
-  return getSafeNextPath(searchParams) ?? "/";
+export function getPostAuthDestination(searchParams: URLSearchParams, needsOnboarding: boolean): string {
+  if (needsOnboarding) return "/onboarding";
+  return getSafeNextPath(searchParams) ?? "/profile";
 }

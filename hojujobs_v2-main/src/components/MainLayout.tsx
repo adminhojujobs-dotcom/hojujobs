@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ModernHeader } from "@/components/ModernHeader";
 
 /**
  * Pushes the footer to the bottom of the viewport on short pages while keeping
@@ -10,6 +11,7 @@ export function MainLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <ScrollToTop />
+      <ModernHeader />
       <div className="flex min-h-0 flex-1 flex-col">
         <Outlet />
       </div>

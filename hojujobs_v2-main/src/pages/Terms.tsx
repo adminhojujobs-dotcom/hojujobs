@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { Header } from "@/components/Header";
 import { useSEO } from "@/hooks/useSEO";
 
 const CANONICAL = "https://hojujobs.com/terms";
@@ -33,7 +32,6 @@ export default function Terms() {
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
-      <Header />
       <div className="max-w-2xl mx-auto px-4 py-10 space-y-6">
         <Link
           to="/"

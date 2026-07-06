@@ -53,6 +53,53 @@ export type Database = {
         }
         Relationships: []
       }
+      business_job_listings: {
+        Row: {
+          branch_id: string
+          company_slug: string
+          created_at: string
+          details: string | null
+          id: string
+          is_active: boolean
+          salary: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          branch_id: string
+          company_slug: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          is_active?: boolean
+          salary?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          branch_id?: string
+          company_slug?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          is_active?: boolean
+          salary?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_job_listings_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "company_branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_events: {
         Row: {
           created_at: string
@@ -715,6 +762,57 @@ export type Database = {
           metadata?: Json | null
           page_url?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          account_type: string
+          contact_number: string | null
+          created_at: string
+          education: string | null
+          email: string | null
+          full_name: string | null
+          introduction: string | null
+          job_email_opt_in: boolean
+          onboarding_completed: boolean
+          other_info: string | null
+          updated_at: string
+          user_id: string
+          visa_type: string | null
+          work_history: string | null
+        }
+        Insert: {
+          account_type: string
+          contact_number?: string | null
+          created_at?: string
+          education?: string | null
+          email?: string | null
+          full_name?: string | null
+          introduction?: string | null
+          job_email_opt_in?: boolean
+          onboarding_completed?: boolean
+          other_info?: string | null
+          updated_at?: string
+          user_id: string
+          visa_type?: string | null
+          work_history?: string | null
+        }
+        Update: {
+          account_type?: string
+          contact_number?: string | null
+          created_at?: string
+          education?: string | null
+          email?: string | null
+          full_name?: string | null
+          introduction?: string | null
+          job_email_opt_in?: boolean
+          onboarding_completed?: boolean
+          other_info?: string | null
+          updated_at?: string
+          user_id?: string
+          visa_type?: string | null
+          work_history?: string | null
         }
         Relationships: []
       }

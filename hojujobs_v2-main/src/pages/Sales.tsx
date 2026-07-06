@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, ExternalLink, RotateCcw, Tags, Ticket, Trash2 } from "lucide-react";
-import { Header } from "@/components/Header";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -256,9 +255,10 @@ export default function Sales() {
   };
 
   return (
-    <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
-      <Header />
-      <main className="mx-auto w-full max-w-6xl px-4 pb-8 pt-4">
+    <div className="flex w-full min-h-0 flex-1 flex-col bg-[#f7f8fb]">
+      <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
+        <h1 className="mb-6 text-2xl font-black tracking-[-0.04em] text-neutral-950 sm:text-3xl">온세일</h1>
+
         <div className="grid gap-3 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-5">
           <aside className="space-y-2 lg:space-y-4">
             <button
@@ -341,11 +341,6 @@ export default function Sales() {
           </aside>
 
           <section className="mx-auto w-full max-w-3xl space-y-2.5 lg:max-w-none">
-            <div className="mb-3">
-              <h1 className="text-xl font-extrabold tracking-normal text-foreground sm:text-2xl">온세일</h1>
-              <p className="mt-1 text-sm text-muted-foreground">호주 최신 인기 딜을 한곳에서 확인하세요.</p>
-            </div>
-
             {loadingDeals ? (
               <div className="rounded-lg border bg-card px-4 py-12 text-center text-sm text-muted-foreground">
                 딜 정보를 불러오는 중...

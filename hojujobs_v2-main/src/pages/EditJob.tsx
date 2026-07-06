@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -50,7 +49,7 @@ export default function EditJob() {
 
     if (error || !data) {
       toast.error("공고를 찾을 수 없습니다.");
-      navigate("/my-posts");
+      navigate("/profile");
       return;
     }
 
@@ -99,7 +98,7 @@ export default function EditJob() {
       toast.error("수정 실패: " + error.message);
     } else {
       toast.success("공고가 수정되었습니다!");
-      navigate(fromAdmin ? "/admin" : "/my-posts");
+      navigate(fromAdmin ? "/admin" : "/profile");
     }
     setSaving(false);
   };
@@ -109,10 +108,9 @@ export default function EditJob() {
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
-      <Header />
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <Link to={fromAdmin ? "/admin" : "/my-posts"} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link to={fromAdmin ? "/admin" : "/profile"} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
             {fromAdmin ? "관리자 대시보드로 돌아가기" : "내 공고로 돌아가기"}
           </Link>

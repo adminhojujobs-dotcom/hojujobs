@@ -9,7 +9,8 @@ import Index from "./pages/Index";
 import JobDetail from "./pages/JobDetail";
 import Auth from "./pages/Auth";
 import PostJob from "./pages/PostJob";
-import MyPosts from "./pages/MyPosts";
+import Profile from "./pages/Profile";
+import Onboarding from "./pages/Onboarding";
 import EditJob from "./pages/EditJob";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
@@ -24,6 +25,9 @@ import BlogPost from "./pages/BlogPost";
 import Sales from "./pages/Sales";
 import SaleDetail from "./pages/SaleDetail";
 import News from "./pages/News";
+import Events from "./pages/Events";
+import Directory from "./pages/Directory";
+import Jobs from "./pages/Jobs";
 import Flatmates from "./pages/Flatmates";
 import FlatmateDetail from "./pages/FlatmateDetail";
 import FlatmatesPost from "./pages/FlatmatesPost";
@@ -36,6 +40,8 @@ import CompanyParkBongsook from "./pages/CompanyParkBongsook";
 import CompanyYanggaDeli from "./pages/CompanyYanggaDeli";
 import CompanyStoneage from "./pages/CompanyStoneage";
 import CompanyDkHairStudio from "./pages/CompanyDkHairStudio";
+import { DevPreviewAuthProvider, DevPreviewLayout } from "@/components/DevPreviewAuth";
+import DevPreviewHub from "./pages/dev/DevPreviewHub";
 
 const queryClient = new QueryClient();
 
@@ -64,12 +70,17 @@ const App = () => (
               <Route path="/company/stoneage" element={<CompanyStoneage />} />
               <Route path="/company/dkhairstudio" element={<CompanyDkHairStudio />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/post-job" element={<PostJob />} />
-              <Route path="/my-posts" element={<MyPosts />} />
+              <Route path="/my-posts" element={<Profile />} />
               <Route path="/edit-job/:id" element={<EditJob />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/admin/activity" element={<AdminActivity />} />
               <Route path="/news" element={<News />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/directory" element={<Directory />} />
+              <Route path="/jobs" element={<Jobs />} />
               <Route path="/flatmates" element={<Flatmates />} />
               <Route path="/flatmates/post" element={<FlatmatesPost />} />
               <Route path="/flatmates/:id" element={<FlatmateDetail />} />
@@ -82,6 +93,43 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              {import.meta.env.DEV && (
+                <Route path="/dev/preview" element={<DevPreviewLayout />}>
+                  <Route index element={<DevPreviewHub />} />
+                  <Route
+                    path="onboarding"
+                    element={
+                      <DevPreviewAuthProvider mode="onboarding">
+                        <Onboarding />
+                      </DevPreviewAuthProvider>
+                    }
+                  />
+                  <Route
+                    path="profile/job-seeker"
+                    element={
+                      <DevPreviewAuthProvider mode="job_seeker">
+                        <Profile />
+                      </DevPreviewAuthProvider>
+                    }
+                  />
+                  <Route
+                    path="profile/business"
+                    element={
+                      <DevPreviewAuthProvider mode="business">
+                        <Profile />
+                      </DevPreviewAuthProvider>
+                    }
+                  />
+                  <Route
+                    path="post-job"
+                    element={
+                      <DevPreviewAuthProvider mode="business">
+                        <PostJob />
+                      </DevPreviewAuthProvider>
+                    }
+                  />
+                </Route>
+              )}
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

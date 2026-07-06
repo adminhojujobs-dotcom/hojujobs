@@ -4,7 +4,6 @@ import { ArrowLeft, Bath, BedSingle, Calendar, ChevronLeft, ChevronRight, MapPin
 import { ContactRevealSection } from "@/components/ContactRevealSection";
 import { DescriptionRevealSection } from "@/components/DescriptionRevealSection";
 import { ListingRevealProvider } from "@/hooks/useListingReveal";
-import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
@@ -143,7 +142,6 @@ export default function FlatmateDetail() {
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-[#f7f8fb]">
-      <Header />
 
       <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:py-8">
         <div className="mb-5">

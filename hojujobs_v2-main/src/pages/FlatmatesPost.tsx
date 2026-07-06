@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, ImagePlus, X } from "lucide-react";
-import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -171,7 +170,6 @@ export default function FlatmatesPost() {
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-[#f7f8fb]">
-      <Header />
 
       <main className="mx-auto w-full max-w-2xl px-4 py-6 sm:py-8">
         <div className="mb-5">

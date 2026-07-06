@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Header } from "@/components/Header";
 import { useAuth } from "@/hooks/useAuth";
 import { getPostAuthDestination, getSafeNextPath } from "@/lib/authRedirect";
 import { getSiteOrigin } from "@/lib/siteUrl";
@@ -29,7 +28,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, needsOnboarding } = useAuth();
 
   // After any successful session (email or OAuth), leave /auth and strip /auth#… — home unless ?next= is set (e.g. 공고 등록).
   useEffect(() => {
@@ -46,9 +45,9 @@ export default function Auth() {
         if (parsed.eventName) trackEvent(parsed.eventName, { metadata: parsed.metadata });
       } catch {}
     }
-    const dest = getPostAuthDestination(searchParams);
+    const dest = getPostAuthDestination(searchParams, needsOnboarding);
     navigate(dest, { replace: true });
-  }, [user, authLoading, searchParams, navigate]);
+  }, [user, authLoading, needsOnboarding, searchParams, navigate]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +98,6 @@ export default function Auth() {
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
-      <Header />
       <div className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-sm space-y-6">
           <div className="text-center">

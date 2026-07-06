@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { Header } from "@/components/Header";
 import { BLOG_POSTS } from "@/data/blogPosts";
 import { useSEO } from "@/hooks/useSEO";
 
@@ -89,7 +88,6 @@ export default function BlogPost() {
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
-      <Header />
       <main className="mx-auto w-full max-w-3xl space-y-8 px-4 py-10">
         <Link
           to="/blog"

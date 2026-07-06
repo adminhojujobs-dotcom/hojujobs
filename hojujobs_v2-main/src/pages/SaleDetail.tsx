@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { ArrowLeft, ExternalLink, Ticket } from "lucide-react";
-import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,7 +129,6 @@ export default function SaleDetail() {
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
-      <Header />
       <main className="mx-auto w-full max-w-3xl px-4 pb-12 pt-4">
         <Link
           to="/sales"

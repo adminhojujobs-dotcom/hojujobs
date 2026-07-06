@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import { ExternalLink } from "lucide-react";
-import { Header } from "@/components/Header";
 import { useSEO } from "@/hooks/useSEO";
 import { trackEvent } from "@/lib/trackEvent";
 import { supabase } from "@/integrations/supabase/client";
@@ -136,32 +134,22 @@ export default function News() {
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-[#f7f8fb]">
-      <Header />
+      <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-10">
+        <h1 className="mb-6 text-2xl font-black tracking-[-0.04em] text-neutral-950 sm:text-3xl">뉴스</h1>
 
-      <main className="w-full max-w-6xl mx-auto px-4 py-8 sm:py-10">
-        <section className="mb-7 overflow-hidden rounded-lg border border-slate-200 bg-white">
-          <div className="border-b border-slate-200 bg-[#111] px-4 py-4 sm:px-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold tracking-normal text-slate-400">호주 생활 뉴스 브리핑</p>
-                <h1 className="mt-1 text-2xl font-black tracking-normal text-white sm:text-3xl">뉴스</h1>
-              </div>
-            </div>
-          </div>
-          <nav className="bg-white" aria-label="뉴스 주제">
-            <div className="flex gap-2 overflow-x-auto px-3 py-2 sm:grid sm:grid-cols-4 sm:gap-0 sm:divide-x sm:divide-slate-200 sm:overflow-visible sm:px-0 sm:py-0">
-              {topics.map((topic) => (
-                <a
-                  key={topic.key}
-                  href={`#${topic.key.toLowerCase()}`}
-                  className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-50 px-3 text-[11px] font-black text-slate-900 transition-colors hover:bg-slate-100 sm:h-auto sm:rounded-none sm:border-0 sm:bg-white sm:px-5 sm:py-3 sm:text-center sm:text-lg sm:hover:bg-slate-50"
-                >
-                  {topic.labelKo}
-                </a>
-              ))}
-            </div>
+        {!isLoading && !errorMessage && topics.length > 0 && (
+          <nav className="mb-6 flex flex-wrap gap-2 border-b border-slate-200 pb-4" aria-label="뉴스 주제">
+            {topics.map((topic) => (
+              <a
+                key={topic.key}
+                href={`#${topic.key.toLowerCase()}`}
+                className="inline-flex h-9 items-center rounded-full border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+              >
+                {topic.labelKo}
+              </a>
+            ))}
           </nav>
-        </section>
+        )}
 
         {isLoading ? (
           <section className="rounded-lg border border-slate-200 bg-white p-8 text-center text-sm font-semibold text-slate-500">
@@ -176,69 +164,60 @@ export default function News() {
             표시할 뉴스가 없습니다.
           </section>
         ) : (
-          <div className="grid gap-5">
+          <div className="space-y-12">
             {topics.map((topic) => (
-              <section
-                key={topic.key}
-                id={topic.key.toLowerCase()}
-                className={`overflow-hidden rounded-lg border bg-gradient-to-br ${topic.tone}`}
-              >
-                <div className="grid gap-0 lg:grid-cols-[17rem_1fr]">
-                  <div className="border-b border-inherit bg-white/55 p-3 sm:p-5 lg:border-b-0 lg:border-r">
-                    <h2 className="text-xl font-black tracking-normal text-slate-950 sm:text-2xl">{topic.labelKo}</h2>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-600 sm:mt-3 sm:text-sm">{topic.summary}</p>
-                  </div>
+              <section key={topic.key} id={topic.key.toLowerCase()} className="scroll-mt-24">
+                <div className="mb-5 border-b border-slate-200 pb-4">
+                  <h2 className="text-xl font-black tracking-[-0.04em] text-neutral-950 sm:text-2xl">{topic.labelKo}</h2>
+                  {topic.summary && (
+                    <p className="mt-2 w-full text-sm leading-relaxed text-slate-600 sm:text-base">{topic.summary}</p>
+                  )}
+                </div>
 
-                  <div className="grid gap-3 p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-1">
-                    {topic.stories.map((story) => (
-                      <article key={story.sourceUrl} className="flex flex-col overflow-hidden rounded-lg border border-white/70 bg-white shadow-sm">
-                        {story.imageUrl && (
-                          <img
-                            src={story.imageUrl}
-                            alt=""
-                            className="h-40 w-full object-cover"
-                            loading="lazy"
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                          />
-                        )}
-                        <div className="flex flex-col p-4">
-                          <div className="mb-3 flex items-center justify-between gap-3 lg:mb-2">
-                            <span className="rounded-md bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-600">{story.meta}</span>
-                            <span className="text-right text-[11px] font-medium text-slate-400">{story.publishedAt}</span>
-                          </div>
-                          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_9.5rem] lg:items-end lg:gap-4">
-                            <div className="min-w-0">
-                              <h3 className="text-base font-black leading-snug text-slate-950">{story.title}</h3>
-                              <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{story.summaryKo}</p>
-                              <p className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-400">
-                                {story.source} · {domainFromUrl(story.sourceUrl)}
-                              </p>
-                            </div>
-                            <a
-                              href={translatedUrl(story.sourceUrl)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={() => {
-                                trackEvent("news_article_clicked", {
-                                  listing_id: story.id,
-                                  metadata: {
-                                    title: story.title,
-                                    source: story.source,
-                                    source_url: story.sourceUrl,
-                                    category: topic.key,
-                                  },
-                                });
-                              }}
-                              className="mt-4 inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-slate-950 px-3 text-xs font-bold text-white transition-colors hover:bg-primary lg:mt-0"
-                            >
-                              기사 보기
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
-                          </div>
+                <div className="grid gap-4">
+                  {topic.stories.map((story) => (
+                    <a
+                      key={story.id}
+                      href={translatedUrl(story.sourceUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => {
+                        trackEvent("news_article_clicked", {
+                          listing_id: story.id,
+                          metadata: {
+                            title: story.title,
+                            source: story.source,
+                            source_url: story.sourceUrl,
+                            category: topic.key,
+                          },
+                        });
+                      }}
+                      className="group flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_2px_10px_rgba(15,23,42,0.04)] transition-colors hover:border-blue-200 hover:bg-slate-50/80 hover:shadow-[0_8px_24px_rgba(15,23,42,0.06)]"
+                    >
+                      {story.imageUrl && (
+                        <img
+                          src={story.imageUrl}
+                          alt=""
+                          className="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+                          loading="lazy"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                        />
+                      )}
+                      <div className="flex flex-1 flex-col p-4 sm:p-5">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <span className="rounded-md bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-600">{story.meta}</span>
+                          <span className="text-right text-[11px] font-medium text-slate-400">{story.publishedAt}</span>
                         </div>
-                      </article>
-                    ))}
-                  </div>
+                        <h3 className="text-base font-semibold leading-snug text-slate-950 transition-colors group-hover:text-blue-700 sm:text-lg">
+                          {story.title}
+                        </h3>
+                        <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{story.summaryKo}</p>
+                        <p className="mt-3 text-[11px] font-semibold text-slate-400">
+                          {story.source} · {domainFromUrl(story.sourceUrl)}
+                        </p>
+                      </div>
+                    </a>
+                  ))}
                 </div>
               </section>
             ))}

@@ -1,6 +1,5 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
-import { Header } from "@/components/Header";
 import { ArrowLeft, MapPin, Briefcase, Eye, Calendar, ExternalLink, UserCheck } from "lucide-react";
 import { ContactRevealSection } from "@/components/ContactRevealSection";
 import { DescriptionRevealSection } from "@/components/DescriptionRevealSection";
@@ -217,7 +216,6 @@ export default function JobDetail() {
   if (isExpired) {
     return (
       <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
-        <Header />
         <div className="flex flex-1 items-center justify-center px-4">
           <div className="text-center max-w-sm">
             <div className="text-4xl mb-4">📋</div>
@@ -235,7 +233,6 @@ export default function JobDetail() {
 
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
-      <Header />
       <div className="w-full min-w-0 max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="mb-6">
           <button onClick={() => window.history.length > 1 ? window.history.back() : window.location.assign("/")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
