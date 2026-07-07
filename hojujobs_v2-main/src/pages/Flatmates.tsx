@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Bath, BedSingle, Check, ChevronDown, ChevronLeft, ChevronRight, MapPin, RotateCcw, Search, ShieldCheck, UserCheck, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Bath, BedSingle, Check, ChevronDown, ChevronLeft, ChevronRight, MapPin, RotateCcw, Search, ShieldCheck, UserCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -251,6 +251,11 @@ export default function Flatmates() {
   return (
     <div className="flex w-full min-h-0 flex-1 flex-col bg-white">
       <main className="mx-auto w-full max-w-[1220px] px-5 py-8 sm:py-12">
+        <Link to="/" className="mb-6 inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 transition-colors hover:text-neutral-950">
+          <ArrowLeft className="h-4 w-4" />
+          홈으로
+        </Link>
+
         <h1 className="mb-1 text-xl font-black tracking-[-0.045em] text-neutral-950 sm:text-2xl">플렛메이트</h1>
         <p className="mb-6 text-sm font-semibold text-slate-500">호주 한인 쉐어하우스 · 독방 · 룸쉐어 정보</p>
 

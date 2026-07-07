@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useDevPreviewAuth } from "@/components/DevPreviewAuth";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
-import { BranchSearchSelect } from "@/components/BranchSearchSelect";
+import { JobPostingForm } from "@/components/JobPostingForm";
 import {
   FormRow,
   FormSection,
@@ -19,7 +19,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  buildCompanyOpeningInsert,
   countApplicationsByOpening,
   formatOpeningDate,
   MANAGED_COMPANY_OPENING_SELECT,
@@ -37,8 +36,6 @@ type ManagedOpeningWithBranch = ManagedCompanyOpening & {
   branch?: CompanyBranchOption | null;
   applicationCount?: number;
 };
-
-const labelClass = "text-sm font-bold text-slate-600";
 
 export default function Profile() {
   useSEO({ title: "내 프로필 | Hoju Jobs", description: "Hoju Jobs 내 프로필", noindex: true });
@@ -62,16 +59,6 @@ export default function Profile() {
 
   const [managedOpenings, setManagedOpenings] = useState<ManagedOpeningWithBranch[]>([]);
   const [jobsLoading, setJobsLoading] = useState(false);
-  const [jobForm, setJobForm] = useState({
-    branchId: "",
-    companySlug: "",
-    title: "",
-    pay: "",
-    duties: "",
-    quickApply: false,
-  });
-  const [selectedBranch, setSelectedBranch] = useState<CompanyBranchOption | null>(null);
-  const [postingJob, setPostingJob] = useState(false);
 
   useEffect(() => {
     if (preview) return;
@@ -262,46 +249,6 @@ export default function Profile() {
     setSaving(false);
   };
 
-  const submitBusinessJob = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (preview) {
-      toast.message("미리보기 모드입니다. 실제 저장은 로그인 후 가능합니다.");
-      return;
-    }
-    if (!user || !selectedBranch || !jobForm.title.trim()) {
-      toast.error("지점과 공고명을 입력해주세요.");
-      return;
-    }
-
-    setPostingJob(true);
-    const { data, error } = await supabase
-      .from("company_job_openings")
-      .insert(
-        buildCompanyOpeningInsert({
-          userId: user.id,
-          branch: selectedBranch,
-          title: jobForm.title,
-          pay: jobForm.pay,
-          duties: jobForm.duties,
-          quickApply: jobForm.quickApply,
-        }),
-      )
-      .select(MANAGED_COMPANY_OPENING_SELECT)
-      .single();
-
-    if (error || !data) {
-      toast.error("공고 등록에 실패했습니다.");
-      setPostingJob(false);
-      return;
-    }
-
-    setManagedOpenings((current) => [{ ...(data as ManagedCompanyOpening), branch: selectedBranch }, ...current]);
-    setJobForm({ branchId: "", companySlug: "", title: "", pay: "", duties: "", quickApply: false });
-    setSelectedBranch(null);
-    toast.success("채용 공고가 등록되었습니다.");
-    setPostingJob(false);
-  };
-
   const deleteManagedOpening = async (openingId: string) => {
     if (preview) {
       toast.message("미리보기 모드입니다.");
@@ -327,7 +274,7 @@ export default function Profile() {
 
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col bg-white text-neutral-950">
-      <main className="mx-auto w-full max-w-[720px] px-5 py-8 sm:py-12">
+      <main className="mx-auto w-full max-w-[880px] px-5 py-8 sm:py-12">
         {preview && (
           <p className="mb-8 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800">
             미리보기 모드 — UI만 확인할 수 있습니다.
@@ -435,56 +382,11 @@ export default function Profile() {
             </div>
           </form>
         ) : (
-          <div className="space-y-10">
-            <form onSubmit={submitBusinessJob} className="space-y-5 border-b border-slate-200 pb-8">
-              <h2 className="text-lg font-black tracking-[-0.03em] text-neutral-950">채용 공고 등록</h2>
-
-              <div className="space-y-2">
-                <Label className={labelClass}>사업체 지점 *</Label>
-                <BranchSearchSelect
-                  value={jobForm.branchId}
-                  onChange={(branchId, branch) => {
-                    setJobForm((prev) => ({ ...prev, branchId, companySlug: branch.company_slug }));
-                    setSelectedBranch(branch);
-                  }}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="job-title" className={labelClass}>공고명 *</Label>
-                <Input id="job-title" value={jobForm.title} onChange={(e) => setJobForm((prev) => ({ ...prev, title: e.target.value }))} className={inputClass} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="job-salary" className={labelClass}>급여</Label>
-                <Input id="job-salary" value={jobForm.pay} onChange={(e) => setJobForm((prev) => ({ ...prev, pay: e.target.value }))} placeholder="예: 시급 $25" className={inputClass} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="job-details" className={labelClass}>담당업무</Label>
-                <Textarea id="job-details" rows={5} value={jobForm.duties} onChange={(e) => setJobForm((prev) => ({ ...prev, duties: e.target.value }))} className={textareaClass} />
-              </div>
-              <p className="text-xs font-semibold text-slate-400">
-                근무조건, 모집조건 등 나머지 항목은 상단의 "업로드" 메뉴에서 입력할 수 있습니다.
-              </p>
-              <div className="flex items-start gap-3 rounded-md border border-slate-200 bg-slate-50 p-4">
-                <Checkbox
-                  id="job-quick-apply"
-                  checked={jobForm.quickApply}
-                  onCheckedChange={(checked) => setJobForm((prev) => ({ ...prev, quickApply: checked === true }))}
-                />
-                <div>
-                  <Label htmlFor="job-quick-apply" className="text-sm font-bold text-neutral-950">
-                    빠른 지원 활성화
-                  </Label>
-                  <p className="mt-1 text-sm font-semibold text-slate-500">
-                    활성화하면 구직자가 프로필 이력서로 바로 지원할 수 있습니다.
-                  </p>
-                </div>
-              </div>
-              <div className="flex justify-end">
-                <Button type="submit" className="h-11 rounded-md bg-blue-600 px-6 font-black text-white hover:bg-blue-700" disabled={postingJob}>
-                  {postingJob ? "등록 중..." : "공고 등록"}
-                </Button>
-              </div>
-            </form>
+          <div className="space-y-16">
+            <section className="border-b border-slate-200 pb-16">
+              <h2 className="mb-8 text-lg font-black tracking-[-0.03em] text-neutral-950">채용 공고 등록</h2>
+              <JobPostingForm />
+            </section>
 
             <section>
               <h2 className="mb-5 text-lg font-black tracking-[-0.03em] text-neutral-950">등록한 채용 공고</h2>

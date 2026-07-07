@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, RotateCcw, Tags, Trash2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, RotateCcw, Tags, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -257,6 +257,11 @@ export default function Sales() {
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col bg-white">
       <main className="mx-auto w-full max-w-[1220px] px-5 py-10 sm:py-12 lg:px-9">
+        <Link to="/" className="mb-6 inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 transition-colors hover:text-neutral-950">
+          <ArrowLeft className="h-4 w-4" />
+          홈으로
+        </Link>
+
         <h1 className="mb-8 text-xl font-black tracking-[-0.045em] text-neutral-950 sm:text-2xl">온세일</h1>
 
         <div className="mb-8 flex flex-wrap items-center gap-2">

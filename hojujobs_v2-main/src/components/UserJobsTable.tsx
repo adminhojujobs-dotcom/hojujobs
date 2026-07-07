@@ -117,7 +117,7 @@ export function UserJobsTable({
 
                 <div className="mt-0.5 flex items-center justify-between gap-3 border-t border-slate-100 pt-2">
                   <span className="truncate text-xs font-bold text-slate-500">{job.industry || "-"}</span>
-                  <span className="shrink-0 rounded-full border border-slate-200 px-3 py-1 text-xs font-black text-neutral-900">
+                  <span className="shrink-0 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">
                     자세히 보기
                   </span>
                 </div>
