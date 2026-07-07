@@ -28,6 +28,7 @@ export function useJobs() {
       const { data, error } = await supabase
         .from("jobs")
         .select("*")
+        .lte("uploaded_at", new Date().toISOString())
         .order("uploaded_at", { ascending: false });
 
       if (error) {

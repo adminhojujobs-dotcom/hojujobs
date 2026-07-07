@@ -133,7 +133,7 @@ function mapHomepageJobCard(row: HomepageJobCardRow): JobCardItem {
     logoUrl: row.logo_url,
     logoTone: row.logo_tone,
     company: row.company_label,
-    location: row.location_label,
+    location: normalizeFeaturedLocation(row.location_label),
     title: row.title,
     payType: row.pay_type,
     pay: row.pay_amount,
@@ -145,11 +145,11 @@ function companySlugFromJobUrl(jobUrl?: string | null) {
   return jobUrl?.match(/^\/company\/([^/?#]+)/)?.[1] ?? null;
 }
 
-function multipleBranchesLabel(location: string) {
+function normalizeFeaturedLocation(location: string) {
   const parts = location.split("·").map((part) => part.trim()).filter(Boolean);
+  const visibleParts = parts.filter((part) => part !== "여러 지점");
 
-  if (parts.length <= 1) return "여러 지점";
-  return `${parts.slice(0, -1).join(" · ")} · 여러 지점`;
+  return visibleParts.length > 0 ? visibleParts.join(" · ") : location;
 }
 
 function applyMultipleBranchLabels(cards: JobCardItem[], branchCounts: Record<string, number>) {
@@ -160,7 +160,7 @@ function applyMultipleBranchLabels(cards: JobCardItem[], branchCounts: Record<st
 
     return {
       ...card,
-      location: multipleBranchesLabel(card.location),
+      location: normalizeFeaturedLocation(card.location),
     };
   });
 }
@@ -178,7 +178,7 @@ const kmall09JobCard: JobCardItem = {
   logoUrl: "https://kmall09.com.au/cdn/shop/files/LOGO_COLOR_SETTING-01.jpg?v=1768457068&width=480",
   logoTone: "blue",
   company: "KMALL09",
-  location: "NSW · 여러 지점",
+  location: "NSW",
   title: "KMALL09 직원 모집",
   payType: "급여",
   pay: "면접 시 협의",
@@ -191,7 +191,7 @@ const bunsikJobCard: JobCardItem = {
   logoUrl: "https://bunsik.au/wp-content/uploads/2023/07/bunsik-logo.png",
   logoTone: "red",
   company: "Bunsik",
-  location: "NSW · 여러 지점",
+  location: "NSW",
   title: "Bunsik 직원 모집",
   payType: "급여",
   pay: "면접 시 협의",
@@ -204,7 +204,7 @@ const sushiYuzenJobCard: JobCardItem = {
   logoUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSviGMYOpZPvAIearZo8cgzB1YLQQsIQD9cQKh9FWE1sw&s",
   logoTone: "black",
   company: "Sushi Yuzen",
-  location: "NSW · VIC · 여러 지점",
+  location: "NSW · VIC",
   title: "SUSHI YUZEN 직원 모집",
   payType: "시급",
   pay: "$31.19 ~ $35.15 + Super",
@@ -217,7 +217,7 @@ const chickenVJobCard: JobCardItem = {
   logoUrl: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/chickenv.png",
   logoTone: "red",
   company: "Chicken V",
-  location: "NSW · 여러 지점",
+  location: "NSW",
   title: "Chicken V 직원 모집",
   payType: "급여",
   pay: "면접 시 협의",
@@ -230,7 +230,7 @@ const parkBongsookJobCard: JobCardItem = {
   logoUrl: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/parkbongsook.png",
   logoTone: "black",
   company: "박봉숙",
-  location: "NSW · 여러 지점",
+  location: "NSW",
   title: "박봉숙 직원 모집",
   payType: "시급",
   pay: "$26.5 ~ $29.5 + Super",
@@ -243,7 +243,7 @@ const yanggaDeliJobCard: JobCardItem = {
   logoUrl: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/yangga-deli.png",
   logoTone: "neutral",
   company: "Yangga Deli",
-  location: "NSW · 여러 지점",
+  location: "NSW",
   title: "Yangga Deli 직원 모집",
   payType: "급여",
   pay: "면접 시 협의",
@@ -256,7 +256,7 @@ const stoneageJobCard: JobCardItem = {
   logoUrl: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/stoneage_logo.png",
   logoTone: "black",
   company: "석기시대",
-  location: "NSW · 여러 지점",
+  location: "NSW",
   title: "석기시대 직원 모집",
   payType: "급여",
   pay: "면접 시 협의",
@@ -269,7 +269,7 @@ const dkHairStudioJobCard: JobCardItem = {
   logoUrl: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/dk-hairstudio.jpg",
   logoTone: "black",
   company: "DK Hair Studio",
-  location: "NSW · 여러 지점",
+  location: "NSW",
   title: "DK Hair Studio 직원 모집",
   payType: "급여",
   pay: "면접 시 협의",
@@ -743,7 +743,7 @@ function JobCard({ job }: { job: JobCardItem }) {
         )}
       </div>
       <p className="mb-3 truncate text-[0.7rem] font-semibold text-slate-500 sm:text-xs">
-        {job.company} <span className="mx-0.5 text-slate-300">·</span> {job.location}
+        {job.company}<span className="mx-1 text-slate-300">·</span>{job.location}
       </p>
       <h3 className="line-clamp-3 min-h-[64px] text-[0.92rem] font-black leading-[1.35] tracking-[-0.04em] text-neutral-950 sm:line-clamp-2 sm:min-h-[58px] sm:text-[1.2rem]">
         {job.title}
@@ -791,6 +791,7 @@ function UserUploadedJobs() {
       const { data, error: fetchError, count } = await supabase
         .from("jobs")
         .select(USER_JOB_SELECT, { count: "exact" })
+        .lte("uploaded_at", new Date().toISOString())
         .order("uploaded_at", { ascending: false })
         .limit(HOMEPAGE_USER_JOBS_LIMIT);
 

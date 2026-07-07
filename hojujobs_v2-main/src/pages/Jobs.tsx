@@ -57,6 +57,7 @@ export default function Jobs() {
       const { data, error: fetchError } = await supabase
         .from("jobs")
         .select(USER_JOB_SELECT)
+        .lte("uploaded_at", new Date().toISOString())
         .order("uploaded_at", { ascending: false });
 
       if (cancelled) return;

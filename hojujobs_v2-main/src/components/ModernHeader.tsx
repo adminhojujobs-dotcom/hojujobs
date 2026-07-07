@@ -45,7 +45,7 @@ export function ModernHeader() {
 
   const mobileNavLinkClass = (to: string) =>
     cn(
-      "rounded-md py-3 transition-colors hover:text-blue-700",
+      "rounded-md py-2 transition-colors hover:text-blue-700",
       isNavActive(location.pathname, to) && "text-blue-600",
     );
 
@@ -137,14 +137,14 @@ export function ModernHeader() {
                   <img src={hojuJobsLogo} alt="Hoju Jobs" className="h-8 w-auto" />
                 </SheetTitle>
               </SheetHeader>
-              <nav className="grid gap-1 px-6 py-5 text-lg font-black text-neutral-950">
+              <nav className="grid gap-3 px-6 py-4 text-lg font-black text-neutral-950">
                 {navItems.map((item) => (
-                  <div key={item.label}>
+                  <div key={item.label} className="grid gap-1">
                     <Link to={item.to} onClick={() => setMobileMenuOpen(false)} className={mobileNavLinkClass(item.to)}>
                       {item.label}
                     </Link>
                     {item.children && (
-                      <div className="ml-3 grid border-l border-slate-100 pl-4 text-base text-slate-500">
+                      <div className="grid gap-1 border-l border-slate-100 pl-5 text-base text-slate-500">
                         {item.children.map((child) => (
                           <Link key={child.label} to={child.to} onClick={() => setMobileMenuOpen(false)} className={mobileNavLinkClass(child.to)}>
                             {child.label}

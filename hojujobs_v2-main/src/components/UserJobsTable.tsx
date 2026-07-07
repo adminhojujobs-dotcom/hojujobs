@@ -109,7 +109,7 @@ export function UserJobsTable({
                 className="flex w-full flex-col gap-1 px-4 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none"
                 onClick={() => openJob(job.id)}
               >
-                <span className={cn("truncate text-xs font-bold text-neutral-500", !hasLocation && "invisible")}>
+                <span className={cn("truncate text-xs font-black text-blue-700", !hasLocation && "invisible")}>
                   {hasLocation ? location : "-"}
                 </span>
 
