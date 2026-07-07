@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Heart } from "lucide-react";
+import { ArrowLeft, ExternalLink, Heart, List } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
@@ -170,10 +170,16 @@ export default function CompanyYanggaDeli() {
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">
       <main className="mx-auto w-full max-w-[1220px] px-5 py-8 sm:py-12">
-        <Link to="/" className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-950">
-          <ArrowLeft className="h-4 w-4" />
-          홈으로
-        </Link>
+        <div className="mb-6 flex items-center gap-4">
+          <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-950">
+            <ArrowLeft className="h-4 w-4" />
+            홈으로
+          </Link>
+          <Link to="/directory" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-950">
+            <List className="h-4 w-4" />
+            목록
+          </Link>
+        </div>
 
         <section id="company" className="overflow-hidden rounded-lg border border-slate-200 bg-white">
           {profile.photo_url && (

@@ -361,18 +361,21 @@ export function JobPostingForm() {
         <FormRow label="지원방법" htmlFor="howToApply" required>
           <Input id="howToApply" value={form.howToApply} onChange={(e) => setForm((prev) => ({ ...prev, howToApply: e.target.value }))} placeholder="예: 이메일로 지원" className={inputClass} required />
         </FormRow>
+        <ExtraFieldsEditor
+          fields={recruitmentExtraFields}
+          onChange={setRecruitmentExtraFields}
+          labelPlaceholder="예: 초보 지원"
+          emptyHint="초보 지원, 우대 조건 등 모집 조건에 추가할 항목을 자유롭게 입력하세요."
+        />
+      </FormSection>
+
+      <FormSection title="연락처">
         <FormRow label="이메일" htmlFor="applyEmail" required>
           <Input id="applyEmail" type="email" value={form.applyEmail} onChange={(e) => setForm((prev) => ({ ...prev, applyEmail: e.target.value }))} placeholder="hr@company.com" className={inputClass} required />
         </FormRow>
         <FormRow label="연락처" htmlFor="contactPhone" required>
           <Input id="contactPhone" value={form.contactPhone} onChange={(e) => setForm((prev) => ({ ...prev, contactPhone: e.target.value }))} placeholder="예: 0400 000 000" className={inputClass} required />
         </FormRow>
-        <ExtraFieldsEditor
-          fields={recruitmentExtraFields}
-          onChange={setRecruitmentExtraFields}
-          labelPlaceholder="항목명 (예: 인스타그램)"
-          emptyHint="인스타그램, 초보 지원 등 모집 조건에 추가할 항목을 자유롭게 입력하세요."
-        />
       </FormSection>
 
       <FormSection title="선택 항목">
