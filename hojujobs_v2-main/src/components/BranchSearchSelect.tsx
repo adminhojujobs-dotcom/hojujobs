@@ -32,7 +32,7 @@ export function BranchSearchSelect({ value, onChange, disabled }: BranchSearchSe
       setLoading(true);
       const { data: branchRows, error } = await supabase
         .from("company_branches")
-        .select("id, company_slug, branch_name, branch_label, address")
+        .select("id, company_slug, branch_name, branch_label, address, email")
         .eq("is_active", true)
         .order("company_slug", { ascending: true })
         .order("sort_order", { ascending: true });
@@ -62,6 +62,7 @@ export function BranchSearchSelect({ value, onChange, disabled }: BranchSearchSe
           branch_label: row.branch_label,
           address: row.address,
           company_name: nameBySlug.get(row.company_slug) ?? row.company_slug,
+          email: row.email,
         }))
         .filter((row) => nameBySlug.has(row.company_slug));
 

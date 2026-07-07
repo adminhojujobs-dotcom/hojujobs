@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { LogOut, Plus, Trash2, Zap } from "lucide-react";
+import { LogOut, Trash2, Users, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDevPreviewAuth } from "@/components/DevPreviewAuth";
 import { useSEO } from "@/hooks/useSEO";
@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import {
   buildCompanyOpeningInsert,
+  countApplicationsByOpening,
+  formatOpeningDate,
   MANAGED_COMPANY_OPENING_SELECT,
   openingPublicPath,
   type ManagedCompanyOpening,
@@ -27,6 +29,7 @@ import { toast } from "sonner";
 
 type ManagedOpeningWithBranch = ManagedCompanyOpening & {
   branch?: CompanyBranchOption | null;
+  applicationCount?: number;
 };
 
 export default function Profile() {
@@ -140,28 +143,49 @@ export default function Profile() {
       }
 
       const listings = (data ?? []) as ManagedCompanyOpening[];
+      const openingIds = listings.map((job) => job.id);
       const branchIds = [...new Set(listings.map((job) => job.branch_id).filter(Boolean))] as string[];
 
-      if (branchIds.length === 0) {
-        setManagedOpenings(listings.map((job) => ({ ...job, branch: null })));
+      const [{ data: applicationRows }, branchResult] = await Promise.all([
+        openingIds.length > 0
+          ? supabase.from("company_job_applications").select("opening_id").in("opening_id", openingIds)
+          : Promise.resolve({ data: [] as { opening_id: string }[] }),
+        branchIds.length > 0
+          ? supabase
+              .from("company_branches")
+              .select("id, company_slug, branch_name, branch_label, address, email")
+              .in("id", branchIds)
+          : Promise.resolve({ data: [] as { id: string; company_slug: string; branch_name: string; branch_label: string | null; address: string; email: string | null }[] }),
+      ]);
+
+      if (cancelled) return;
+
+      const applicationCounts = countApplicationsByOpening(applicationRows ?? []);
+      const branchRows = branchResult.data ?? [];
+
+      if (branchRows.length === 0) {
+        setManagedOpenings(
+          listings.map((job) => ({
+            ...job,
+            branch: null,
+            applicationCount: applicationCounts.get(job.id) ?? 0,
+          })),
+        );
         setJobsLoading(false);
         return;
       }
 
-      const { data: branchRows } = await supabase
-        .from("company_branches")
-        .select("id, company_slug, branch_name, branch_label, address")
-        .in("id", branchIds);
-
-      const slugs = [...new Set((branchRows ?? []).map((row) => row.company_slug))];
+      const slugs = [...new Set(branchRows.map((row) => row.company_slug))];
       const { data: profiles } = await supabase
         .from("company_profiles")
         .select("slug, name")
         .in("slug", slugs);
 
+      if (cancelled) return;
+
       const nameBySlug = new Map((profiles ?? []).map((row) => [row.slug, row.name]));
       const branchById = new Map(
-        (branchRows ?? []).map((row) => [
+        branchRows.map((row) => [
           row.id,
           {
             id: row.id,
@@ -170,6 +194,7 @@ export default function Profile() {
             branch_label: row.branch_label,
             address: row.address,
             company_name: nameBySlug.get(row.company_slug) ?? row.company_slug,
+            email: row.email,
           } satisfies CompanyBranchOption,
         ]),
       );
@@ -178,6 +203,7 @@ export default function Profile() {
         listings.map((job) => ({
           ...job,
           branch: job.branch_id ? branchById.get(job.branch_id) ?? null : null,
+          applicationCount: applicationCounts.get(job.id) ?? 0,
         })),
       );
       setJobsLoading(false);
@@ -376,13 +402,7 @@ export default function Profile() {
         ) : (
           <div className="space-y-8">
             <form onSubmit={submitBusinessJob} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-lg font-black text-neutral-950">채용 공고 등록</h2>
-                <Button type="button" variant="outline" size="sm" onClick={() => navigate("/post-job")}>
-                  <Plus className="mr-1 h-4 w-4" />
-                  전체 화면
-                </Button>
-              </div>
+              <h2 className="text-lg font-black text-neutral-950">채용 공고 등록</h2>
 
               <div className="space-y-2">
                 <Label>사업체 지점 *</Label>
@@ -441,33 +461,53 @@ export default function Profile() {
                   {managedOpenings.map((opening) => (
                     <div key={opening.id} className="rounded-xl border border-slate-100 px-4 py-4">
                       <div className="flex items-start justify-between gap-3">
-                        <Link to={`/my-jobs/${opening.id}`} className="min-w-0 flex-1 hover:opacity-80">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="truncate font-bold text-neutral-950">{opening.title}</p>
+                        <div className="min-w-0 flex-1">
+                          <Link
+                            to={openingPublicPath(opening.company_slug, opening.id)}
+                            className="block hover:opacity-80"
+                          >
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="truncate font-bold text-neutral-950">{opening.title}</p>
+                              {opening.quick_apply && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700">
+                                  <Zap className="h-3 w-3" />
+                                  빠른 지원
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-1 text-sm text-slate-500">
+                              {opening.branch ? branchOptionLabel(opening.branch) : opening.company_slug}
+                            </p>
+                            {opening.branch?.address && (
+                              <p className="mt-1 text-xs text-slate-400">{opening.branch.address}</p>
+                            )}
+                            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                              {opening.pay && <span className="font-semibold text-blue-700">{opening.pay}</span>}
+                              <span className="text-slate-400">{formatOpeningDate(opening.created_at)} 등록</span>
+                            </div>
+                            {opening.detail_intro && (
+                              <p className="mt-2 line-clamp-2 text-sm text-slate-600">{opening.detail_intro}</p>
+                            )}
+                          </Link>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <Button asChild variant="outline" size="sm">
+                              <Link to={openingPublicPath(opening.company_slug, opening.id)}>사이트에서 보기</Link>
+                            </Button>
                             {opening.quick_apply && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-black text-emerald-700">
-                                <Zap className="h-3 w-3" />
-                                빠른 지원
-                              </span>
+                              <Button asChild variant="outline" size="sm">
+                                <Link to={`/my-jobs/${opening.id}`}>
+                                  <Users className="mr-1.5 h-3.5 w-3.5" />
+                                  지원자 관리 ({opening.applicationCount ?? 0})
+                                </Link>
+                              </Button>
                             )}
                           </div>
-                          <p className="mt-1 text-sm text-slate-500">
-                            {opening.branch ? branchOptionLabel(opening.branch) : opening.company_slug}
-                          </p>
-                          {opening.pay && <p className="mt-1 text-sm font-semibold text-blue-700">{opening.pay}</p>}
-                          {opening.detail_intro && <p className="mt-2 line-clamp-3 text-sm text-slate-600">{opening.detail_intro}</p>}
-                          <p className="mt-2 text-xs font-semibold text-blue-700">지원자 보기 →</p>
-                        </Link>
+                        </div>
                         <Button type="button" variant="ghost" size="icon" onClick={() => void deleteManagedOpening(opening.id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
-                      <Link
-                        to={openingPublicPath(opening.company_slug, opening.id)}
-                        className="mt-3 inline-block text-xs font-semibold text-slate-500 hover:text-blue-700"
-                      >
-                        공개 페이지 보기
-                      </Link>
                     </div>
                   ))}
                 </div>

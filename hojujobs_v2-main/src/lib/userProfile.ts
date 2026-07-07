@@ -24,6 +24,7 @@ export interface CompanyBranchOption {
   branch_label: string | null;
   address: string;
   company_name: string;
+  email?: string | null;
 }
 
 export const USER_PROFILE_SELECT =

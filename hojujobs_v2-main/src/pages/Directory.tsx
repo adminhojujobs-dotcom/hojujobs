@@ -16,6 +16,11 @@ type CompanyProfileRow = {
   is_active: boolean;
 };
 
+type DirectoryCompany = CompanyProfileRow & {
+  activeOpeningCount: number;
+  openingSuburbs: string[];
+};
+
 type SortKey = "name";
 type SortDirection = "asc" | "desc";
 
@@ -31,7 +36,7 @@ export default function Directory() {
     noindex: true,
   });
 
-  const [profiles, setProfiles] = useState<CompanyProfileRow[]>([]);
+  const [profiles, setProfiles] = useState<DirectoryCompany[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,22 +51,49 @@ export default function Directory() {
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
-        .from("company_profiles")
-        .select("id, name, slug, address, phone, email, logo_url, is_active")
-        .eq("is_active", true)
-        .order("name", { ascending: true });
+      const [{ data: profileRows, error: profileError }, { data: openingRows, error: openingError }] =
+        await Promise.all([
+          supabase
+            .from("company_profiles")
+            .select("id, name, slug, address, phone, email, logo_url, is_active")
+            .eq("is_active", true)
+            .order("name", { ascending: true }),
+          supabase
+            .from("company_job_openings")
+            .select("company_slug, suburb, area")
+            .eq("is_active", true),
+        ]);
 
       if (cancelled) return;
 
-      if (fetchError) {
-        console.error("company_profiles fetch error:", fetchError);
+      if (profileError || openingError) {
+        console.error("directory fetch error:", profileError ?? openingError);
         setError("회사 목록을 불러오지 못했습니다.");
         setProfiles([]);
-      } else {
-        setProfiles((data ?? []) as CompanyProfileRow[]);
+        setLoading(false);
+        return;
       }
 
+      const openingsBySlug = new Map<string, { count: number; suburbs: Set<string> }>();
+      for (const opening of openingRows ?? []) {
+        const entry = openingsBySlug.get(opening.company_slug) ?? { count: 0, suburbs: new Set<string>() };
+        entry.count += 1;
+        if (opening.suburb?.trim()) {
+          entry.suburbs.add(`${opening.area} ${opening.suburb}`.trim());
+        }
+        openingsBySlug.set(opening.company_slug, entry);
+      }
+
+      setProfiles(
+        ((profileRows ?? []) as CompanyProfileRow[]).map((profile) => {
+          const openingInfo = openingsBySlug.get(profile.slug);
+          return {
+            ...profile,
+            activeOpeningCount: openingInfo?.count ?? 0,
+            openingSuburbs: openingInfo ? Array.from(openingInfo.suburbs).sort((a, b) => a.localeCompare(b, "ko")) : [],
+          };
+        }),
+      );
       setLoading(false);
     }
 
@@ -76,7 +108,8 @@ export default function Directory() {
 
     const filtered = profiles.filter((profile) => {
       if (!trimmed) return true;
-      const haystack = `${profile.name ?? ""} ${profile.slug ?? ""} ${profile.address ?? ""} ${profile.phone ?? ""} ${profile.email ?? ""}`.toLowerCase();
+      const suburbHaystack = profile.openingSuburbs.join(" ");
+      const haystack = `${profile.name ?? ""} ${profile.slug ?? ""} ${profile.address ?? ""} ${profile.phone ?? ""} ${profile.email ?? ""} ${suburbHaystack}`.toLowerCase();
       return haystack.includes(trimmed);
     });
 
@@ -107,7 +140,7 @@ export default function Directory() {
             <Input
               value={keyword}
               onChange={(event) => setKeyword(event.target.value)}
-              placeholder="회사명, 주소 검색"
+              placeholder="회사명, 주소, 지역 검색"
               className="h-9 rounded-full border-slate-200 pl-9 text-sm"
             />
           </div>
@@ -124,7 +157,7 @@ export default function Directory() {
               회사명
               <ArrowUpDown className="h-3.5 w-3.5" />
             </button>
-            <div>주소</div>
+            <div>주소 · 채용</div>
           </div>
 
           {loading ? (
@@ -152,11 +185,28 @@ export default function Directory() {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="truncate text-base font-black text-neutral-950">{profile.name}</p>
-                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-500 sm:hidden">{profile.address || "-"}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate text-base font-black text-neutral-950">{profile.name}</p>
+                      {profile.activeOpeningCount > 0 && (
+                        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-black text-blue-700">
+                          채용 {profile.activeOpeningCount}건
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-0.5 truncate text-sm font-semibold text-slate-500 sm:hidden">
+                      {profile.address || "-"}
+                      {profile.openingSuburbs.length > 0 ? ` · ${profile.openingSuburbs.slice(0, 2).join(", ")}` : ""}
+                    </p>
                   </div>
 
-                  <p className="hidden truncate text-sm font-semibold text-slate-600 sm:block">{profile.address || "-"}</p>
+                  <div className="hidden min-w-0 sm:block">
+                    <p className="truncate text-sm font-semibold text-slate-600">{profile.address || "-"}</p>
+                    {profile.openingSuburbs.length > 0 && (
+                      <p className="mt-0.5 truncate text-xs font-semibold text-blue-700">
+                        모집 지역: {profile.openingSuburbs.join(", ")}
+                      </p>
+                    )}
+                  </div>
                 </button>
               ))}
             </div>

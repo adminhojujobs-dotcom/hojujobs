@@ -239,6 +239,13 @@ export default function CompanyJobDetail() {
           )}
         </section>
 
+        {opening.detail_intro && conditionRows.length === 0 && (
+          <section className="border-b border-slate-200 py-8">
+            <h2 className="mb-4 text-xl font-black tracking-[-0.035em] text-neutral-950">상세 내용</h2>
+            <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700 sm:text-base">{opening.detail_intro}</p>
+          </section>
+        )}
+
         {conditionRows.length > 0 && (
           <section className="border-b border-slate-200 py-8">
             <h2 className="mb-5 text-xl font-black tracking-[-0.035em] text-neutral-950">근무조건</h2>
