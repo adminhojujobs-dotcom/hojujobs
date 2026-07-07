@@ -25,6 +25,7 @@ export interface CompanyBranchOption {
   address: string;
   company_name: string;
   email?: string | null;
+  logo_url?: string | null;
 }
 
 export const USER_PROFILE_SELECT =

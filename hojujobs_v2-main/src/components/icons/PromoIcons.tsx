@@ -34,6 +34,23 @@ export function NewsIcon(props: IconProps) {
   );
 }
 
+export function BlogIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" {...props}>
+      <rect x="2.5" y="2.5" width="15" height="18" rx="2.2" fill="#F2F3F6" />
+      <path d="M2.5 4.7A2.2 2.2 0 0 1 4.7 2.5h10.1A2.2 2.2 0 0 1 17 4.7V6H2.5Z" fill="#375BF6" />
+      <line x1="5.5" y1="10" x2="13.5" y2="10" stroke="#111827" strokeWidth="1.1" strokeLinecap="round" />
+      <line x1="5.5" y1="13" x2="13.5" y2="13" stroke="#111827" strokeWidth="1.1" strokeLinecap="round" />
+      <line x1="5.5" y1="16" x2="11" y2="16" stroke="#111827" strokeWidth="1.1" strokeLinecap="round" />
+      <g transform="rotate(45 18.5 18.5)">
+        <rect x="17" y="12.5" width="3" height="10.5" rx="1.2" fill="#375BF6" />
+        <path d="M17 12.5h3l-1.5-2.6Z" fill="#0F172A" />
+        <rect x="17" y="20.5" width="3" height="1.6" fill="#fff" />
+      </g>
+    </svg>
+  );
+}
+
 export function EventsCalendarIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 24 24" {...props}>

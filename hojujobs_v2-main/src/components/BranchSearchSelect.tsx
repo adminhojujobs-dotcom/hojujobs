@@ -48,11 +48,12 @@ export function BranchSearchSelect({ value, onChange, disabled }: BranchSearchSe
       const slugs = [...new Set(branchRows.map((row) => row.company_slug))];
       const { data: profiles } = await supabase
         .from("company_profiles")
-        .select("slug, name")
+        .select("slug, name, logo_url")
         .eq("is_active", true)
         .in("slug", slugs);
 
       const nameBySlug = new Map((profiles ?? []).map((profile) => [profile.slug, profile.name]));
+      const logoBySlug = new Map((profiles ?? []).map((profile) => [profile.slug, profile.logo_url]));
 
       const options = branchRows
         .map((row) => ({
@@ -63,6 +64,7 @@ export function BranchSearchSelect({ value, onChange, disabled }: BranchSearchSe
           address: row.address,
           company_name: nameBySlug.get(row.company_slug) ?? row.company_slug,
           email: row.email,
+          logo_url: logoBySlug.get(row.company_slug) ?? null,
         }))
         .filter((row) => nameBySlug.has(row.company_slug));
 
@@ -98,7 +100,11 @@ export function BranchSearchSelect({ value, onChange, disabled }: BranchSearchSe
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[min(28rem,calc(100vw-2rem))] p-0" align="start">
+      <PopoverContent
+        className="w-[min(28rem,calc(100vw-2rem))] p-0"
+        align="start"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
         <Command>
           <CommandInput placeholder="회사명, 지점명, 주소 검색" />
           <CommandList>
@@ -113,8 +119,15 @@ export function BranchSearchSelect({ value, onChange, disabled }: BranchSearchSe
                     setOpen(false);
                   }}
                 >
-                  <Check className={cn("mr-2 h-4 w-4", value === branch.id ? "opacity-100" : "opacity-0")} />
-                  <div className="min-w-0">
+                  <Check className={cn("mr-2 h-4 w-4 shrink-0", value === branch.id ? "opacity-100" : "opacity-0")} />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-white">
+                    {branch.logo_url ? (
+                      <img src={branch.logo_url} alt={branch.company_name} className="h-full w-full object-contain" />
+                    ) : (
+                      <span className="text-xs font-black text-slate-300">{branch.company_name.slice(0, 1)}</span>
+                    )}
+                  </div>
+                  <div className="ml-2.5 min-w-0">
                     <p className="truncate font-semibold">{branchOptionLabel(branch)}</p>
                     <p className="truncate text-xs text-muted-foreground">{branch.address}</p>
                   </div>

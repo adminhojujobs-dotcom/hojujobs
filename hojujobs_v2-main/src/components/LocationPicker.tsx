@@ -95,7 +95,11 @@ export function LocationPicker({
           <ChevronDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[320px] p-0" align="start">
+      <PopoverContent
+        className="w-[320px] p-0"
+        align="start"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
         {/* Search */}
         <div className="relative p-2 border-b border-border">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />

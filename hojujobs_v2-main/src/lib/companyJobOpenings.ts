@@ -36,35 +36,83 @@ export function companyLabelFromBranch(branch: CompanyBranchOption) {
   return `${branch.company_name} ${branch.branch_name}`;
 }
 
-export function buildCompanyOpeningInsert(args: {
+export interface CompanyOpeningExtraField {
+  label: string;
+  value: string;
+}
+
+export interface CompanyOpeningFormInput {
   userId: string;
   branch: CompanyBranchOption;
   title: string;
-  salary: string;
-  details: string;
+  // Core fields — always shown in the form.
+  pay: string;
+  positionType?: string;
+  workDays?: string;
+  workHours?: string;
+  benefits?: string;
+  headcount?: string;
+  deadline?: string;
+  preferredQualifications?: string;
+  howToApply?: string;
+  applyEmail?: string;
+  // Optional fields — common enough to offer, but hidden from the listing when left blank.
+  employmentType?: string;
+  contactPhone?: string;
+  requiredDocuments?: string;
+  duties?: string;
+  // Free-form additions for anything that doesn't fit the standard fields.
+  conditionExtraFields?: CompanyOpeningExtraField[];
+  recruitmentExtraFields?: CompanyOpeningExtraField[];
+  skillTags?: string[];
   quickApply: boolean;
   sortOrder?: number;
-}) {
+}
+
+export function buildCompanyOpeningInsert(args: CompanyOpeningFormInput) {
   const { area, suburb } = areaSuburbFromBranch(args.branch);
-  const pay = args.salary.trim() || "면접 시 협의";
-  const details = args.details.trim();
-  const branchLocation = args.branch.branch_label || args.branch.branch_name;
+  const pay = args.pay.trim() || "면접 시 협의";
+  const workHours = args.workHours?.trim() || "시간협의";
+  const deadline = args.deadline?.trim() || "상시모집";
+  const applyEmail = args.applyEmail?.trim() || args.branch.email?.trim() || null;
+  const howToApply =
+    args.howToApply?.trim() ||
+    (args.quickApply
+      ? "사이트에서 빠른 지원으로 이력서를 제출해주세요."
+      : applyEmail
+        ? `이메일로 문의: ${applyEmail}`
+        : "공고 내 연락처로 문의해주세요.");
 
   const conditionRows: [string, string, string?][] = [
     ["급여", pay],
-    ["근무지역", args.branch.address, branchLocation],
-    ["근무형태", "시간협의"],
+    ["근무지역", args.branch.address, args.branch.branch_label ?? args.branch.branch_name],
+    ["근무시간", workHours],
   ];
-
-  if (details) {
-    conditionRows.push(["상세 내용", details]);
+  if (args.positionType?.trim()) conditionRows.push(["모집분야", args.positionType.trim()]);
+  if (args.workDays?.trim()) conditionRows.push(["근무요일", args.workDays.trim()]);
+  if (args.employmentType?.trim()) conditionRows.push(["근무형태", args.employmentType.trim()]);
+  if (args.benefits?.trim()) conditionRows.push(["복리후생", args.benefits.trim()]);
+  if (args.duties?.trim()) conditionRows.push(["담당업무", args.duties.trim()]);
+  for (const field of args.conditionExtraFields ?? []) {
+    if (field.label.trim() && field.value.trim()) {
+      conditionRows.push([field.label.trim(), field.value.trim()]);
+    }
   }
 
-  const recruitmentRows: [string, string][] = args.quickApply
-    ? [["지원방법", "사이트에서 빠른 지원으로 이력서를 제출해주세요."]]
-    : args.branch.email
-      ? [["지원방법", `이메일로 문의: ${args.branch.email}`]]
-      : [["지원방법", "공고 내 연락처로 문의해주세요."]];
+  const recruitmentRows: [string, string][] = [
+    ["모집마감", deadline],
+    ["지원방법", howToApply],
+  ];
+  if (args.headcount?.trim()) recruitmentRows.push(["모집인원", args.headcount.trim()]);
+  if (args.preferredQualifications?.trim()) recruitmentRows.push(["우대사항", args.preferredQualifications.trim()]);
+  if (args.requiredDocuments?.trim()) recruitmentRows.push(["지원서류", args.requiredDocuments.trim()]);
+  if (args.contactPhone?.trim()) recruitmentRows.push(["연락처", args.contactPhone.trim()]);
+  if (applyEmail) recruitmentRows.push(["이메일", applyEmail]);
+  for (const field of args.recruitmentExtraFields ?? []) {
+    if (field.label.trim() && field.value.trim()) {
+      recruitmentRows.push([field.label.trim(), field.value.trim()]);
+    }
+  }
 
   return {
     company_slug: args.branch.company_slug,
@@ -75,16 +123,16 @@ export function buildCompanyOpeningInsert(args: {
     company: companyLabelFromBranch(args.branch),
     pay,
     pay_type: "급여",
-    hours: "시간협의",
-    posted_at: "상시",
+    hours: workHours,
+    posted_at: deadline,
     sort_order: args.sortOrder ?? 9999,
     quick_apply: args.quickApply,
     posted_by_user_id: args.userId,
-    apply_email: args.branch.email ?? null,
-    detail_intro: details || null,
+    apply_email: applyEmail,
+    detail_intro: args.duties?.trim() || null,
     condition_rows: conditionRows as Json,
     recruitment_rows: recruitmentRows as Json,
-    skill_tags: [] as string[],
+    skill_tags: (args.skillTags ?? []).map((tag) => tag.trim()).filter(Boolean),
     is_active: true,
   };
 }

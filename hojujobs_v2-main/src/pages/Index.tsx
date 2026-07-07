@@ -13,7 +13,7 @@ import { BLOG_POSTS } from "@/data/blogPosts";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { UserJobsTable } from "@/components/UserJobsTable";
 import { USER_JOB_SELECT, type UserJobRow } from "@/lib/userJobs";
-import { EventsCalendarIcon, NewsIcon, SalesTagIcon } from "@/components/icons/PromoIcons";
+import { BlogIcon, EventsCalendarIcon, NewsIcon, SalesTagIcon } from "@/components/icons/PromoIcons";
 
 interface IndexProps {
   cityFilter?: string;
@@ -107,6 +107,11 @@ const mobileShortcutItems = [
     label: "이벤트",
     href: "/events",
     icon: EventsCalendarIcon,
+  },
+  {
+    label: "블로그",
+    href: "/blog",
+    icon: BlogIcon,
   },
 ];
 
@@ -331,7 +336,7 @@ function QuickSectionsSkeleton() {
     <section className="mx-auto max-w-[1220px] overflow-hidden px-5 pb-10 sm:pb-12 lg:px-9">
       <div className="md:hidden">
         <div className="h-[190px] animate-pulse rounded-2xl bg-slate-100" />
-        <div className="mt-5 grid grid-cols-3 gap-3">
+        <div className="mt-5 grid grid-cols-4 gap-3">
           {mobileShortcutItems.map(({ label, href, icon: Icon }) => (
             <Link key={label} to={href} className="flex flex-col items-center gap-1.5 text-sm font-black text-neutral-900">
               <Icon className="h-9 w-9" strokeWidth={1.75} />
@@ -632,7 +637,7 @@ function QuickSections() {
           </CarouselContent>
         </Carousel>
 
-        <div className="mt-5 grid grid-cols-3 gap-3">
+        <div className="mt-5 grid grid-cols-4 gap-3">
           {mobileShortcutItems.map(({ label, href, icon: Icon }) => (
             <Link key={label} to={href} className="flex flex-col items-center gap-1.5 text-sm font-black text-neutral-900">
               <Icon className="h-9 w-9" strokeWidth={1.75} />

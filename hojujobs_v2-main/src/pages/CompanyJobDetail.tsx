@@ -121,16 +121,21 @@ export default function CompanyJobDetail() {
     () => detailRowsFromJson(opening?.recruitment_rows ?? []),
     [opening],
   );
+  const contactRows = useMemo(
+    () => recruitmentRows.filter(([label]) => label === "연락처" || label === "이메일"),
+    [recruitmentRows],
+  );
+  const recruitmentDetailRows = useMemo(
+    () => recruitmentRows.filter(([label]) => label !== "연락처" && label !== "이메일"),
+    [recruitmentRows],
+  );
 
   const address = branch?.address ?? profile?.address ?? "";
   const mapQuery = encodeURIComponent(branch?.map_query || branch?.address || profile?.map_query || profile?.address || "");
-  const contactPhone = branch?.phone ?? profile?.phone ?? null;
-  const contactPhoneHref = branch?.phone_href ?? profile?.phone_href ?? null;
+  const contactPhone = recruitmentRows.find(([label]) => label === "연락처")?.[1] ?? null;
+  const contactPhoneHref = contactPhone ? contactPhone.replace(/[^\d+]/g, "") : null;
   const contactEmail = opening?.apply_email ?? null;
-  const skillTags =
-    opening && opening.skill_tags.length > 0
-      ? opening.skill_tags
-      : profile?.skill_tags ?? [];
+  const skillTags = opening?.skill_tags ?? [];
 
   useSEO({
     title: opening ? `${opening.title} | 호주잡스` : "채용정보 | 호주잡스",
@@ -263,11 +268,25 @@ export default function CompanyJobDetail() {
           </section>
         )}
 
-        {recruitmentRows.length > 0 && (
+        {recruitmentDetailRows.length > 0 && (
           <section className="border-b border-slate-200 py-8">
             <h2 className="mb-5 text-xl font-black tracking-[-0.035em] text-neutral-950">모집조건</h2>
             <dl className="divide-y divide-slate-100">
-              {recruitmentRows.map(([label, value]) => (
+              {recruitmentDetailRows.map(([label, value]) => (
+                <div key={label} className="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-4 py-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
+                  <dt className="text-sm font-bold text-slate-500">{label}</dt>
+                  <dd className="text-sm font-bold leading-6 text-neutral-950 sm:text-base">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+
+        {contactRows.length > 0 && (
+          <section className="border-b border-slate-200 py-8">
+            <h2 className="mb-5 text-xl font-black tracking-[-0.035em] text-neutral-950">연락처</h2>
+            <dl className="divide-y divide-slate-100">
+              {contactRows.map(([label, value]) => (
                 <div key={label} className="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-4 py-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
                   <dt className="text-sm font-bold text-slate-500">{label}</dt>
                   <dd className="text-sm font-bold leading-6 text-neutral-950 sm:text-base">{value}</dd>
