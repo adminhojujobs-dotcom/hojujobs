@@ -112,7 +112,7 @@ export default function Events() {
                 )}
 
                 <div className="p-4 sm:p-5">
-                  <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-black text-slate-500">
+                  <div className="mb-3 flex flex-wrap items-center gap-2 text-[11px] font-black text-slate-500">
                     {event.event_date_label && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-blue-700">
                         <CalendarDays className="h-3 w-3" />
@@ -125,22 +125,22 @@ export default function Events() {
                     </span>
                   </div>
 
-                  <h2 className="line-clamp-2 text-lg font-black leading-snug tracking-[-0.04em] text-neutral-950 group-hover:text-blue-700">
+                  <h2 className="line-clamp-2 text-base font-black leading-snug tracking-[-0.04em] text-neutral-950 group-hover:text-blue-700">
                     {event.title}
                   </h2>
 
                   {event.location_label && (
-                    <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-slate-500">
-                      <MapPin className="h-4 w-4 shrink-0" />
+                    <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+                      <MapPin className="h-3.5 w-3.5 shrink-0" />
                       <span className="truncate">{event.location_label}</span>
                     </p>
                   )}
 
                   {event.description && (
-                    <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-600">{event.description}</p>
+                    <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-slate-600">{event.description}</p>
                   )}
 
-                  <span className="mt-5 inline-flex items-center gap-1 text-sm font-black text-blue-600">
+                  <span className="mt-5 inline-flex items-center gap-1 text-xs font-black text-blue-600">
                     자세히 보기
                     <ExternalLink className="h-3.5 w-3.5" />
                   </span>

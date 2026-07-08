@@ -473,8 +473,7 @@ function QuickSections() {
 
       return {
         title: "커뮤니티 이벤트",
-        moreHref: top.source_url,
-        moreExternal: true,
+        moreHref: "/events",
         preview: {
           label: top.location_label ?? top.organizer,
           title: top.title,
