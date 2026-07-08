@@ -28,9 +28,6 @@ import News from "./pages/News";
 import Events from "./pages/Events";
 import Directory from "./pages/Directory";
 import Jobs from "./pages/Jobs";
-import Flatmates from "./pages/Flatmates";
-import FlatmateDetail from "./pages/FlatmateDetail";
-import FlatmatesPost from "./pages/FlatmatesPost";
 import CompanyKmall09 from "./pages/CompanyKmall09";
 import CompanyJobDetail from "./pages/CompanyJobDetail";
 import CompanyOpeningManage from "./pages/CompanyOpeningManage";
@@ -83,9 +80,6 @@ const App = () => (
               <Route path="/events" element={<Events />} />
               <Route path="/directory" element={<Directory />} />
               <Route path="/jobs" element={<Jobs />} />
-              <Route path="/flatmates" element={<Flatmates />} />
-              <Route path="/flatmates/post" element={<FlatmatesPost />} />
-              <Route path="/flatmates/:id" element={<FlatmateDetail />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/sales" element={<Sales />} />
               <Route path="/sales/:rank" element={<SaleDetail />} />

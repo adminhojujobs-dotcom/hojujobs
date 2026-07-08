@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, ChevronsUpDown, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { branchOptionLabel, type CompanyBranchOption } from "@/lib/userProfile";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 
 interface BranchSearchSelectProps {
-  value: string;
-  onChange: (branchId: string, branch: CompanyBranchOption) => void;
+  value: string[];
+  onChange: (branchIds: string[], branches: CompanyBranchOption[]) => void;
   disabled?: boolean;
 }
 
@@ -78,10 +78,26 @@ export function BranchSearchSelect({ value, onChange, disabled }: BranchSearchSe
     };
   }, []);
 
-  const selectedBranch = useMemo(
-    () => branches.find((branch) => branch.id === value) ?? null,
-    [branches, value],
-  );
+  const selectedBranches = branches.filter((branch) => value.includes(branch.id));
+
+  const toggleBranch = (branch: CompanyBranchOption) => {
+    const nextIds = value.includes(branch.id) ? value.filter((id) => id !== branch.id) : [...value, branch.id];
+    const nextBranches = branches.filter((b) => nextIds.includes(b.id));
+    onChange(nextIds, nextBranches);
+  };
+
+  const removeBranch = (branchId: string) => {
+    const nextIds = value.filter((id) => id !== branchId);
+    onChange(nextIds, branches.filter((b) => nextIds.includes(b.id)));
+  };
+
+  const triggerLabel = loading
+    ? "지점 불러오는 중..."
+    : selectedBranches.length === 0
+      ? "지점을 선택하세요"
+      : selectedBranches.length === 1
+        ? branchOptionLabel(selectedBranches[0])
+        : `${branchOptionLabel(selectedBranches[0])} 외 ${selectedBranches.length - 1}곳`;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -94,9 +110,7 @@ export function BranchSearchSelect({ value, onChange, disabled }: BranchSearchSe
           disabled={disabled || loading}
           className="h-11 w-full justify-between font-normal"
         >
-          <span className="truncate">
-            {loading ? "지점 불러오는 중..." : selectedBranch ? branchOptionLabel(selectedBranch) : "지점을 선택하세요"}
-          </span>
+          <span className="truncate">{triggerLabel}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -110,32 +124,53 @@ export function BranchSearchSelect({ value, onChange, disabled }: BranchSearchSe
           <CommandList>
             <CommandEmpty>일치하는 지점이 없습니다.</CommandEmpty>
             <CommandGroup>
-              {branches.map((branch) => (
-                <CommandItem
-                  key={branch.id}
-                  value={`${branch.company_name} ${branch.branch_name} ${branch.branch_label ?? ""} ${branch.address}`}
-                  onSelect={() => {
-                    onChange(branch.id, branch);
-                    setOpen(false);
-                  }}
-                >
-                  <Check className={cn("mr-2 h-4 w-4 shrink-0", value === branch.id ? "opacity-100" : "opacity-0")} />
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-white">
-                    {branch.logo_url ? (
-                      <img src={branch.logo_url} alt={branch.company_name} className="h-full w-full object-contain" />
-                    ) : (
-                      <span className="text-xs font-black text-slate-300">{branch.company_name.slice(0, 1)}</span>
-                    )}
-                  </div>
-                  <div className="ml-2.5 min-w-0">
-                    <p className="truncate font-semibold">{branchOptionLabel(branch)}</p>
-                    <p className="truncate text-xs text-muted-foreground">{branch.address}</p>
-                  </div>
-                </CommandItem>
-              ))}
+              {branches.map((branch) => {
+                const isSelected = value.includes(branch.id);
+                return (
+                  <CommandItem
+                    key={branch.id}
+                    value={`${branch.company_name} ${branch.branch_name} ${branch.branch_label ?? ""} ${branch.address}`}
+                    onSelect={() => toggleBranch(branch)}
+                  >
+                    <Check className={cn("mr-2 h-4 w-4 shrink-0", isSelected ? "opacity-100" : "opacity-0")} />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-100 bg-white">
+                      {branch.logo_url ? (
+                        <img src={branch.logo_url} alt={branch.company_name} className="h-full w-full object-contain" />
+                      ) : (
+                        <span className="text-xs font-black text-slate-300">{branch.company_name.slice(0, 1)}</span>
+                      )}
+                    </div>
+                    <div className="ml-2.5 min-w-0">
+                      <p className="truncate font-semibold">{branchOptionLabel(branch)}</p>
+                      <p className="truncate text-xs text-muted-foreground">{branch.address}</p>
+                    </div>
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           </CommandList>
         </Command>
+
+        {selectedBranches.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 border-t border-slate-200 p-2.5">
+            {selectedBranches.map((branch) => (
+              <span
+                key={branch.id}
+                className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700"
+              >
+                {branchOptionLabel(branch)}
+                <button
+                  type="button"
+                  onClick={() => removeBranch(branch.id)}
+                  className="hover:text-blue-900"
+                  aria-label={`${branchOptionLabel(branch)} 선택 해제`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );

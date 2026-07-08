@@ -41,9 +41,9 @@ export function JobPostingForm() {
   const preview = useDevPreviewAuth();
   const { user } = useAuth();
   const [submitting, setSubmitting] = useState(false);
-  const [selectedBranch, setSelectedBranch] = useState<CompanyBranchOption | null>(null);
+  const [selectedBranches, setSelectedBranches] = useState<CompanyBranchOption[]>([]);
   const [form, setForm] = useState({
-    branchId: "",
+    branchIds: [] as string[],
     title: "",
     pay: "",
     positionType: "",
@@ -106,21 +106,25 @@ export function JobPostingForm() {
       [form.deadline, "모집마감"],
       [form.preferredQualifications, "우대사항"],
       [form.howToApply, "지원방법"],
-      [form.applyEmail, "이메일"],
-      [form.contactPhone, "연락처"],
     ];
     const missingField = requiredFields.find(([value]) => !value.trim());
-    if (!user || !selectedBranch || missingField) {
-      toast.error(missingField ? `${missingField[1]}을(를) 입력해주세요.` : "지점을 선택해주세요.");
+    const hasContact = form.applyEmail.trim() || form.contactPhone.trim();
+    if (!user || selectedBranches.length === 0 || missingField || !hasContact) {
+      toast.error(
+        missingField
+          ? `${missingField[1]}을(를) 입력해주세요.`
+          : !hasContact
+            ? "이메일 또는 연락처 중 하나는 입력해주세요."
+            : "지점을 선택해주세요.",
+      );
       return;
     }
 
     setSubmitting(true);
-    const { data, error } = await supabase
-      .from("company_job_openings")
-      .insert(buildCompanyOpeningInsert({
+    const rows = selectedBranches.map((branch) =>
+      buildCompanyOpeningInsert({
         userId: user.id,
-        branch: selectedBranch,
+        branch,
         title: form.title,
         pay: form.pay,
         positionType: form.positionType,
@@ -140,18 +144,27 @@ export function JobPostingForm() {
         recruitmentExtraFields,
         skillTags,
         quickApply: form.quickApply,
-      }))
-      .select("id, company_slug")
-      .single();
+      }),
+    );
 
-    if (error || !data) {
+    const { data, error } = await supabase
+      .from("company_job_openings")
+      .insert(rows)
+      .select("id, company_slug");
+
+    if (error || !data || data.length === 0) {
       toast.error("공고 등록에 실패했습니다.");
       setSubmitting(false);
       return;
     }
 
-    toast.success("채용 공고가 등록되었습니다.");
-    navigate(openingPublicPath(data.company_slug, data.id));
+    if (data.length === 1) {
+      toast.success("채용 공고가 등록되었습니다.");
+      navigate(openingPublicPath(data[0].company_slug, data[0].id));
+    } else {
+      toast.success(`${data.length}개 지점에 채용 공고가 등록되었습니다.`);
+      navigate("/profile");
+    }
     setSubmitting(false);
   };
 
@@ -299,12 +312,15 @@ export function JobPostingForm() {
       <FormSection title="기본 정보">
         <FormRow label="사업체 지점" required>
           <BranchSearchSelect
-            value={form.branchId}
-            onChange={(branchId, branch) => {
-              setForm((prev) => ({ ...prev, branchId }));
-              setSelectedBranch(branch);
+            value={form.branchIds}
+            onChange={(branchIds, branches) => {
+              setForm((prev) => ({ ...prev, branchIds }));
+              setSelectedBranches(branches);
             }}
           />
+          <p className="text-xs font-semibold text-slate-400">
+            여러 지점에서 동시에 채용한다면 지점을 여러 개 선택할 수 있습니다.
+          </p>
           <button
             type="button"
             onClick={() => setPostMode("generic")}
@@ -370,11 +386,12 @@ export function JobPostingForm() {
       </FormSection>
 
       <FormSection title="연락처">
-        <FormRow label="이메일" htmlFor="applyEmail" required>
-          <Input id="applyEmail" type="email" value={form.applyEmail} onChange={(e) => setForm((prev) => ({ ...prev, applyEmail: e.target.value }))} placeholder="hr@company.com" className={inputClass} required />
+        <p className="-mt-4 text-xs font-semibold text-slate-400">이메일 또는 연락처 중 하나는 입력해주세요.</p>
+        <FormRow label="이메일" htmlFor="applyEmail">
+          <Input id="applyEmail" type="email" value={form.applyEmail} onChange={(e) => setForm((prev) => ({ ...prev, applyEmail: e.target.value }))} placeholder="hr@company.com" className={inputClass} />
         </FormRow>
-        <FormRow label="연락처" htmlFor="contactPhone" required>
-          <Input id="contactPhone" value={form.contactPhone} onChange={(e) => setForm((prev) => ({ ...prev, contactPhone: e.target.value }))} placeholder="예: 0400 000 000" className={inputClass} required />
+        <FormRow label="연락처" htmlFor="contactPhone">
+          <Input id="contactPhone" value={form.contactPhone} onChange={(e) => setForm((prev) => ({ ...prev, contactPhone: e.target.value }))} placeholder="예: 0400 000 000" className={inputClass} />
         </FormRow>
       </FormSection>
 
