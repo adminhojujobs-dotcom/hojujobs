@@ -109,14 +109,14 @@ export function UserJobsTable({
                 className="flex w-full flex-col gap-1 px-4 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none"
                 onClick={() => openJob(job.id)}
               >
-                <span className={cn("truncate text-xs font-black text-blue-700", !hasLocation && "invisible")}>
+                <span className={cn("truncate text-xs font-normal text-blue-700", !hasLocation && "invisible")}>
                   {hasLocation ? location : "-"}
                 </span>
 
-                <h3 className="line-clamp-2 text-sm font-black leading-snug text-neutral-950">{job.title || "-"}</h3>
+                <h3 className="line-clamp-2 text-sm font-normal leading-snug text-neutral-950">{job.title || "-"}</h3>
 
                 <div className="mt-0.5 flex items-center justify-between gap-3 border-t border-slate-100 pt-2">
-                  <span className="truncate text-xs font-bold text-slate-500">{job.industry || "-"}</span>
+                  <span className="truncate text-xs font-normal text-slate-500">{job.industry || "-"}</span>
                   <span className="shrink-0 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">
                     자세히 보기
                   </span>
@@ -131,9 +131,9 @@ export function UserJobsTable({
       <Table className="hidden min-w-[860px] text-[15px] sm:table">
         <TableHeader>
           <TableRow className="border-b border-t border-neutral-900 hover:bg-transparent">
-            <TableHead className="h-14 w-[62%] px-5 text-left text-base font-black text-neutral-950">공고</TableHead>
-            <TableHead className="h-14 w-[20%] px-5 text-left text-base font-black text-neutral-950">지역</TableHead>
-            <TableHead className="h-14 w-[18%] px-5 text-left text-base font-black text-neutral-950">업종</TableHead>
+            <TableHead className="h-14 w-[62%] px-5 text-left text-base font-medium text-neutral-950">공고</TableHead>
+            <TableHead className="h-14 w-[20%] px-5 text-left text-base font-medium text-neutral-950">지역</TableHead>
+            <TableHead className="h-14 w-[18%] px-5 text-left text-base font-medium text-neutral-950">업종</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -171,13 +171,13 @@ export function UserJobsTable({
                   }
                 }}
               >
-                <TableCell className="max-w-[34rem] truncate px-5 text-base font-bold text-neutral-950">
+                <TableCell className="max-w-[34rem] truncate px-5 text-base font-normal text-neutral-950">
                   {job.title || "-"}
                 </TableCell>
-                <TableCell className="max-w-[18rem] truncate px-5 text-base font-semibold text-neutral-600">
+                <TableCell className="max-w-[18rem] truncate px-5 text-base font-normal text-neutral-600">
                   {formatUserJobLocation(job)}
                 </TableCell>
-                <TableCell className="max-w-[14rem] truncate px-5 text-base font-semibold text-neutral-600">
+                <TableCell className="max-w-[14rem] truncate px-5 text-base font-normal text-neutral-600">
                   {job.industry || "-"}
                 </TableCell>
               </TableRow>

@@ -150,7 +150,7 @@ export default function News() {
               <a
                 key={topic.key}
                 href={`#${topic.key.toLowerCase()}`}
-                className="inline-flex h-10 items-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-black text-neutral-950 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                className="inline-flex h-10 items-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-normal text-neutral-950 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
               >
                 {topic.labelKo}
               </a>
@@ -175,7 +175,7 @@ export default function News() {
             {topics.map((topic) => (
               <section key={topic.key} id={topic.key.toLowerCase()} className="scroll-mt-24">
                 <div className="border-b border-neutral-950 pb-4">
-                  <h2 className="text-2xl font-black tracking-[-0.045em] text-neutral-950 sm:text-3xl">{topic.labelKo}</h2>
+                  <h2 className="text-2xl font-normal tracking-[-0.045em] text-neutral-950 sm:text-3xl">{topic.labelKo}</h2>
                 </div>
 
                 <div>
@@ -212,19 +212,19 @@ export default function News() {
                       <div className={story.imageUrl ? "min-w-0" : "min-w-0 sm:col-span-2"}>
                         <div className="mb-3 flex flex-wrap items-center gap-2">
                           {story.meta && (
-                            <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">
+                            <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-normal text-slate-600">
                               {story.meta}
                             </span>
                           )}
-                          <span className="text-sm font-bold text-slate-500">{story.source}</span>
+                          <span className="text-sm font-normal text-slate-500">{story.source}</span>
                         </div>
-                        <h3 className="line-clamp-2 text-xl font-black leading-snug tracking-[-0.035em] text-neutral-950 transition-colors group-hover:text-blue-700 sm:text-2xl">
+                        <h3 className="line-clamp-2 text-xl font-normal leading-snug tracking-[-0.035em] text-neutral-950 transition-colors group-hover:text-blue-700 sm:text-2xl">
                           {story.title}
                         </h3>
-                        <p className="mt-3 line-clamp-2 text-base font-semibold leading-relaxed text-slate-500 sm:text-lg">
+                        <p className="mt-3 line-clamp-2 text-base font-normal leading-relaxed text-slate-500 sm:text-lg">
                           {story.summaryKo}
                         </p>
-                        <p className="mt-3 text-sm font-semibold text-slate-500">
+                        <p className="mt-3 text-sm font-normal text-slate-500">
                           {story.publishedAt || domainFromUrl(story.sourceUrl)}
                         </p>
                       </div>

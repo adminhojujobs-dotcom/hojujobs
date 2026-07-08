@@ -616,12 +616,12 @@ function QuickSections() {
                       {card.categoryTitle}
                     </span>
                     <div className="mt-auto">
-                      <p className="mb-1.5 line-clamp-1 text-xs font-black text-white/85">{card.label}</p>
+                      <p className="mb-1.5 line-clamp-1 text-xs font-normal text-white/85">{card.label}</p>
                       <h3 className="line-clamp-2 text-base font-black leading-tight tracking-[-0.04em]">
                         {card.title}
                       </h3>
                       <div className="mt-2.5 flex items-center justify-between gap-4">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-black text-white">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-normal text-white">
                           {card.meta}
                           <ExternalLink className="h-3 w-3" />
                         </span>
@@ -687,7 +687,7 @@ function QuickSections() {
                   <h3 className="line-clamp-2 text-sm font-black leading-snug tracking-[-0.02em] text-neutral-950 group-hover:text-blue-700">
                     {item.title}
                   </h3>
-                  {item.meta && <p className="mt-1.5 line-clamp-1 text-xs font-bold text-slate-400">{item.meta}</p>}
+                  {item.meta && <p className="mt-1.5 line-clamp-1 text-xs font-normal text-slate-400">{item.meta}</p>}
                 </div>
               </PromoLink>
             ))}
@@ -701,8 +701,8 @@ function QuickSections() {
                 external={item.external}
                 className="group flex min-w-0 flex-1 items-center justify-between gap-4 py-3 first:pt-0"
               >
-                <span className="line-clamp-1 text-sm font-bold text-slate-800 group-hover:text-blue-700">{item.label}</span>
-                {item.meta && <span className="shrink-0 text-xs font-bold text-slate-400">· {item.meta}</span>}
+                <span className="line-clamp-1 text-sm font-normal text-slate-800 group-hover:text-blue-700">{item.label}</span>
+                {item.meta && <span className="shrink-0 text-xs font-normal text-slate-400">· {item.meta}</span>}
               </PromoLink>
             ))}
           </div>
@@ -717,7 +717,7 @@ function QuickSections() {
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
-          <PromoLink href={activeSection.moreHref} external={activeSection.moreExternal} className="truncate text-center text-sm font-bold text-slate-500 hover:text-blue-700">
+          <PromoLink href={activeSection.moreHref} external={activeSection.moreExternal} className="truncate text-center text-sm font-normal text-slate-500 hover:text-blue-700">
             <span className="font-black text-neutral-950">{activeSection.title}</span> 더보기 {activeSectionIndex + 1}/{visiblePromoSections.length}
           </PromoLink>
           <button
@@ -904,7 +904,7 @@ function WorkingHolidayGuides() {
                 <img src={post.imageSrc} alt={post.imageAlt} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" />
               </div>
               <div className="pt-3">
-                <h3 className="line-clamp-2 text-base font-semibold leading-snug tracking-[-0.035em] text-neutral-950">
+                <h3 className="line-clamp-2 text-base font-normal leading-snug tracking-[-0.035em] text-neutral-950">
                   {post.title}
                 </h3>
               </div>

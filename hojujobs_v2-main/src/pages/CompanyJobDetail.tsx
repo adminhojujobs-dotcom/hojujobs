@@ -175,7 +175,7 @@ export default function CompanyJobDetail() {
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">
       <main className="mx-auto w-full max-w-[1220px] px-5 py-8 sm:py-12 lg:px-9">
-        <Link to={`/company/${slug}`} className="mb-6 inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 transition-colors hover:text-neutral-950">
+        <Link to={`/company/${slug}`} className="mb-6 inline-flex items-center gap-1.5 text-sm font-normal text-slate-500 transition-colors hover:text-neutral-950">
           <ArrowLeft className="h-4 w-4" />
           {profile?.name ?? opening.company} 채용정보
         </Link>
@@ -184,9 +184,9 @@ export default function CompanyJobDetail() {
           <div className="flex flex-wrap items-start justify-between gap-6">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-block rounded-md bg-blue-50 px-2.5 py-1 text-xs font-black text-blue-700">{opening.posted_at}</span>
+                <span className="inline-block rounded-md bg-blue-50 px-2.5 py-1 text-xs font-normal text-blue-700">{opening.posted_at}</span>
                 {opening.quick_apply && (
-                  <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-700">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-normal text-emerald-700">
                     <Zap className="h-3 w-3" />
                     빠른 지원
                   </span>
@@ -195,7 +195,7 @@ export default function CompanyJobDetail() {
               <h1 className="mt-4 max-w-4xl text-3xl font-black leading-tight tracking-[-0.045em] text-neutral-950 sm:text-4xl">
                 {opening.title}
               </h1>
-              <p className="mt-3 text-base font-bold text-slate-500">{opening.company}</p>
+              <p className="mt-3 text-base font-normal text-slate-500">{opening.company}</p>
             </div>
             {profile?.logo_url && (
               <img src={profile.logo_url} alt={profile.name} className="h-16 w-auto shrink-0 object-contain" />
@@ -203,12 +203,12 @@ export default function CompanyJobDetail() {
           </div>
 
           <div className="mt-7 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-6">
-            <span className="text-xl font-black text-neutral-950">{opening.pay}</span>
-            <span className="rounded-md bg-blue-50 px-2.5 py-1 text-xs font-black text-blue-700">{opening.pay_type}</span>
-            <span className="ml-2 text-sm font-bold text-slate-300">·</span>
-            <span className="text-sm font-bold text-slate-600">{opening.hours}</span>
-            <span className="text-sm font-bold text-slate-300">·</span>
-            <span className="text-sm font-bold text-slate-600">{opening.area} {opening.suburb}</span>
+            <span className="text-xl font-normal text-neutral-950">{opening.pay}</span>
+            <span className="rounded-md bg-blue-50 px-2.5 py-1 text-xs font-normal text-blue-700">{opening.pay_type}</span>
+            <span className="ml-2 text-sm font-normal text-slate-300">·</span>
+            <span className="text-sm font-normal text-slate-600">{opening.hours}</span>
+            <span className="text-sm font-normal text-slate-300">·</span>
+            <span className="text-sm font-normal text-slate-600">{opening.area} {opening.suburb}</span>
           </div>
 
           {(opening.quick_apply || contactPhone || contactEmail) && (
@@ -227,7 +227,7 @@ export default function CompanyJobDetail() {
               {contactPhone && (
                 <a
                   href={contactPhoneHref ? `tel:${contactPhoneHref}` : undefined}
-                  className="rounded-md bg-blue-600 px-5 py-2.5 text-sm font-black text-white transition-colors hover:bg-blue-700"
+                  className="rounded-md bg-blue-600 px-5 py-2.5 text-sm font-normal text-white transition-colors hover:bg-blue-700"
                 >
                   전화 지원 {contactPhone}
                 </a>
@@ -235,7 +235,7 @@ export default function CompanyJobDetail() {
               {contactEmail && (
                 <a
                   href={`mailto:${contactEmail}`}
-                  className="rounded-md border border-slate-300 px-5 py-2.5 text-sm font-black text-neutral-900 transition-colors hover:bg-slate-50"
+                  className="rounded-md border border-slate-300 px-5 py-2.5 text-sm font-normal text-neutral-900 transition-colors hover:bg-slate-50"
                 >
                   이메일 지원
                 </a>
@@ -257,10 +257,10 @@ export default function CompanyJobDetail() {
             <dl className="divide-y divide-slate-100">
               {conditionRows.map(([label, value, note]) => (
                 <div key={label} className="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-4 py-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
-                  <dt className="text-sm font-bold text-slate-500">{label}</dt>
+                  <dt className="text-sm font-normal text-slate-500">{label}</dt>
                   <dd>
-                    <p className="text-sm font-bold text-neutral-950 sm:text-base">{value}</p>
-                    {note && <p className="mt-1.5 text-xs font-semibold text-slate-400">{note}</p>}
+                    <p className="text-sm font-normal text-neutral-950 sm:text-base">{value}</p>
+                    {note && <p className="mt-1.5 text-xs font-normal text-slate-400">{note}</p>}
                   </dd>
                 </div>
               ))}
@@ -274,8 +274,8 @@ export default function CompanyJobDetail() {
             <dl className="divide-y divide-slate-100">
               {recruitmentDetailRows.map(([label, value]) => (
                 <div key={label} className="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-4 py-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
-                  <dt className="text-sm font-bold text-slate-500">{label}</dt>
-                  <dd className="text-sm font-bold leading-6 text-neutral-950 sm:text-base">{value}</dd>
+                  <dt className="text-sm font-normal text-slate-500">{label}</dt>
+                  <dd className="text-sm font-normal leading-6 text-neutral-950 sm:text-base">{value}</dd>
                 </div>
               ))}
             </dl>
@@ -288,8 +288,8 @@ export default function CompanyJobDetail() {
             <dl className="divide-y divide-slate-100">
               {contactRows.map(([label, value]) => (
                 <div key={label} className="grid grid-cols-[6rem_minmax(0,1fr)] gap-x-4 py-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
-                  <dt className="text-sm font-bold text-slate-500">{label}</dt>
-                  <dd className="text-sm font-bold leading-6 text-neutral-950 sm:text-base">{value}</dd>
+                  <dt className="text-sm font-normal text-slate-500">{label}</dt>
+                  <dd className="text-sm font-normal leading-6 text-neutral-950 sm:text-base">{value}</dd>
                 </div>
               ))}
             </dl>
@@ -298,10 +298,10 @@ export default function CompanyJobDetail() {
 
         {skillTags.length > 0 && (
           <section className="border-b border-slate-200 py-8">
-            <p className="mb-4 text-sm font-black text-blue-700">이런 스킬이 있으면 좋아요!</p>
+            <p className="mb-4 text-sm font-normal text-blue-700">이런 스킬이 있으면 좋아요!</p>
             <div className="flex flex-wrap gap-2">
               {skillTags.map((tag) => (
-                <span key={tag} className="rounded-md bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-700">{tag}</span>
+                <span key={tag} className="rounded-md bg-blue-50 px-3 py-1.5 text-sm font-normal text-blue-700">{tag}</span>
               ))}
             </div>
           </section>
@@ -310,14 +310,14 @@ export default function CompanyJobDetail() {
         {address && (
           <section className="border-b border-slate-200 py-8">
             <h2 className="mb-4 text-xl font-black tracking-[-0.035em] text-neutral-950">근무지역</h2>
-            <div className="mb-4 flex flex-wrap items-center gap-2 text-base font-black text-slate-900">
+            <div className="mb-4 flex flex-wrap items-center gap-2 text-base font-normal text-slate-900">
               <MapPin className="h-4 w-4 text-blue-700" />
               {address}
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-sm font-black text-blue-700"
+                className="inline-flex items-center gap-1 text-sm font-normal text-blue-700"
               >
                 지도 크게 보기
                 <ExternalLink className="h-3.5 w-3.5" />

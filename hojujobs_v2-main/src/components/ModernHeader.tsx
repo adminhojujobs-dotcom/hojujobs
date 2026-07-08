@@ -21,7 +21,6 @@ const navItems: NavItem[] = [
   { label: "뉴스", to: "/news" },
   { label: "이벤트", to: "/events" },
   { label: "블로그", to: "/blog" },
-  { label: "플렛메이트", to: "/flatmates" },
 ];
 
 function isNavActive(pathname: string, to: string) {

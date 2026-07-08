@@ -267,7 +267,7 @@ export default function Sales() {
         <div className="mb-8 flex flex-wrap items-center gap-2">
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger className={cn(
-              "flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-neutral-900 outline-none transition-colors hover:border-slate-300",
+              "flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 text-sm font-normal text-neutral-900 outline-none transition-colors hover:border-slate-300",
               selectedProductTypes.length > 0 && "border-blue-300 bg-blue-50 text-blue-700"
             )}>
               <span>상품 종류</span>
@@ -284,7 +284,7 @@ export default function Sales() {
                   setSelectedProductTypes([]);
                   trackEvent("sales_filter_changed", { metadata: { action: "clear", surface: "sales_filter_bar" } });
                 }}
-                className={cn("justify-between", selectedProductTypes.length === 0 && "font-bold text-blue-700")}
+                className={cn("justify-between", selectedProductTypes.length === 0 && "text-blue-700")}
               >
                 <span>전체 상품</span>
                 <span className="text-xs tabular-nums text-slate-400">{deals.length}</span>
@@ -311,7 +311,7 @@ export default function Sales() {
               trackEvent("sales_filter_changed", { metadata: { action: "clear", surface: "sales_filter_bar" } });
             }}
             className={cn(
-              "inline-flex items-center gap-1 text-xs font-bold text-slate-500 transition-colors hover:text-neutral-950",
+              "inline-flex items-center gap-1 text-xs font-normal text-slate-500 transition-colors hover:text-neutral-950",
               selectedProductTypes.length === 0 && "pointer-events-none opacity-40"
             )}
           >
@@ -365,17 +365,17 @@ export default function Sales() {
                     )}
                     <div className="min-w-0">
                       <div className="mb-1 flex flex-wrap items-center gap-1.5 sm:mb-2 sm:gap-2">
-                        <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[0.65rem] font-black text-blue-700 sm:px-2.5 sm:py-1 sm:text-xs">
+                        <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[0.65rem] font-normal text-blue-700 sm:px-2.5 sm:py-1 sm:text-xs">
                           {deal.category}
                         </span>
-                        <span className="text-xs font-semibold text-slate-500 sm:text-sm">{formatUploadedAt(deal.uploadedAt)}</span>
+                        <span className="text-xs font-normal text-slate-500 sm:text-sm">{formatUploadedAt(deal.uploadedAt)}</span>
                       </div>
 
                       <h2 className="line-clamp-2 text-sm font-black leading-snug tracking-[-0.025em] text-neutral-950 sm:text-lg">
                         {highlightPrices(deal.title)}
                       </h2>
                       {deal.teaserDescription && (
-                        <p className="mt-1 line-clamp-2 text-xs font-semibold leading-relaxed text-slate-500 sm:mt-2 sm:text-base">
+                        <p className="mt-1 line-clamp-2 text-xs font-normal leading-relaxed text-slate-500 sm:mt-2 sm:text-base">
                           {highlightPrices(cleanTeaserText(deal.teaserDescription))}
                         </p>
                       )}

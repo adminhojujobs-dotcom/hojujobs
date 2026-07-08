@@ -172,11 +172,11 @@ export default function CompanyDkHairStudio() {
     <div className="flex min-h-0 flex-1 flex-col bg-white text-neutral-950">
       <main className="mx-auto w-full max-w-[1220px] px-5 py-8 sm:py-12">
         <div className="mb-6 flex items-center gap-4">
-          <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-950">
+          <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-normal text-slate-500 transition-colors hover:text-slate-950">
             <ArrowLeft className="h-4 w-4" />
             홈으로
           </Link>
-          <Link to="/directory" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-950">
+          <Link to="/directory" className="inline-flex items-center gap-1.5 text-sm font-normal text-slate-500 transition-colors hover:text-slate-950">
             <List className="h-4 w-4" />
             목록
           </Link>
@@ -192,10 +192,10 @@ export default function CompanyDkHairStudio() {
                 <img src={profile.logo_url} alt={profile.name} className="h-full w-full object-contain" />
               </div>
               <div>
-                <h1 className="max-w-4xl text-xl font-black leading-tight tracking-[-0.05em] text-neutral-950 sm:text-3xl">
+                <h1 className="max-w-4xl text-xl font-normal leading-tight tracking-[-0.05em] text-neutral-950 sm:text-3xl">
                   {profile.profile_title}
                 </h1>
-                <p className="mt-2 text-base font-semibold text-slate-600">{profile.subtitle}</p>
+                <p className="mt-2 text-base font-normal text-slate-600">{profile.subtitle}</p>
               </div>
             </div>
           </div>
@@ -204,11 +204,11 @@ export default function CompanyDkHairStudio() {
         <section id="conditions" className="mt-16">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
             <h2 className="text-2xl font-black tracking-[-0.04em]">채용 공고</h2>
-            <p className="text-sm font-bold text-slate-400">{jobOpenings.length}개 포지션</p>
+            <p className="text-sm font-normal text-slate-400">{jobOpenings.length}개 포지션</p>
           </div>
 
           <div className="overflow-hidden border-y border-t-neutral-950 border-b-slate-200 bg-white">
-            <div className="hidden grid-cols-[10rem_minmax(0,1fr)_11rem_9rem] items-center border-b border-slate-200 px-5 py-5 text-center text-base font-black text-neutral-950 lg:grid">
+            <div className="hidden grid-cols-[10rem_minmax(0,1fr)_11rem_9rem] items-center border-b border-slate-200 px-5 py-5 text-center text-base font-normal text-neutral-950 lg:grid">
               <div className="text-left">지역</div>
               <div>모집제목/기업명</div>
               <div>급여</div>
@@ -223,26 +223,26 @@ export default function CompanyDkHairStudio() {
                 >
                   <div className="flex flex-col gap-1.5 lg:hidden">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs font-black text-slate-500">{opening.company}</p>
+                      <p className="text-xs font-normal text-slate-500">{opening.company}</p>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-blue-600">{opening.postedAt}</span>
+                        <span className="text-xs font-normal text-blue-600">{opening.postedAt}</span>
                         <Heart className="h-4 w-4 text-slate-300" strokeWidth={1.8} />
                       </div>
                     </div>
 
-                    <Link to={`/company/${profile.slug}/opening/${opening.id}`} className="text-base font-black leading-snug tracking-[-0.03em] text-neutral-950">
+                    <Link to={`/company/${profile.slug}/opening/${opening.id}`} className="text-base font-normal leading-snug tracking-[-0.03em] text-neutral-950">
                       {opening.title}
                     </Link>
 
-                    <p className="text-xs font-bold text-slate-400">{opening.hours}</p>
+                    <p className="text-xs font-normal text-slate-400">{opening.hours}</p>
 
                     <div className="mt-1.5 flex items-center justify-between gap-3 border-t border-slate-100 pt-2">
-                      <p className="text-xs font-bold text-slate-500">
+                      <p className="text-xs font-normal text-slate-500">
                         {opening.area} {opening.suburb} · <span className="text-neutral-900">{opening.pay}</span>
                       </p>
                       <Link
                         to={`/company/${profile.slug}/opening/${opening.id}`}
-                        className="shrink-0 rounded-full border border-slate-200 px-3.5 py-1.5 text-xs font-black text-neutral-900"
+                        className="shrink-0 rounded-full border border-slate-200 px-3.5 py-1.5 text-xs font-normal text-neutral-900"
                       >
                         지원하기
                       </Link>
@@ -250,24 +250,24 @@ export default function CompanyDkHairStudio() {
                   </div>
 
                   <div className="hidden lg:contents">
-                    <div className="text-left text-sm font-black leading-6 text-neutral-900">
+                    <div className="text-left text-sm font-normal leading-6 text-neutral-900">
                       <p>{opening.area}</p>
                       <p>{opening.suburb}</p>
                     </div>
 
                     <div>
-                      <Link to={`/company/${profile.slug}/opening/${opening.id}`} className="group inline-flex max-w-full items-center gap-2 text-lg font-black leading-snug tracking-[-0.03em] text-neutral-950 hover:text-blue-700">
+                      <Link to={`/company/${profile.slug}/opening/${opening.id}`} className="group inline-flex max-w-full items-center gap-2 text-lg font-normal leading-snug tracking-[-0.03em] text-neutral-950 hover:text-blue-700">
                         <span className="line-clamp-2">{opening.title}</span>
                         <ExternalLink className="h-4 w-4 shrink-0 text-slate-300 group-hover:text-blue-500" />
                       </Link>
-                      <p className="mt-2 text-sm font-black text-slate-400">{opening.company}</p>
+                      <p className="mt-2 text-sm font-normal text-slate-400">{opening.company}</p>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center gap-2 text-center">
-                      <span className="text-base font-black text-neutral-950">{opening.pay}</span>
+                      <span className="text-base font-normal text-neutral-950">{opening.pay}</span>
                     </div>
 
-                    <p className="text-center text-sm font-black text-neutral-950">{opening.hours}</p>
+                    <p className="text-center text-sm font-normal text-neutral-950">{opening.hours}</p>
                   </div>
                 </article>
               ))}
@@ -276,10 +276,10 @@ export default function CompanyDkHairStudio() {
 
           {profile.skill_tags.length > 0 && (
             <div className="mt-8 rounded-lg border border-slate-200 bg-white p-6">
-              <p className="mb-4 text-base font-black text-blue-700">이런 스킬이 있으면 좋아요!</p>
+              <p className="mb-4 text-base font-normal text-blue-700">이런 스킬이 있으면 좋아요!</p>
               <div className="flex flex-wrap gap-2">
                 {profile.skill_tags.map((tag) => (
-                  <span key={tag} className="rounded-md bg-blue-50 px-4 py-2 text-sm font-black text-blue-700">{tag}</span>
+                  <span key={tag} className="rounded-md bg-blue-50 px-4 py-2 text-sm font-normal text-blue-700">{tag}</span>
                 ))}
               </div>
             </div>

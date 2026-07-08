@@ -185,7 +185,7 @@ export default function Directory() {
         </div>
 
         <div className="overflow-hidden border-y border-t-neutral-950 border-b-slate-200 bg-white">
-          <div className="hidden grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1.4fr)_2rem] items-center border-b border-slate-200 px-5 py-4 text-sm font-black text-neutral-950 sm:grid">
+          <div className="hidden grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1.4fr)_2rem] items-center border-b border-slate-200 px-5 py-4 text-sm font-normal text-neutral-950 sm:grid">
             <div />
             <button
               type="button"
@@ -223,33 +223,33 @@ export default function Directory() {
                         {profile.logo_url ? (
                           <img src={profile.logo_url} alt={profile.name} className="h-full w-full object-contain" />
                         ) : (
-                          <span className="text-xs font-black text-slate-300">{profile.name.slice(0, 1)}</span>
+                          <span className="text-xs font-normal text-slate-300">{profile.name.slice(0, 1)}</span>
                         )}
                       </div>
 
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="truncate text-base font-black text-neutral-950 group-hover:text-blue-700 group-hover:underline">
+                          <p className="truncate text-base font-normal text-neutral-950 group-hover:text-blue-700 group-hover:underline">
                             {profile.name}
                           </p>
                           {profile.activeOpeningCount > 0 && (
-                            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-black text-blue-700">
+                            <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-normal text-blue-700">
                               채용 {profile.activeOpeningCount}건
                             </span>
                           )}
                         </div>
-                        <p className="mt-0.5 truncate text-sm font-semibold text-slate-500 sm:hidden">
+                        <p className="mt-0.5 truncate text-sm font-normal text-slate-500 sm:hidden">
                           {profile.openingSuburbs.length > 0 ? profile.openingSuburbs.slice(0, 2).join(", ") : "-"}
                         </p>
                       </div>
 
                       <div className="hidden min-w-0 sm:block">
                         {profile.openingSuburbs.length > 0 ? (
-                          <p className="truncate text-xs font-semibold text-blue-700">
+                          <p className="truncate text-xs font-normal text-blue-700">
                             모집 지역: {profile.openingSuburbs.join(", ")}
                           </p>
                         ) : (
-                          <p className="text-sm font-semibold text-slate-400">-</p>
+                          <p className="text-sm font-normal text-slate-400">-</p>
                         )}
                       </div>
                     </Link>
@@ -261,7 +261,7 @@ export default function Directory() {
                           aria-label={`${profile.name} 지점 ${isExpanded ? "숨기기" : "보기"}`}
                           onClick={() => toggleExpanded(profile.slug)}
                           className={cn(
-                            "flex shrink-0 items-center gap-1 justify-self-end rounded-full border px-2.5 py-1 text-[11px] font-black transition-colors",
+                            "flex shrink-0 items-center gap-1 justify-self-end rounded-full border px-2.5 py-1 text-[11px] font-normal transition-colors",
                             isExpanded
                               ? "border-blue-200 bg-blue-50 text-blue-700"
                               : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700",
@@ -279,10 +279,10 @@ export default function Directory() {
                       <div className="divide-y divide-slate-100 bg-slate-50 px-5 py-2 sm:pl-[4.75rem]">
                         {profile.branches.map((branch) => (
                           <div key={branch.id} className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 py-2.5">
-                            <span className="text-sm font-black text-neutral-950">
+                            <span className="text-sm font-normal text-neutral-950">
                               {branch.branch_label ?? branch.branch_name}
                             </span>
-                            <span className="text-sm font-semibold text-slate-500">{branch.address}</span>
+                            <span className="text-sm font-normal text-slate-500">{branch.address}</span>
                           </div>
                         ))}
                       </div>

@@ -37,21 +37,21 @@ export default function Blog() {
   });
 
   return (
-    <div className="flex w-full min-h-0 flex-1 flex-col bg-background">
-      <main className="mx-auto w-full max-w-4xl space-y-8 px-4 py-10">
+    <div className="flex min-h-0 w-full flex-1 flex-col bg-white">
+      <main className="mx-auto w-full max-w-[1220px] px-5 py-10 sm:py-12 lg:px-9">
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 transition-colors hover:text-neutral-950"
         >
           <ArrowLeft className="h-4 w-4" />
           홈으로
         </Link>
 
-        <header className="space-y-3">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+        <header className="mb-8 space-y-3">
+          <h1 className="text-xl font-black tracking-[-0.045em] text-neutral-950 sm:text-2xl">
             호주 워홀 카페 일자리 찾는 법
           </h1>
-          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          <p className="max-w-2xl text-sm font-normal leading-relaxed text-slate-500">
             멜버른과 시드니에서 카페 알바를 찾는 워홀러를 위해 쉽게 정리했어요.
             어디서 공고를 보고, 어떻게 연락하고, 왜 지원이 잘 안 되는지까지 차근차근 알려드립니다.
           </p>
@@ -70,9 +70,9 @@ export default function Blog() {
               </Link>
               <div className="flex flex-1 flex-col p-5">
                 <div className="flex-1 space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Guide</p>
-                <h2 className="text-lg font-semibold text-foreground">{post.title}</h2>
-                <p className="text-sm leading-relaxed text-muted-foreground">{post.description}</p>
+                <p className="text-xs font-normal uppercase tracking-[0.16em] text-slate-500">Guide</p>
+                <h2 className="text-lg font-normal text-neutral-950">{post.title}</h2>
+                <p className="text-sm font-normal leading-relaxed text-slate-500">{post.description}</p>
                 </div>
                 <Link
                   to={`/blog/${post.slug}`}
