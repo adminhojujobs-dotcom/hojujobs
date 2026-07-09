@@ -41,6 +41,7 @@ import CompanyParkBongsook from "./pages/CompanyParkBongsook";
 import CompanyYanggaDeli from "./pages/CompanyYanggaDeli";
 import CompanyStoneage from "./pages/CompanyStoneage";
 import CompanyDkHairStudio from "./pages/CompanyDkHairStudio";
+import CompanyGeneric from "./pages/CompanyGeneric";
 import { DevPreviewAuthProvider, DevPreviewLayout } from "@/components/DevPreviewAuth";
 import DevPreviewHub from "./pages/dev/DevPreviewHub";
 
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="/company/yanggadeli" element={<CompanyYanggaDeli />} />
               <Route path="/company/stoneage" element={<CompanyStoneage />} />
               <Route path="/company/dkhairstudio" element={<CompanyDkHairStudio />} />
+              <Route path="/company/:slug" element={<CompanyGeneric />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/profile" element={<Profile />} />
