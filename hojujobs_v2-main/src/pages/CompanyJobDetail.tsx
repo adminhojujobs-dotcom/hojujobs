@@ -12,6 +12,7 @@ type CompanyProfileRow = Database["public"]["Tables"]["company_profiles"]["Row"]
 type CompanyBranchRow = Database["public"]["Tables"]["company_branches"]["Row"];
 type CompanyJobOpeningRow = Database["public"]["Tables"]["company_job_openings"]["Row"];
 type DetailRow = [string, string, string?];
+type DetailSection = { title: string; items: string[] };
 
 function detailRowsFromJson(value: Json): DetailRow[] {
   if (!Array.isArray(value)) return [];
@@ -21,6 +22,18 @@ function detailRowsFromJson(value: Json): DetailRow[] {
     const [label, content, note] = row;
     if (typeof label !== "string" || typeof content !== "string") return [];
     return [[label, content, typeof note === "string" ? note : undefined] satisfies DetailRow];
+  });
+}
+
+function detailSectionsFromJson(value: Json): DetailSection[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((section) => {
+    if (!section || typeof section !== "object" || Array.isArray(section)) return [];
+    const { title, items } = section as Record<string, Json>;
+    if (typeof title !== "string" || !Array.isArray(items)) return [];
+    const stringItems = items.filter((item): item is string => typeof item === "string");
+    return stringItems.length > 0 ? [{ title, items: stringItems }] : [];
   });
 }
 
@@ -128,6 +141,10 @@ export default function CompanyJobDetail() {
   const recruitmentDetailRows = useMemo(
     () => recruitmentRows.filter(([label]) => label !== "연락처" && label !== "이메일"),
     [recruitmentRows],
+  );
+  const detailSections = useMemo(
+    () => detailSectionsFromJson(opening?.detail_sections ?? []),
+    [opening],
   );
 
   const address = branch?.address ?? profile?.address ?? "";
@@ -244,13 +261,6 @@ export default function CompanyJobDetail() {
           )}
         </section>
 
-        {opening.detail_intro && conditionRows.length === 0 && (
-          <section className="border-b border-slate-200 py-8">
-            <h2 className="mb-4 text-xl font-black tracking-[-0.035em] text-neutral-950">상세 내용</h2>
-            <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700 sm:text-base">{opening.detail_intro}</p>
-          </section>
-        )}
-
         {conditionRows.length > 0 && (
           <section className="border-b border-slate-200 py-8">
             <h2 className="mb-5 text-xl font-black tracking-[-0.035em] text-neutral-950">근무조건</h2>
@@ -293,6 +303,34 @@ export default function CompanyJobDetail() {
                 </div>
               ))}
             </dl>
+          </section>
+        )}
+
+        {opening.detail_intro && (
+          <section className="border-b border-slate-200 py-8">
+            <h2 className="mb-4 text-xl font-black tracking-[-0.035em] text-neutral-950">회사 소개</h2>
+            <p className="whitespace-pre-wrap text-sm leading-7 text-slate-700 sm:text-base">{opening.detail_intro}</p>
+          </section>
+        )}
+
+        {detailSections.length > 0 && (
+          <section className="border-b border-slate-200 py-8">
+            <h2 className="mb-5 text-xl font-black tracking-[-0.035em] text-neutral-950">상세 안내</h2>
+            <div className="space-y-6">
+              {detailSections.map((section) => (
+                <div key={section.title}>
+                  <h3 className="mb-2 text-base font-black text-neutral-950">{section.title}</h3>
+                  <ul className="space-y-1.5">
+                    {section.items.map((item) => (
+                      <li key={item} className="flex gap-2 text-sm font-normal leading-6 text-slate-700 sm:text-base">
+                        <span className="text-slate-300">·</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </section>
         )}
 

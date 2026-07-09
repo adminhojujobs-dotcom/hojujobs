@@ -34,31 +34,29 @@ function toJobOpening(row: CompanyJobOpeningRow): JobOpening {
 }
 
 const fallbackProfile: CompanyProfileRow = {
-  id: "fallback-chickenv",
-  slug: "chickenv",
-  name: "Chicken V",
-  profile_title: "Chicken V 직원 모집",
-  subtitle: "치킨 & 부산포차 — 이스트우드 · 시드니 시티 매장 홀/주방 직원 모집",
-  logo_url: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/chickenv.png",
-  photo_url: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/photos/chickenv.jpg",
-  phone: null,
-  email: "iseoyun6816@gmail.com",
-  address: "345b Sussex St, Sydney NSW 2000",
-  map_query: "345b Sussex St, Sydney NSW 2000",
-  skill_tags: ["홀 서빙", "주방 조리", "포차 안주 조리", "고객응대", "매장정리", "재고관리"],
+  id: "fallback-bornga",
+  slug: "bornga",
+  name: "Bornga",
+  profile_title: "Bornga 직원 모집",
+  subtitle: "백종원 대표가 만든 한식 바베큐 브랜드",
+  logo_url: "https://www.google.com/s2/favicons?domain=bornga.kr&sz=256",
+  photo_url: "https://media-cdn.tripadvisor.com/media/photo-l/1a/24/59/8d/caption.jpg",
+  phone: "03 9995 0643",
+  email: "mbornga@gmail.com",
+  address: "Level 1/178 Little Bourke St, Melbourne VIC 3000",
+  map_query: "Level 1/178 Little Bourke St, Melbourne VIC 3000",
+  skill_tags: ["홀 서빙", "그릴 서비스", "주방 보조", "고객응대", "테이블 정리", "위생관리"],
   is_active: true,
   created_at: "",
   updated_at: "",
 };
 
 const fallbackJobOpenings: JobOpening[] = [
-  { id: "fallback-eastwood", area: "NSW", suburb: "Eastwood", title: "Chicken V Eastwood 홀/주방 직원 모집", company: "Chicken V Eastwood & Busanjip", pay: "면접 시 협의", payType: "급여", hours: "11:00 - 24:00", postedAt: "상시" },
-  { id: "fallback-city-kitchen", area: "NSW", suburb: "Sydney CBD", title: "Chicken V & Busan Pocha City 주방 직원 모집", company: "Chicken V & Busan Pocha City", pay: "면접 후 경력에 따라 협의", payType: "급여", hours: "17:00 - 26:00", postedAt: "상시" },
-  { id: "fallback-city-hall", area: "NSW", suburb: "Sydney CBD", title: "Busan Pocha & Chicken V 홀 파트타임 직원 모집", company: "Busan Pocha & Chicken V City", pay: "면접 시 협의", payType: "급여", hours: "주 2-3일", postedAt: "상시" },
+  { id: "fallback-1", area: "VIC", suburb: "Melbourne CBD", title: "Bornga Melbourne점 홀/주방 직원 모집", company: "Bornga Melbourne점", pay: "면접 시 협의", payType: "급여", hours: "풀타임 / 파트타임", postedAt: "상시" },
 ];
 
-export default function CompanyChickenV() {
-  const { slug = "chickenv" } = useParams();
+export default function CompanyBornga() {
+  const { slug = "bornga" } = useParams();
   const [profile, setProfile] = useState<CompanyProfileRow>(fallbackProfile);
   const [jobOpenings, setJobOpenings] = useState<JobOpening[]>(fallbackJobOpenings);
   const [isLoadingCompany, setIsLoadingCompany] = useState(true);
@@ -103,11 +101,11 @@ export default function CompanyChickenV() {
 
   useSEO({
     title: `${profile.profile_title} | 호주잡스`,
-    description: `${profile.name} 회사 프로필과 채용정보. 주소, 연락처, 매장 소개와 근무조건을 확인하세요.`,
+    description: `${profile.name} 회사 프로필과 채용정보. 주소, 연락처, 인스타그램, 매장 소개와 근무조건을 확인하세요.`,
     canonical: `https://hojujobs.com/company/${profile.slug}`,
     htmlLang: "ko",
     ogLocale: "ko_KR",
-    keywords: `${profile.name} 채용, 치킨 포차 구인, 시드니 한인 구인, Korean jobs Australia`,
+    keywords: `${profile.name} 채용, Bornga 구인, Korean BBQ 멜버른, 멜버른 한인 구인`,
   });
 
   if (isLoadingCompany) {
@@ -132,7 +130,7 @@ export default function CompanyChickenV() {
             <div className="mb-6 h-9 w-44 rounded bg-slate-100" />
             <div className="border-y border-t-neutral-950 border-b-slate-200 bg-white">
               {Array.from({ length: 2 }).map((_, index) => (
-                <div key={`chickenv-job-skeleton-${index}`} className="grid gap-4 border-b border-slate-200 px-5 py-7 lg:grid-cols-[10rem_minmax(0,1fr)_11rem_9rem]">
+                <div key={`bornga-job-skeleton-${index}`} className="grid gap-4 border-b border-slate-200 px-5 py-7 lg:grid-cols-[10rem_minmax(0,1fr)_11rem_9rem]">
                   <div className="h-12 rounded bg-slate-100" />
                   <div className="h-14 rounded bg-slate-100" />
                   <div className="h-10 rounded bg-slate-100" />

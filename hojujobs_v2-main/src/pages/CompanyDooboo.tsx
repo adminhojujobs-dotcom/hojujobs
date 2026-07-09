@@ -34,31 +34,29 @@ function toJobOpening(row: CompanyJobOpeningRow): JobOpening {
 }
 
 const fallbackProfile: CompanyProfileRow = {
-  id: "fallback-chickenv",
-  slug: "chickenv",
-  name: "Chicken V",
-  profile_title: "Chicken V 직원 모집",
-  subtitle: "치킨 & 부산포차 — 이스트우드 · 시드니 시티 매장 홀/주방 직원 모집",
-  logo_url: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/chickenv.png",
-  photo_url: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/photos/chickenv.jpg",
-  phone: null,
-  email: "iseoyun6816@gmail.com",
-  address: "345b Sussex St, Sydney NSW 2000",
-  map_query: "345b Sussex St, Sydney NSW 2000",
-  skill_tags: ["홀 서빙", "주방 조리", "포차 안주 조리", "고객응대", "매장정리", "재고관리"],
+  id: "fallback-dooboo",
+  slug: "dooboo",
+  name: "DOOBOO",
+  profile_title: "DOOBOO 직원 모집",
+  subtitle: "다양한 한식 메뉴를 선보이는 레스토랑",
+  logo_url: "https://images.squarespace-cdn.com/content/v1/6281bd30d89ad1244a348d0e/6854b493-de91-44b5-ba33-6fa61c8a34b6/Dooboo-Logo-%28Hot-Pot%292.png?format=1500w",
+  photo_url: "https://images.squarespace-cdn.com/content/v1/6281bd30d89ad1244a348d0e/ee9c0c6e-2c03-4caa-bdbe-abe435e46c6b/Dooboo-093-1-.jpg",
+  phone: "03 8395 3782",
+  email: null,
+  address: "261 Swanston St, Melbourne VIC 3000",
+  map_query: "261 Swanston St, Melbourne VIC 3000",
+  skill_tags: ["홀 서빙", "한식 조리", "주방 보조", "캐셔", "고객응대", "위생관리"],
   is_active: true,
   created_at: "",
   updated_at: "",
 };
 
 const fallbackJobOpenings: JobOpening[] = [
-  { id: "fallback-eastwood", area: "NSW", suburb: "Eastwood", title: "Chicken V Eastwood 홀/주방 직원 모집", company: "Chicken V Eastwood & Busanjip", pay: "면접 시 협의", payType: "급여", hours: "11:00 - 24:00", postedAt: "상시" },
-  { id: "fallback-city-kitchen", area: "NSW", suburb: "Sydney CBD", title: "Chicken V & Busan Pocha City 주방 직원 모집", company: "Chicken V & Busan Pocha City", pay: "면접 후 경력에 따라 협의", payType: "급여", hours: "17:00 - 26:00", postedAt: "상시" },
-  { id: "fallback-city-hall", area: "NSW", suburb: "Sydney CBD", title: "Busan Pocha & Chicken V 홀 파트타임 직원 모집", company: "Busan Pocha & Chicken V City", pay: "면접 시 협의", payType: "급여", hours: "주 2-3일", postedAt: "상시" },
+  { id: "fallback-1", area: "VIC", suburb: "Melbourne CBD", title: "DOOBOO Melbourne CBD점 홀/주방 직원 모집", company: "DOOBOO Melbourne CBD점", pay: "면접 시 협의", payType: "급여", hours: "풀타임 / 파트타임", postedAt: "상시" },
 ];
 
-export default function CompanyChickenV() {
-  const { slug = "chickenv" } = useParams();
+export default function CompanyDooboo() {
+  const { slug = "dooboo" } = useParams();
   const [profile, setProfile] = useState<CompanyProfileRow>(fallbackProfile);
   const [jobOpenings, setJobOpenings] = useState<JobOpening[]>(fallbackJobOpenings);
   const [isLoadingCompany, setIsLoadingCompany] = useState(true);
@@ -103,11 +101,11 @@ export default function CompanyChickenV() {
 
   useSEO({
     title: `${profile.profile_title} | 호주잡스`,
-    description: `${profile.name} 회사 프로필과 채용정보. 주소, 연락처, 매장 소개와 근무조건을 확인하세요.`,
+    description: `${profile.name} 회사 프로필과 채용정보. 주소, 연락처, 인스타그램, 매장 소개와 근무조건을 확인하세요.`,
     canonical: `https://hojujobs.com/company/${profile.slug}`,
     htmlLang: "ko",
     ogLocale: "ko_KR",
-    keywords: `${profile.name} 채용, 치킨 포차 구인, 시드니 한인 구인, Korean jobs Australia`,
+    keywords: `${profile.name} 채용, DOOBOO 구인, 한식당 멜버른, 멜버른 한인 구인`,
   });
 
   if (isLoadingCompany) {
@@ -132,7 +130,7 @@ export default function CompanyChickenV() {
             <div className="mb-6 h-9 w-44 rounded bg-slate-100" />
             <div className="border-y border-t-neutral-950 border-b-slate-200 bg-white">
               {Array.from({ length: 2 }).map((_, index) => (
-                <div key={`chickenv-job-skeleton-${index}`} className="grid gap-4 border-b border-slate-200 px-5 py-7 lg:grid-cols-[10rem_minmax(0,1fr)_11rem_9rem]">
+                <div key={`dooboo-job-skeleton-${index}`} className="grid gap-4 border-b border-slate-200 px-5 py-7 lg:grid-cols-[10rem_minmax(0,1fr)_11rem_9rem]">
                   <div className="h-12 rounded bg-slate-100" />
                   <div className="h-14 rounded bg-slate-100" />
                   <div className="h-10 rounded bg-slate-100" />

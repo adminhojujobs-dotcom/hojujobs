@@ -281,8 +281,87 @@ const dkHairStudioJobCard: JobCardItem = {
   jobUrl: "/company/dkhairstudio",
 };
 
+const bbqCodeJobCard: JobCardItem = {
+  id: "fallback-bbqcode",
+  logo: "BBQ Code",
+  logoUrl: "https://www.google.com/s2/favicons?domain=bbqcode.com.au&sz=256",
+  logoTone: "purple",
+  company: "BBQ Code",
+  location: "VIC",
+  title: "BBQ Code 직원 모집",
+  payType: "급여",
+  pay: "면접 시 협의",
+  jobUrl: "/company/bbqcode",
+};
+
+const paiksBbqJobCard: JobCardItem = {
+  id: "fallback-paiksbbq",
+  logo: "PAIK'S BBQ",
+  logoUrl: "https://ui-avatars.com/api/?name=PAIK%27S+BBQ&background=111827&color=fff&size=256&bold=true",
+  logoTone: "blue-dark",
+  company: "PAIK'S BBQ",
+  location: "VIC",
+  title: "PAIK'S BBQ 직원 모집",
+  payType: "급여",
+  pay: "면접 시 협의",
+  jobUrl: "/company/paiksbbq",
+};
+
+const doobooJobCard: JobCardItem = {
+  id: "fallback-dooboo",
+  logo: "DOOBOO",
+  logoUrl: "https://images.squarespace-cdn.com/content/v1/6281bd30d89ad1244a348d0e/6854b493-de91-44b5-ba33-6fa61c8a34b6/Dooboo-Logo-%28Hot-Pot%292.png?format=1500w",
+  logoTone: "blue",
+  company: "DOOBOO",
+  location: "VIC",
+  title: "DOOBOO 직원 모집",
+  payType: "급여",
+  pay: "면접 시 협의",
+  jobUrl: "/company/dooboo",
+};
+
+const samSamChickenJobCard: JobCardItem = {
+  id: "fallback-samsamchicken",
+  logo: "SamSam\nChicken & Beer",
+  logoUrl: "https://images.squarespace-cdn.com/content/v1/5ab08d4d1aef1d04ff510c72/1607573003335-Y4H31KSPNHWMUL8LDUAT/SamSam_Symbol-01.png",
+  logoTone: "red",
+  company: "SamSam Chicken & Beer",
+  location: "VIC",
+  title: "SamSam Chicken & Beer 직원 모집",
+  payType: "급여",
+  pay: "면접 시 협의",
+  jobUrl: "/company/samsamchicken",
+};
+
+const bornGaJobCard: JobCardItem = {
+  id: "fallback-bornga",
+  logo: "Bornga",
+  logoUrl: "https://www.google.com/s2/favicons?domain=bornga.kr&sz=256",
+  logoTone: "black",
+  company: "Bornga",
+  location: "VIC",
+  title: "Bornga 직원 모집",
+  payType: "급여",
+  pay: "면접 시 협의",
+  jobUrl: "/company/bornga",
+};
+
 function withPinnedCards(cards: JobCardItem[]) {
-  const pinnedCards = [kmall09JobCard, bunsikJobCard, sushiYuzenJobCard, chickenVJobCard, parkBongsookJobCard, yanggaDeliJobCard, stoneageJobCard, dkHairStudioJobCard];
+  const pinnedCards = [
+    kmall09JobCard,
+    bunsikJobCard,
+    sushiYuzenJobCard,
+    chickenVJobCard,
+    parkBongsookJobCard,
+    yanggaDeliJobCard,
+    stoneageJobCard,
+    dkHairStudioJobCard,
+    bbqCodeJobCard,
+    paiksBbqJobCard,
+    doobooJobCard,
+    samSamChickenJobCard,
+    bornGaJobCard,
+  ];
   const mergedCards = [...cards];
 
   pinnedCards.forEach((pinnedCard) => {
@@ -301,7 +380,7 @@ function withPinnedCards(cards: JobCardItem[]) {
     };
   });
 
-  return mergedCards.slice(0, 12);
+  return mergedCards.slice(0, 20);
 }
 
 const fallbackJobCards: JobCardItem[] = [
@@ -313,6 +392,11 @@ const fallbackJobCards: JobCardItem[] = [
   yanggaDeliJobCard,
   stoneageJobCard,
   dkHairStudioJobCard,
+  bbqCodeJobCard,
+  paiksBbqJobCard,
+  doobooJobCard,
+  samSamChickenJobCard,
+  bornGaJobCard,
 ];
 
 function PromoLink({ href, external, className, children }: { href: string; external?: boolean; className: string; children: ReactNode }) {
@@ -938,7 +1022,7 @@ const Index = ({ cityFilter }: IndexProps) => {
         .eq("is_active", true)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false })
-        .limit(12);
+        .limit(20);
 
       if (cancelled) return;
 
@@ -959,7 +1043,7 @@ const Index = ({ cityFilter }: IndexProps) => {
 
       const { data: profiles, error: profilesError } = await supabase
         .from("company_profiles")
-        .select("slug")
+        .select("slug, logo_url")
         .eq("is_active", true)
         .in("slug", companySlugs);
 
@@ -972,7 +1056,12 @@ const Index = ({ cityFilter }: IndexProps) => {
       }
 
       const activeCompanySlugs = new Set(profiles.map((profile) => profile.slug));
-      const cards = filterCompanyCards(rawCards, activeCompanySlugs);
+      const logoUrlBySlug = new Map(profiles.map((profile) => [profile.slug, profile.logo_url]));
+      const cards = filterCompanyCards(rawCards, activeCompanySlugs).map((card) => {
+        const slug = companySlugFromJobUrl(card.jobUrl);
+        const profileLogoUrl = slug ? logoUrlBySlug.get(slug) : null;
+        return profileLogoUrl ? { ...card, logoUrl: profileLogoUrl } : card;
+      });
 
       const { data: branches } = await supabase
         .from("company_branches")

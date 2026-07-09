@@ -53,38 +53,6 @@ export type Database = {
         }
         Relationships: []
       }
-      business_job_applications: {
-        Row: {
-          applicant_user_id: string
-          created_at: string
-          cv_snapshot: Json
-          id: string
-          job_listing_id: string
-        }
-        Insert: {
-          applicant_user_id: string
-          created_at?: string
-          cv_snapshot: Json
-          id?: string
-          job_listing_id: string
-        }
-        Update: {
-          applicant_user_id?: string
-          created_at?: string
-          cv_snapshot?: Json
-          id?: string
-          job_listing_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "business_job_applications_job_listing_id_fkey"
-            columns: ["job_listing_id"]
-            isOneToOne: false
-            referencedRelation: "business_job_listings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       business_job_listings: {
         Row: {
           branch_id: string
@@ -93,7 +61,6 @@ export type Database = {
           details: string | null
           id: string
           is_active: boolean
-          quick_apply: boolean
           salary: string | null
           title: string
           updated_at: string
@@ -106,7 +73,6 @@ export type Database = {
           details?: string | null
           id?: string
           is_active?: boolean
-          quick_apply?: boolean
           salary?: string | null
           title: string
           updated_at?: string
@@ -119,7 +85,6 @@ export type Database = {
           details?: string | null
           id?: string
           is_active?: boolean
-          quick_apply?: boolean
           salary?: string | null
           title?: string
           updated_at?: string
@@ -369,72 +334,51 @@ export type Database = {
       }
       company_profiles: {
         Row: {
-          about_paragraphs: string[]
           address: string
-          badges: string[]
-          condition_rows: Json
           created_at: string
           email: string | null
           id: string
-          instagram_handle: string | null
-          instagram_url: string | null
           is_active: boolean
           logo_url: string
           map_query: string | null
           name: string
           phone: string | null
-          phone_href: string | null
           photo_url: string | null
           profile_title: string
-          recruitment_rows: Json
           skill_tags: string[]
           slug: string
           subtitle: string
           updated_at: string
         }
         Insert: {
-          about_paragraphs?: string[]
           address: string
-          badges?: string[]
-          condition_rows?: Json
           created_at?: string
           email?: string | null
           id?: string
-          instagram_handle?: string | null
-          instagram_url?: string | null
           is_active?: boolean
           logo_url: string
           map_query?: string | null
           name: string
           phone?: string | null
-          phone_href?: string | null
           photo_url?: string | null
           profile_title: string
-          recruitment_rows?: Json
           skill_tags?: string[]
           slug: string
           subtitle: string
           updated_at?: string
         }
         Update: {
-          about_paragraphs?: string[]
           address?: string
-          badges?: string[]
-          condition_rows?: Json
           created_at?: string
           email?: string | null
           id?: string
-          instagram_handle?: string | null
-          instagram_url?: string | null
           is_active?: boolean
           logo_url?: string
           map_query?: string | null
           name?: string
           phone?: string | null
-          phone_href?: string | null
           photo_url?: string | null
           profile_title?: string
-          recruitment_rows?: Json
           skill_tags?: string[]
           slug?: string
           subtitle?: string

@@ -38,6 +38,11 @@ import CompanyParkBongsook from "./pages/CompanyParkBongsook";
 import CompanyYanggaDeli from "./pages/CompanyYanggaDeli";
 import CompanyStoneage from "./pages/CompanyStoneage";
 import CompanyDkHairStudio from "./pages/CompanyDkHairStudio";
+import CompanyBbqCode from "./pages/CompanyBbqCode";
+import CompanyPaiksBbq from "./pages/CompanyPaiksBbq";
+import CompanyDooboo from "./pages/CompanyDooboo";
+import CompanySamSamChicken from "./pages/CompanySamSamChicken";
+import CompanyBornga from "./pages/CompanyBornga";
 import { DevPreviewAuthProvider, DevPreviewLayout } from "@/components/DevPreviewAuth";
 import DevPreviewHub from "./pages/dev/DevPreviewHub";
 
@@ -68,6 +73,11 @@ const App = () => (
               <Route path="/company/yanggadeli" element={<CompanyYanggaDeli />} />
               <Route path="/company/stoneage" element={<CompanyStoneage />} />
               <Route path="/company/dkhairstudio" element={<CompanyDkHairStudio />} />
+              <Route path="/company/bbqcode" element={<CompanyBbqCode />} />
+              <Route path="/company/paiksbbq" element={<CompanyPaiksBbq />} />
+              <Route path="/company/dooboo" element={<CompanyDooboo />} />
+              <Route path="/company/samsamchicken" element={<CompanySamSamChicken />} />
+              <Route path="/company/bornga" element={<CompanyBornga />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/profile" element={<Profile />} />

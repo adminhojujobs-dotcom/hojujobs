@@ -34,31 +34,29 @@ function toJobOpening(row: CompanyJobOpeningRow): JobOpening {
 }
 
 const fallbackProfile: CompanyProfileRow = {
-  id: "fallback-chickenv",
-  slug: "chickenv",
-  name: "Chicken V",
-  profile_title: "Chicken V 직원 모집",
-  subtitle: "치킨 & 부산포차 — 이스트우드 · 시드니 시티 매장 홀/주방 직원 모집",
-  logo_url: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/chickenv.png",
-  photo_url: "https://khxkzudzkklfyivgnmmq.supabase.co/storage/v1/object/public/company-logos/photos/chickenv.jpg",
-  phone: null,
-  email: "iseoyun6816@gmail.com",
-  address: "345b Sussex St, Sydney NSW 2000",
-  map_query: "345b Sussex St, Sydney NSW 2000",
-  skill_tags: ["홀 서빙", "주방 조리", "포차 안주 조리", "고객응대", "매장정리", "재고관리"],
+  id: "fallback-samsamchicken",
+  slug: "samsamchicken",
+  name: "SamSam Chicken & Beer",
+  profile_title: "SamSam Chicken & Beer 직원 모집",
+  subtitle: "치킨과 맥주를 함께 즐기는 한식 주점",
+  logo_url: "https://images.squarespace-cdn.com/content/v1/5ab08d4d1aef1d04ff510c72/1607573003335-Y4H31KSPNHWMUL8LDUAT/SamSam_Symbol-01.png",
+  photo_url: "https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=1600&q=80",
+  phone: "03 8395 3782",
+  email: null,
+  address: "207-209 Swanston St, Melbourne VIC 3000",
+  map_query: "207-209 Swanston St, Melbourne VIC 3000",
+  skill_tags: ["홀 서빙", "치킨 조리", "주방 보조", "캐셔", "고객응대", "위생관리"],
   is_active: true,
   created_at: "",
   updated_at: "",
 };
 
 const fallbackJobOpenings: JobOpening[] = [
-  { id: "fallback-eastwood", area: "NSW", suburb: "Eastwood", title: "Chicken V Eastwood 홀/주방 직원 모집", company: "Chicken V Eastwood & Busanjip", pay: "면접 시 협의", payType: "급여", hours: "11:00 - 24:00", postedAt: "상시" },
-  { id: "fallback-city-kitchen", area: "NSW", suburb: "Sydney CBD", title: "Chicken V & Busan Pocha City 주방 직원 모집", company: "Chicken V & Busan Pocha City", pay: "면접 후 경력에 따라 협의", payType: "급여", hours: "17:00 - 26:00", postedAt: "상시" },
-  { id: "fallback-city-hall", area: "NSW", suburb: "Sydney CBD", title: "Busan Pocha & Chicken V 홀 파트타임 직원 모집", company: "Busan Pocha & Chicken V City", pay: "면접 시 협의", payType: "급여", hours: "주 2-3일", postedAt: "상시" },
+  { id: "fallback-1", area: "VIC", suburb: "Melbourne CBD", title: "SamSam Chicken & Beer CBD점 홀/주방 직원 모집", company: "SamSam Chicken & Beer CBD점", pay: "면접 시 협의", payType: "급여", hours: "풀타임 / 파트타임", postedAt: "상시" },
 ];
 
-export default function CompanyChickenV() {
-  const { slug = "chickenv" } = useParams();
+export default function CompanySamSamChicken() {
+  const { slug = "samsamchicken" } = useParams();
   const [profile, setProfile] = useState<CompanyProfileRow>(fallbackProfile);
   const [jobOpenings, setJobOpenings] = useState<JobOpening[]>(fallbackJobOpenings);
   const [isLoadingCompany, setIsLoadingCompany] = useState(true);
@@ -103,11 +101,11 @@ export default function CompanyChickenV() {
 
   useSEO({
     title: `${profile.profile_title} | 호주잡스`,
-    description: `${profile.name} 회사 프로필과 채용정보. 주소, 연락처, 매장 소개와 근무조건을 확인하세요.`,
+    description: `${profile.name} 회사 프로필과 채용정보. 주소, 연락처, 인스타그램, 매장 소개와 근무조건을 확인하세요.`,
     canonical: `https://hojujobs.com/company/${profile.slug}`,
     htmlLang: "ko",
     ogLocale: "ko_KR",
-    keywords: `${profile.name} 채용, 치킨 포차 구인, 시드니 한인 구인, Korean jobs Australia`,
+    keywords: `${profile.name} 채용, SamSam Chicken 구인, 치킨호프 멜버른, 멜버른 한인 구인`,
   });
 
   if (isLoadingCompany) {
@@ -132,7 +130,7 @@ export default function CompanyChickenV() {
             <div className="mb-6 h-9 w-44 rounded bg-slate-100" />
             <div className="border-y border-t-neutral-950 border-b-slate-200 bg-white">
               {Array.from({ length: 2 }).map((_, index) => (
-                <div key={`chickenv-job-skeleton-${index}`} className="grid gap-4 border-b border-slate-200 px-5 py-7 lg:grid-cols-[10rem_minmax(0,1fr)_11rem_9rem]">
+                <div key={`samsamchicken-job-skeleton-${index}`} className="grid gap-4 border-b border-slate-200 px-5 py-7 lg:grid-cols-[10rem_minmax(0,1fr)_11rem_9rem]">
                   <div className="h-12 rounded bg-slate-100" />
                   <div className="h-14 rounded bg-slate-100" />
                   <div className="h-10 rounded bg-slate-100" />
